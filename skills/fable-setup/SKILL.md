@@ -1,101 +1,76 @@
 ---
 name: fable-setup
-description: Optional one-time check for Claude Fable 5.1 in Claude Code. The plugin already injects the always-on prompting rules at every session start through a hook, so nothing needs to be edited for the defaults. Use /fable-setup to audit CLAUDE.md and settings for rules that conflict with the Fable 5.1 guide, switch between interactive and unattended mode, or review effort and API settings. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "unattended mode". Also teaches /fable-prompt in three lines at the end.
+description: Optional one-time setup for Claude Fable 5.1 in Claude Code. The plugin already injects the always-on prompting rules at every session start through a hook, so nothing needs to be edited for the defaults. Use /fable-setup to choose where the rules live (hook, a separate rules file, or a CLAUDE.md section), switch interactive/unattended mode, pick the effort default, and audit CLAUDE.md for conflicting rules. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "unattended mode", "rules file".
 ---
-# fable-setup · audit, mode switch, settings checklist
+# fable-setup · choose delivery, mode, effort; audit conflicts
 
-Source: Anthropic "Prompting Claude Fable 5.1". Blocks live in
-`${CLAUDE_PLUGIN_ROOT}/skills/fable-prompt/references/prompt-blocks.md`. The always-on rules are injected
-by `${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh` at every session start; read
-`${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` to see exactly what is active.
+Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md` for unattended mode).
+Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable-prompt/references/prompt-blocks.md`.
 
-The guide's advice splits into three layers:
-1. **Per request** (goal, context, scope, done, effort, conditional nudges) → `/fable-prompt`.
-2. **Always-on rules** (autonomy, scope limits, targeted edits, progress updates, formatting, batching) → injected
-   by the hook by default; optionally written into CLAUDE.md instead (user's choice, needs a non-auto session
-   because Claude Code's permission classifier blocks an agent from editing its own instruction file).
-3. **Settings** (mode, effort default, API options) → a small JSON config file plus an admin checklist.
+Three layers: per request → `/fable-prompt`; always-on rules → delivered by this skill's choice (hook by
+default); settings → mode, effort, and an admin checklist.
 
-## Mode
-- `/fable-setup` (default): run all steps, ask at most two questions (Step 2).
-- `/fable-setup auto`, or "알아서", "no questions": skip the questions, keep `hook` delivery and `interactive`
-  unless the environment is clearly unattended (headless `claude -p`, CI, an agent harness), report, done.
-- `/fable-setup unattended` / `/fable-setup interactive`: set that mode directly.
-- `/fable-setup claude-md` / `/fable-setup hook`: choose the delivery directly (see Step 4).
+## Arguments (skip the matching question)
+`auto` (no questions, keep defaults) · `hook` | `rules-file` | `claude-md` (delivery) ·
+`interactive` | `unattended` (mode) · `high` | `medium` (effort).
 
-## Step 1 · Detect (one batch of reads)
-Read whichever exist: `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`,
-`./.claude/settings.json`, `~/.claude/oh-my-fable.json`, `./.claude/oh-my-fable.json`, `./.claude/agents/*.md`,
-`~/.claude/agents/*.md`. Run `claude --version`. Grep the project for `@anthropic-ai/sdk`, `anthropic`,
-`claude-agent-sdk` to detect a direct API or Agent SDK integration.
+## Step 1 · Detect (one batch of reads, silent)
+`./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `./.claude/settings.json`,
+`~/.claude/oh-my-fable.json`, `./.claude/oh-my-fable.json`, `~/.claude/rules/`, `./.claude/rules/`,
+`claude --version`, and the environment variable `CLAUDE_CODE_EFFORT_LEVEL`.
 
-## Step 2 · Up to two questions (unless auto or explicit arguments)
-AskUserQuestion, options with a one-line explanation and a recommended pick.
+## Step 2 · Questions: short, three at most, one AskUserQuestion each
+Keep every question and option to one line. No preamble, no explanation paragraphs.
 
-1. **How do you mostly use this?**
-   - Interactive: I watch and steer → `interactive` (default). Autonomy block without the "not watching" sentence.
-   - Unattended: headless runs, agents, CI, long autonomous sessions → `unattended`. Full autonomy block.
-2. **Where should the always-on rules live?**
-   - Hook (default, recommended): the plugin injects them at session start. Nothing to edit, works in every
-     permission mode, removed by uninstalling.
-   - CLAUDE.md: a delimited section written into `~/.claude/CLAUDE.md` (or the project's `CLAUDE.md` when the
-     current directory is a git repo with one). Visible and editable next to your other rules. **Requires a
-     session that is not in auto permission mode**, because Claude Code's classifier blocks an agent from
-     editing its own instruction file; the user approves the edit when prompted.
-   Skip this question when the argument `claude-md` or `hook` was given.
+1. **Where should the rules live?**
+   - `Hook (recommended)` · nothing to edit, active on install
+   - `Separate rules file` · `~/.claude/rules/oh-my-fable.md`, auto-loaded, editable, CLAUDE.md untouched
+   - `CLAUDE.md section` · inside your CLAUDE.md, needs edit approval (not in auto mode)
+2. **How do you mostly work?**
+   - `Interactive (recommended)` · you watch and steer
+   - `Unattended` · headless, CI, agents; adds "the user is not watching"
+3. **Effort default?**
+   - `high (recommended)` · guide default
+   - `medium` · Fable 5 quality at lower cost
+   - `keep current` · shown with the current value from Step 1
 
-## Step 3 · Audit (report only, in the user's language)
-Table: rule found → verdict → suggestion. Do not edit CLAUDE.md. Suggest exact replacement text the user can
-paste, and offer to apply it only if they ask.
-- Lines that suppress narration ("hold all findings for the final response", "no closing recap",
-  "결과는 마지막에 한꺼번에") → conflict with block E; suggest scoping them to short answers.
-- Anti-formatting rules ("no bullet points", "never use headers", "서식 쓰지 마") → conflict with block I.
-- "Ask before every step" rules → conflict with the autonomy block; keep only for destructive actions.
-- Existing scope, targeted-edit, progress rules → already covered, fine.
-- Model and effort pins in settings → note current values.
+Ask in the user's language. If a git repo with its own CLAUDE.md is the current directory, add
+`(this project only)` variants to question 1 instead of a fourth question.
 
-## Step 4 · Apply the choice
-**Hook delivery** (default): write the config only.
-Global `~/.claude/oh-my-fable.json`, or project `./.claude/oh-my-fable.json` (wins over global):
+## Step 3 · Apply
+**Config** (always, global `~/.claude/oh-my-fable.json` or project `./.claude/oh-my-fable.json`):
 ```json
 {"enabled": true, "mode": "interactive", "delivery": "hook"}
 ```
-Only `enabled`, `mode`, `delivery` are read. If the write is refused, print the JSON and the path; the defaults
-(enabled, interactive, hook) apply anyway without any file. Mode changes take effect at the next session start
-or `/reload-plugins`.
+If the write is refused, print the JSON and path; defaults apply without a file.
 
-**CLAUDE.md delivery**: build the section from `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (prepend
-`${CLAUDE_PLUGIN_ROOT}/hooks/autonomy-unattended.md` after the heading when mode is unattended). Everything
-in it is English regardless of the user's language. Show the exact text, then insert or replace it in the
-chosen CLAUDE.md between these delimiters so re-runs update in place and never touch anything else:
-```
-<!-- oh-my-fable:start v1 -->
-…section…
-<!-- oh-my-fable:end -->
-```
-Use the Edit tool (or Write for a new file). If the edit is refused by the permission classifier, do not retry
-with another tool: say that CLAUDE.md delivery needs a session outside auto mode, keep the hook delivery
-active (do not write `"delivery": "claude-md"`), and tell the user how to finish by hand if they still want
-it: paste the shown section into CLAUDE.md, then set `"delivery": "claude-md"` in the config.
-When the edit succeeds, write the config with `"delivery": "claude-md"` so the hook stays silent and the rules
-are not injected twice.
+**Rules text** = `always-on.md`, with `autonomy-unattended.md` inserted after the heading when unattended. English
+regardless of the user's language.
 
-## Step 5 · Settings checklist (layer 3; report, change only on request)
-- **Effort**: Claude Code reads `CLAUDE_CODE_EFFORT_LEVEL` and `settings.json` `effortLevel` /
-  `modelSettings.<model>.effortLevel`. Recommend `high` (guide default). Warn that `low` skips searches and
-  `max` slows long documents. Show current values and which one actually wins.
-- **Direct API integrations only**: `thinking.display: "updates"` (beta header
-  `thinking-display-updates-2026-08-18`); append-only history with thinking blocks; turn-scoped system
-  messages for per-turn reminders; server-side compaction or block **K**; subagent start tool returns
-  immediately; crop-and-zoom tool for vision; handle `stop_reason: "refusal"`.
+- `hook`: nothing else to write.
+- `rules-file`: write the rules text to `~/.claude/rules/oh-my-fable.md` (project: `./.claude/rules/oh-my-fable.md`).
+  Claude Code loads `rules/*.md` automatically, so CLAUDE.md is not edited. Set `"delivery": "rules-file"` so the
+  hook stays silent. If the write is refused, write it to `~/.claude/oh-my-fable/rules.md` instead and show the
+  one line the user can add to CLAUDE.md: `@~/.claude/oh-my-fable/rules.md`.
+- `claude-md`: insert or replace between `<!-- oh-my-fable:start v1 -->` and `<!-- oh-my-fable:end -->` in the
+  chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
+  with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.
 
-## Step 6 · Verify and teach
-Hook delivery: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set to the
-current directory and confirm the output contains `(Mode: <chosen mode>`. CLAUDE.md delivery: confirm the
-delimiters appear exactly once in the file and the hook script now prints nothing. Then end with this note in the user's language:
+**Effort**: `high` or `medium` → set `effortLevel` in `~/.claude/settings.json` (merge, keep other keys). If a
+`modelSettings.<model>.effortLevel` or the env var `CLAUDE_CODE_EFFORT_LEVEL` overrides it, say which one wins
+in one line. If the write is refused, show the one-line change instead.
 
-> The always-on rules are active in every session; nothing else to install. When a request is short or vague,
-> `/fable-prompt <request>` fills in goal, context, scope, done criteria, and effort, shows the improved
-> request, and runs it. Add "프롬프트만" / "just the prompt" to see the rewrite without running it.
+## Step 4 · Audit (report only, one table)
+Rule found → verdict → one-line suggestion. Never edit CLAUDE.md here.
+Conflicts to flag: narration suppression ("hold findings for the final response", "no closing recap"),
+anti-formatting rules ("no bullets", "no headers"), "ask before every step". Same-meaning rules → "already covered".
 
-Report one status: DONE, DONE_WITH_CONCERNS (list what the admin still has to change), or NEEDS_CONTEXT.
+## Step 5 · Verify and close
+Hook: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set and confirm
+`(Mode: …)` appears. Rules file / CLAUDE.md: confirm the file exists (delimiters exactly once) and the hook prints
+nothing. Then close with exactly this, translated:
+
+> Done. Rules: <delivery>, mode: <mode>, effort: <effort>. Takes effect from the next session (or `/reload-plugins`).
+> Ask as usual; for short or vague requests use `/fable-prompt <request>`. Add "just the prompt" to preview only.
+
+One status line: DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT.

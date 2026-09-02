@@ -2,9 +2,9 @@
 # oh-my-fable SessionStart hook: emit the always-on Fable 5.1 rules as additionalContext.
 # Config (optional, project file wins over global):
 #   $CLAUDE_PROJECT_DIR/.claude/oh-my-fable.json  or  $HOME/.claude/oh-my-fable.json
-#   {"enabled": true, "mode": "interactive" | "unattended", "delivery": "hook" | "claude-md"}
-# Defaults: enabled, interactive, hook. With delivery "claude-md" the rules live in CLAUDE.md
-# (written by /fable-setup with the user's approval) and this hook stays silent to avoid duplicates.
+#   {"enabled": true, "mode": "interactive" | "unattended", "delivery": "hook" | "claude-md" | "rules-file"}
+# Defaults: enabled, interactive, hook. With delivery "claude-md" or "rules-file" the rules live in a
+# file the user chose (written by /fable-setup) and this hook stays silent to avoid duplicates.
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CFG=""
@@ -15,7 +15,7 @@ ENABLED=true; MODE=interactive
 if [ -n "$CFG" ]; then
   grep -Eq '"enabled"[[:space:]]*:[[:space:]]*false' "$CFG" && ENABLED=false
   grep -Eq '"mode"[[:space:]]*:[[:space:]]*"unattended"' "$CFG" && MODE=unattended
-  grep -Eq '"delivery"[[:space:]]*:[[:space:]]*"claude-md"' "$CFG" && ENABLED=false
+  grep -Eq '"delivery"[[:space:]]*:[[:space:]]*"(claude-md|rules-file)"' "$CFG" && ENABLED=false
 fi
 [ "$ENABLED" = true ] || exit 0
 
