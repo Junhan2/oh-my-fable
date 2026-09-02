@@ -1,17 +1,29 @@
 # oh-my-fable
 
+한국어 · [English](README.en.md) · [中文](README.zh.md)
+
 Claude Fable 5.1을 Claude Code에서 가장 좋은 품질로 쓰기 위한 가이드와 스킬 2개.
 근거는 Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)이며, 문구는 원문 그대로 씁니다.
 
-## 가장 쉬운 설치: AI에게 한마디
+## 초보자 흐름 (처음부터 끝까지)
 
-Claude Code를 열고 이렇게만 말하세요.
+Claude Code를 처음 쓰는 사람 기준입니다. 직접 입력하는 것은 굵게 표시한 세 번뿐입니다.
 
-```
-https://github.com/Junhan2/oh-my-fable 설치해줘
-```
+| 순서 | 누가 | 무엇 |
+|---|---|---|
+| 1 | **사용자** | Claude Code에 `https://github.com/Junhan2/oh-my-fable 설치해줘` 라고 말한다 |
+| 2 | Claude | 이 README를 읽고 마켓플레이스 등록, 플러그인 설치, 설치 확인을 스스로 실행한다 |
+| 3 | Claude | "다음 두 줄을 입력하세요: `/reload-plugins`, `/fable-setup auto`" 라고 안내한다 |
+| 4 | **사용자** | `/reload-plugins` 입력. 방금 설치한 플러그인이 재시작 없이 켜진다 |
+| 5 | **사용자** | `/fable-setup auto` 입력 |
+| 6 | Claude | 환경(CLAUDE.md 위치, 설정, 에이전트 파일)을 읽고, 충돌하는 옛 규칙을 표로 보여 주고, CLAUDE.md에 상시 규칙 구간을 넣은 뒤, 무엇을 썼는지와 되돌리는 법을 보여 준다. 질문은 없다 |
+| 7 | Claude | 마지막에 사용법 세 줄을 보여 준다: "요청이 짧거나 막연하면 `/fable-prompt <요청>`. 보기만 하려면 뒤에 `프롬프트만`" |
+| 8 | 사용자 | 이후 평소처럼 일한다. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
 
-Claude가 아래 순서를 스스로 진행합니다. 사용자가 할 일은 Claude가 안내하는 `/reload-plugins` 와 `/fable-setup auto` 두 줄을 입력하는 것뿐입니다. 재시작은 필요 없습니다.
+- 질문을 받으면서 세팅하고 싶으면 5번에서 `auto`를 빼고 `/fable-setup`. 질문은 두 개입니다: 주 사용 방식(대화형 / 무인 / API 연동), 규칙 위치(글로벌 `~/.claude/CLAUDE.md` 전체 적용 / 이 프로젝트의 `CLAUDE.md`만).
+- `auto`는 가장 넓은 범위인 글로벌 `~/.claude/CLAUDE.md`에 넣습니다(없으면 만듭니다). 프로젝트 하나에만 넣고 싶으면 `auto` 없이 실행해 두 번째 질문에서 고릅니다.
+- 되돌리기: CLAUDE.md에서 `<!-- oh-my-fable:start -->` 부터 `<!-- oh-my-fable:end -->` 까지 지우면 끝입니다.
+- 왜 4번이 필요한가: 새로 설치한 플러그인은 `/reload-plugins`(Claude Code 2.1.258 기준) 또는 재시작 뒤에 로드됩니다. 이 명령은 내장 명령이라 Claude가 대신 실행할 수 없습니다.
 
 <details>
 <summary>AI가 따르는 절차 (Claude가 이 README를 읽고 실행)</summary>
@@ -19,8 +31,8 @@ Claude가 아래 순서를 스스로 진행합니다. 사용자가 할 일은 Cl
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `claude plugin list`로 `oh-my-fable@oh-my-fable`이 보이는지 확인
-4. 사용자에게 정확히 이 두 줄만 안내: 먼저 `/reload-plugins` (설치한 플러그인을 재시작 없이 활성화, Claude Code 2.1.258 기준), 그다음 `/fable-setup auto`
-5. `/fable-setup auto`는 질문 없이 환경을 읽고 CLAUDE.md에 상시 규칙을 넣은 뒤 결과와 되돌리는 법을 보여 줍니다. 질문을 받고 싶으면 `auto` 없이 `/fable-setup`.
+4. 사용자에게 정확히 이 두 줄만 안내: 먼저 `/reload-plugins`, 그다음 `/fable-setup auto`
+5. 그 밖의 설명은 하지 않는다. 사용법 안내는 `/fable-setup`이 끝에서 한다
 
 </details>
 
