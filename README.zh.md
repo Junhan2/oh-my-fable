@@ -51,7 +51,7 @@ effort：high
 |---|---|---|
 | **常驻规则钩子** | 安装后自动 | 每次会话开始时，按英文原文加载 Fable 5.1 指南的常驻规则（自主执行、范围限制、局部编辑、进度汇报、排版、批量工具调用）。不修改 CLAUDE.md |
 | `/fable-prompt` | 每当请求简短或模糊 | 展示补全了目标、上下文、范围、完成标准和 effort 的请求并直接执行。加 `只要提示词` 则只展示 |
-| `/fable-setup` | 可选，需要时 | 用表格指出 CLAUDE.md 和设置中与指南冲突的规则，切换交互式/无人值守模式，检查 effort 设置 |
+| `/fable-setup` | 可选，需要时 | 用表格指出 CLAUDE.md 和设置中与指南冲突的规则，切换交互式/无人值守模式，选择钩子或 CLAUDE.md 存放方式，检查 effort 设置 |
 
 Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：工作中话更少，可能每轮只调用一个工具，小改动也倾向重写整个文件，low effort 下凭记忆作答而不搜索。官方指南是针对这些变化的"症状对处方"清单，本插件替你自动应用。
 
@@ -92,7 +92,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 4 | **你** | 输入 `/reload-plugins` 并回车。出现 `Reloaded: … plugins` 即表示常驻规则已生效 |
 | 5 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
 
-- **不修改 CLAUDE.md。** 规则由插件钩子在会话开始时加载。Claude Code 会阻止 AI 修改自己的指令文件，所以从一开始就不采用改文件的方式。
+- **规则存放位置可二选一。** 默认是**钩子**：插件在会话开始时加载，不改任何文件。如果愿意，`/fable-setup claude-md` 可把规则**作为段落写入 CLAUDE.md**（与其他规则并列可见，可手动修改）。CLAUDE.md 方式只能在非 auto 权限模式的会话中进行，因为 Claude Code 会阻止 AI 修改自己的指令文件，需要你批准编辑。写入 CLAUDE.md 后钩子会自动静默，不会重复注入。
 - **无人值守模式**（无头、CI、代理）：`/fable-setup unattended` 会加上"用户没有在看"的段落。`/fable-setup interactive` 切回。
 - **与现有规则的冲突**：`/fable-setup` 用表格列出，由你决定是否修改。
 - **关闭**：在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`，或 `claude plugin uninstall oh-my-fable@oh-my-fable`。
@@ -180,8 +180,16 @@ claude plugin install oh-my-fable@oh-my-fable
 **CLAUDE.md 里已经有类似规则怎么办？**
 `/fable-setup` 会用表格列出。意思相同标为"已有"；意思相反（禁止排版、最后统一汇报）则给出替换文本。修改由你自己完成，因为 Claude Code 会阻止 AI 修改自己的 CLAUDE.md。
 
-**为什么用钩子而不写入 CLAUDE.md？**
-两个原因。Claude Code 的权限分类器会阻止 AI 修改自己的指令文件，所以要做到一句话安装就不能碰文件。而且 SessionStart 钩子每次会话只加载一次，token 成本与 CLAUDE.md 相同。
+**钩子和 CLAUDE.md 有什么区别？**
+| | 钩子（默认） | CLAUDE.md（`/fable-setup claude-md`） |
+|---|---|---|
+| 安装 | 安装即生效，不改文件 | 在可批准编辑的会话（非 auto 模式）中执行一次 |
+| 查看位置 | `hooks/always-on.md` | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v1 -->` 段落 |
+| 修改 | 仅通过配置文件切换模式 | 可自由修改段落内的句子 |
+| 移除 | 卸载或 `{"enabled": false}` | 删除段落 |
+| token 成本 | 每次会话一次，相同 | 每次会话一次，相同 |
+
+两者可共存而不重复：写入 CLAUDE.md 时配置中记录 `"delivery": "claude-md"`，钩子随即静默。
 
 **`/fable-prompt` 每次都附上长段英文吗？**
 不会。常驻模块由钩子提供，只附四个字段和按请求追加的内容。

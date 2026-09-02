@@ -51,7 +51,7 @@ Two skills that apply the fixes from Anthropic's official [Prompting Claude Fabl
 |---|---|---|
 | **Always-on hook** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. CLAUDE.md is never touched |
 | `/fable-prompt` | whenever a request is short or vague | shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to only see the rewrite |
-| `/fable-setup` | optional, when needed | flags rules in your CLAUDE.md and settings that conflict with the guide, switches interactive/unattended mode, and reviews effort settings |
+| `/fable-setup` | optional, when needed | flags rules in your CLAUDE.md and settings that conflict with the guide, switches interactive/unattended mode, lets you choose hook or CLAUDE.md delivery, and reviews effort settings |
 
 Fable 5.1 got much better at finishing long tasks on its own, and its habits shifted with it. It narrates less while working, may call one tool per turn, tends to rewrite whole files for small edits, and at low effort answers from memory instead of searching. The official guide is a symptom-to-fix list for those shifts; this plugin applies the fixes for you.
 
@@ -92,7 +92,7 @@ You type only the two bold steps.
 | 4 | **You** | Type `/reload-plugins`, press Enter. `Reloaded: … plugins` means the always-on rules are active |
 | 5 | You | Work as usual. `/fable-prompt fix this` for vague requests |
 
-- **CLAUDE.md is never edited.** The plugin hook loads the rules at session start. Claude Code blocks an AI from editing its own instruction file, so a file-editing approach was ruled out from the start.
+- **Two places to keep the rules, your choice.** Default is the **hook**: the plugin loads them at session start and touches no file. If you prefer, `/fable-setup claude-md` writes them **as a section inside CLAUDE.md** (visible next to your other rules, editable by hand). The CLAUDE.md route only works in a session that is not in auto permission mode, because Claude Code blocks an AI from editing its own instruction file; you approve the edit. Once the section is in CLAUDE.md the hook goes silent, so nothing is injected twice.
 - **Unattended mode** (headless, CI, agents): `/fable-setup unattended` adds the "the user is not watching" paragraph. `/fable-setup interactive` switches back.
 - **Conflicts with existing rules**: `/fable-setup` lists them in a table; you decide what to change.
 - **Turn off**: write `{"enabled": false}` to `~/.claude/oh-my-fable.json`, or `claude plugin uninstall oh-my-fable@oh-my-fable`.
@@ -180,8 +180,16 @@ Full block texts: [`skills/fable-prompt/references/prompt-blocks.md`](skills/fab
 **My CLAUDE.md already has similar rules.**
 `/fable-setup` lists them. Same meaning: "already covered". Opposite meaning (no formatting, hold findings until the end): it proposes replacement text. You make the edit yourself, because Claude Code blocks an AI from editing its own CLAUDE.md.
 
-**Why a hook instead of writing to CLAUDE.md?**
-Two reasons. Claude Code's permission classifier blocks an AI from editing its own instruction file, so a one-sentence install only works if no file is touched. And a SessionStart hook loads once per session, so the token cost equals CLAUDE.md.
+**Hook or CLAUDE.md: what is the difference?**
+| | Hook (default) | CLAUDE.md (`/fable-setup claude-md`) |
+|---|---|---|
+| Install | active on install, no file edited | once, in a session where you approve edits (not auto mode) |
+| Where you see it | `hooks/always-on.md` | the `<!-- oh-my-fable:start v1 -->` section in your CLAUDE.md |
+| Editing | mode only, via the config file | edit the sentences freely |
+| Removal | uninstall or `{"enabled": false}` | delete the section |
+| Token cost | once per session, same | once per session, same |
+
+Both can coexist without duplication: writing to CLAUDE.md records `"delivery": "claude-md"` in the config and the hook goes silent.
 
 **Does `/fable-prompt` attach long English blocks every time?**
 No. The always-on blocks come from the hook, so only the four fields and the request-specific lines are attached.
