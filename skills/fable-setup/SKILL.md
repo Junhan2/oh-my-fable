@@ -18,7 +18,13 @@ Read whichever exist: `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md
 Grep the project for `@anthropic-ai/sdk`, `anthropic` (Python), `claude-agent-sdk` to detect a direct API
 or Agent SDK integration.
 
-## Step 2 · Ask at most two questions
+## Step 2 · Ask at most two questions (skipped in auto mode)
+**Auto mode**: when invoked as `/fable-setup auto` (or the user said "알아서", "질문 없이", "no questions"),
+ask nothing. Defaults: interactive Claude Code use (light autonomy block), global `~/.claude/CLAUDE.md`
+when it exists or no project CLAUDE.md is present, otherwise the project file. Also skip the confirmation
+in Step 4: write the section, then show what was written and how to undo it (delete the delimited block).
+Everything else below still runs.
+
 Use AskUserQuestion. Each option needs a one-line explanation and a recommended pick.
 1. **How do you mostly work?** (multi-select)
    - Interactive Claude Code, watching and steering → autonomy block in light form (self-check paragraph only)
