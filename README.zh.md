@@ -144,7 +144,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 第 2 层 · 一次性配置
 
-`/fable-setup` 把以下内容写成 `## Fable 5.1 prompting (oh-my-fable)` 段落。再次运行会原地更新。
+`/fable-setup` 把以下内容写成 `## Fable 5.1 prompting (oh-my-fable)` 段落。再次运行会原地更新。写入 CLAUDE.md 的内容无论用户语言如何都是英文（模型每轮都会读取该文件，且模块效果是以英文测得的）。只有聊天中的说明使用用户语言。
 
 | 模块 | 一句话要点 | 注意 |
 |---|---|---|

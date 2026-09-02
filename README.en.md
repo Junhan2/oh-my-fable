@@ -144,7 +144,7 @@ Add depending on the request:
 
 ## Layer 2 · set once
 
-`/fable-setup` writes the following into CLAUDE.md as a `## Fable 5.1 prompting (oh-my-fable)` section. Running it again updates the same section in place.
+`/fable-setup` writes the following into CLAUDE.md as a `## Fable 5.1 prompting (oh-my-fable)` section. Running it again updates the same section in place. Everything written into CLAUDE.md is English regardless of your language (the model reads that file every turn, and the blocks were measured in English). Only the chat explanations use your language.
 
 | Block | One-line gist | Note |
 |---|---|---|

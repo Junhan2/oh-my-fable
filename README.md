@@ -144,7 +144,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 2층 · 한 번 깔아 두기
 
-`/fable-setup`이 아래를 `## Fable 5.1 prompting (oh-my-fable)` 섹션으로 CLAUDE.md에 넣습니다. 다시 실행하면 같은 자리를 갱신합니다.
+`/fable-setup`이 아래를 `## Fable 5.1 prompting (oh-my-fable)` 섹션으로 CLAUDE.md에 넣습니다. 다시 실행하면 같은 자리를 갱신합니다. CLAUDE.md에 쓰이는 내용은 사용자 언어와 무관하게 전부 영어입니다(모델이 매 턴 읽는 파일이고, 블록은 영어로 효과가 측정됐습니다). 채팅 설명만 사용자 언어로 나옵니다.
 
 | 블록 | 한 줄 요지 | 주의 |
 |---|---|---|

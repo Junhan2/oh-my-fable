@@ -35,7 +35,7 @@ most directly support and state the assumption inside the prompt.
 | Long deliverable | full rewrite, multi-section doc, big table, whole file | as above plus the long-output note (block G) |
 
 ## Step 3 · Compose
-Write task-specific parts in the user's language. Keep guide blocks in English verbatim.
+Write task-specific parts (goal, context, scope, done) in the user's language so they can check them. Keep every guide block in English verbatim; never translate a block.
 
 1. **Goal** · one sentence, outcome-verifiable.
 2. **Context** · resolved paths, symbols, error text, related decisions.

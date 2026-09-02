@@ -44,6 +44,11 @@ Report a short table: rule found → verdict → action.
 - Model or effort pins in settings → note the current value.
 
 ## Step 4 · Write the always-on section (idempotent)
+**Everything written into CLAUDE.md is English**, whatever language the user speaks: the heading, the
+delimiters, the blocks verbatim, and any comment lines. CLAUDE.md is read by the model on every turn,
+and the guide blocks were measured in English. Only your chat messages (audit table, confirmation,
+usage note) use the user's language.
+
 Insert or replace one section in the chosen CLAUDE.md, delimited exactly so re-runs update in place:
 
 ```
