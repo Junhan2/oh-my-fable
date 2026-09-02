@@ -66,7 +66,7 @@ Say this to Claude Code:
 install https://github.com/Junhan2/oh-my-fable
 ```
 
-Claude installs the plugin, asks one question (three choices), and applies your answers. The rules apply automatically the next time you open Claude Code. Nothing to type yourself. To use them in this session right now, type `/clear`.
+Claude installs the plugin, asks one question (three choices), and applies your answers. The rules apply automatically the next time you open Claude Code. Nothing to type yourself. To use them in this session right now, type `/reload-plugins` (loads the plugin you just installed) and then `/clear` (injects the rules), one per line.
 
 <details>
 <summary>Manual install</summary>
@@ -99,7 +99,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 | 2 | Claude | registers the marketplace, installs the plugin, verifies |
 | 3 | Claude | one question: where the rules live · how you work · effort (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
 | 4 | Claude | writes the config (and, if chosen, the rules file or CLAUDE.md section), shows conflicts with existing rules as a table |
-| 5 | Claude | says "applies from the next session; type `/clear` to use it now" |
+| 5 | Claude | says "applies from the next session; for now type `/reload-plugins` then `/clear`" |
 | 6 | You | work as usual. `/fable-prompt fix this` for vague requests |
 
 **Three places for the rules** (question 1)
@@ -125,8 +125,8 @@ Only one is active at a time. If you pick a file option, or a CLAUDE.md section 
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Read `installPath` for `oh-my-fable@oh-my-fable` from `~/.claude/plugins/installed_plugins.json`
 4. Read `<installPath>/skills/fable-setup/SKILL.md` and follow it **in this session right away** (`${CLAUDE_PLUGIN_ROOT}` is `<installPath>`). Bundle the questions as that file says
-5. Then tell the user only this: "Installed and configured. The rules apply from the next session. To use them now, type `/clear`. Send vague requests as `/fable-prompt <request>`."
-6. Say nothing else. Do not suggest `/reload-plugins` (the hook runs only on session start, `/clear`, and compaction)
+5. Then tell the user only this: "Installed and configured. The rules apply from the next session. To use them right now, type `/reload-plugins` and press Enter, then `/clear` and press Enter (one per line). Send vague requests as `/fable-prompt <request>`."
+6. Say nothing else. Both are needed because `/reload-plugins` loads the just-installed plugin (hook and skills) into this session, and the rules are injected only on session start, `/clear`, and compaction
 
 </details>
 

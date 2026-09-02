@@ -66,7 +66,7 @@ Claude Code에 이렇게만 말하세요.
 https://github.com/Junhan2/oh-my-fable 설치해줘
 ```
 
-Claude가 설치하고, 질문 한 번(선택지 세 개)을 하고, 답에 맞게 설정까지 끝냅니다. 다음에 Claude Code를 열면 자동으로 적용됩니다. 사용자가 직접 칠 것은 없습니다. 지금 이 세션에서 바로 쓰고 싶으면 `/clear` 한 줄.
+Claude가 설치하고, 질문 한 번(선택지 세 개)을 하고, 답에 맞게 설정까지 끝냅니다. 다음에 Claude Code를 열면 자동으로 적용됩니다. 사용자가 직접 칠 것은 없습니다. 지금 이 세션에서 바로 쓰고 싶으면 `/reload-plugins`(방금 설치한 플러그인 로드) 다음 `/clear`(규칙 주입) 를 한 줄씩.
 
 <details>
 <summary>수동 설치</summary>
@@ -99,7 +99,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 2 | Claude | 마켓플레이스 등록, 플러그인 설치, 설치 확인 |
 | 3 | Claude | 질문 한 번: 규칙 위치 · 사용 방식 · effort (각 한 줄 선택지, 추천 표시). 프로젝트 안이면 범위, 충돌이 있으면 고칠지 한 번 더 |
 | 4 | Claude | 답에 맞게 설정 파일(과 선택한 경우 규칙 파일 또는 CLAUDE.md 구간)을 쓰고, 기존 규칙과의 충돌을 표로 보여 줌 |
-| 5 | Claude | "다음 세션부터 자동 적용. 지금 쓰려면 `/clear`" 안내 |
+| 5 | Claude | "다음 세션부터 자동 적용. 지금 쓰려면 `/reload-plugins` 다음 `/clear`" 안내 |
 | 6 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
 
 **규칙 위치 세 가지** (첫 질문)
@@ -125,8 +125,8 @@ claude plugin install oh-my-fable@oh-my-fable
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `~/.claude/plugins/installed_plugins.json` 에서 `oh-my-fable@oh-my-fable` 의 `installPath` 를 읽는다
 4. `<installPath>/skills/fable-setup/SKILL.md` 를 읽고 그 절차를 **이 세션에서 바로** 따른다(`${CLAUDE_PLUGIN_ROOT}` 는 `<installPath>`). 질문은 그 파일에 적힌 대로 한 번에 묶어서
-5. 끝나면 사용자에게 이렇게만 안내한다: "설치와 설정이 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/clear` 를 입력하세요. 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
-6. 그 밖의 설명은 하지 않는다. `/reload-plugins` 를 권하지 않는다(훅은 세션 시작·`/clear`·압축 때만 실행된다)
+5. 끝나면 사용자에게 이렇게만 안내한다: "설치와 설정이 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/reload-plugins` 를 입력하고 Enter, 그다음 `/clear` 를 입력하고 Enter 하세요(한 줄에 하나씩). 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
+6. 그 밖의 설명은 하지 않는다. 둘 다 필요한 이유: `/reload-plugins` 는 방금 설치한 플러그인(훅·스킬)을 이 세션에 로드하고, 규칙 주입은 세션 시작·`/clear`·압축 때만 일어난다
 
 </details>
 

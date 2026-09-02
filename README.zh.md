@@ -66,7 +66,7 @@ Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：�
 安装 https://github.com/Junhan2/oh-my-fable
 ```
 
-Claude 会安装插件，问一次（三个选项），并按答案完成设置。下次打开 Claude Code 时自动生效，你不需要输入任何命令。想在当前会话立即使用，输入 `/clear`。
+Claude 会安装插件，问一次（三个选项），并按答案完成设置。下次打开 Claude Code 时自动生效，你不需要输入任何命令。想在当前会话立即使用，先输入 `/reload-plugins`（加载刚安装的插件），再输入 `/clear`（注入规则），每行一个。
 
 <details>
 <summary>手动安装</summary>
@@ -99,7 +99,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 2 | Claude | 注册市场、安装插件、确认安装 |
 | 3 | Claude | 问一次：规则位置 · 使用方式 · effort（每项一行选项，标注推荐）。在项目内会再问范围，有冲突会问是否修复 |
 | 4 | Claude | 按答案写入配置（以及所选的规则文件或 CLAUDE.md 段落），用表格列出与现有规则的冲突 |
-| 5 | Claude | 提示"下次会话自动生效，现在就用请输入 `/clear`" |
+| 5 | Claude | 提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
 | 6 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
 
 **规则的三种位置**（问题 1）
@@ -125,8 +125,8 @@ claude plugin install oh-my-fable@oh-my-fable
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 从 `~/.claude/plugins/installed_plugins.json` 读取 `oh-my-fable@oh-my-fable` 的 `installPath`
 4. 读取 `<installPath>/skills/fable-setup/SKILL.md` 并**在本会话中立即**按其步骤执行（`${CLAUDE_PLUGIN_ROOT}` 即 `<installPath>`）。按该文件要求把问题合并为一次提问
-5. 完成后只告诉用户："安装和设置已完成。下次会话自动生效。现在就用请输入 `/clear`。模糊的请求用 `/fable-prompt <请求>` 发送。"
-6. 不做其他说明。不要建议 `/reload-plugins`（钩子只在会话开始、`/clear` 和压缩时运行）
+5. 完成后只告诉用户："安装和设置已完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable-prompt <请求>` 发送。"
+6. 不做其他说明。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入
 
 </details>
 

@@ -85,9 +85,10 @@ last line starts with `(oh-my-fable: mode`. Rules file / CLAUDE.md: confirm the 
 and the hook prints nothing. Then close with exactly this, translated:
 
 > Done. Rules: <delivery>, mode: <mode>, effort: <effort>. They apply automatically from the next Claude Code
-> session. To use them in this session right now, type `/clear` (SessionStart hooks run on startup, /clear, and
-> compaction, not on /reload-plugins). Ask as usual; for short or vague requests use `/fable-prompt <request>`.
-> Add "just the prompt" to preview only.
+> session. To use them in this session right now: if the plugin was installed in this session, type
+> `/reload-plugins` first, then `/clear` (one per line; the rules are injected on session start, /clear, and
+> compaction). Ask as usual; for short or vague requests use `/fable-prompt <request>`. Add "just the prompt"
+> to preview only.
 
 One status line: DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT.
 
