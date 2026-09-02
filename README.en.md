@@ -15,11 +15,14 @@
 
 ---
 
+**Type a sloppy one-liner. Claude receives a proper request and runs it.**
+
+👤 **What you type**
 ```
 /fable-prompt fix this
 ```
+🤖 **What Claude actually receives** (filled in automatically)
 ```
-Improved request
 Goal: remove the TS2345 error in apps/web/src/lib/pricing.ts so that tsc --noEmit ends with 0 errors
 Context: the pasted error text. No related decisions
 Scope: this file and the type definition file only. Report other visible errors as follow-ups, do not fix them
