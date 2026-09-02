@@ -38,7 +38,7 @@ Two skills that apply the fixes from Anthropic's official [Prompting Claude Fabl
 - [Beginner flow](#beginner-flow)
 - [How it works: three layers](#how-it-works-three-layers)
 - [Layer 1 · every request](#layer-1--every-request)
-- [Layer 2 · set once](#layer-2--set-once)
+- [Layer 2 · always-on](#layer-2--always-on)
 - [Layer 3 · settings](#layer-3--settings)
 - [Symptom to fix](#symptom-to-fix)
 - [FAQ](#faq)
@@ -47,10 +47,11 @@ Two skills that apply the fixes from Anthropic's official [Prompting Claude Fabl
 
 ## What it does
 
-| Skill | When | What |
+| Part | When | What |
 |---|---|---|
-| `/fable-setup` | once after install | reads your environment (CLAUDE.md, settings, agent files), flags conflicting old rules, and writes the always-on rules into CLAUDE.md. Add `auto` to skip all questions |
+| **Always-on hook** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. CLAUDE.md is never touched |
 | `/fable-prompt` | whenever a request is short or vague | shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to only see the rewrite |
+| `/fable-setup` | optional, when needed | flags rules in your CLAUDE.md and settings that conflict with the guide, switches interactive/unattended mode, and reviews effort settings |
 
 Fable 5.1 got much better at finishing long tasks on its own, and its habits shifted with it. It narrates less while working, may call one tool per turn, tends to rewrite whole files for small edits, and at low effort answers from memory instead of searching. The official guide is a symptom-to-fix list for those shifts; this plugin applies the fixes for you.
 
@@ -69,38 +70,32 @@ claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
 
-Then, inside Claude Code, enter these **one line at a time**. Only one slash command is recognised per line, so pasting both together runs only the first.
+Then one line inside Claude Code:
 
 ```
 /reload-plugins
 ```
-When `Reloaded: … plugins` appears:
-```
-/fable-setup auto
-```
 
-Done. From now on, prefix vague requests with `/fable-prompt`.
+When `Reloaded: … plugins` appears you are done. The always-on rules are active from this session on; prefix vague requests with `/fable-prompt`. For unattended runs (headless, CI, agents) that need the full autonomy paragraph, run `/fable-setup unattended` once.
 
 > **Requirements** Claude Code 2.1.258 or newer (for `/reload-plugins`). On older versions, restart after installing.
 
 ## Beginner flow
 
-You type only the three bold steps.
+You type only the two bold steps.
 
 | Step | Who | What |
 |---|---|---|
 | 1 | **You** | Tell Claude Code: `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | Reads this README, then registers the marketplace, installs the plugin, and verifies the install by itself |
-| 3 | Claude | Says: "Type `/reload-plugins` and press Enter. When the reload message appears, type `/fable-setup auto` and press Enter" |
-| 4 | **You** | Type `/reload-plugins`, press Enter. `Reloaded: … plugins` means the plugin is active, no restart needed |
-| 5 | **You** | On the next line, type `/fable-setup auto`, press Enter (on the same line as step 4 only the first command runs) |
-| 6 | Claude | Reads your environment, shows a table of conflicting old rules, writes the always-on section into CLAUDE.md, then shows what it wrote and how to undo it. No questions |
-| 7 | Claude | Ends with a three-line usage note: "For short or vague requests use `/fable-prompt <request>`. Add `just the prompt` to see the rewrite only" |
-| 8 | You | Work as usual. `/fable-prompt fix this` |
+| 3 | Claude | Says: "Type `/reload-plugins` and press Enter" |
+| 4 | **You** | Type `/reload-plugins`, press Enter. `Reloaded: … plugins` means the always-on rules are active |
+| 5 | You | Work as usual. `/fable-prompt fix this` for vague requests |
 
-- **Prefer to be asked?** Drop `auto` in step 5. Two questions: how you mostly work (interactive / unattended / API integration), and where the rules live (global `~/.claude/CLAUDE.md` for every project, or this project's `CLAUDE.md` only).
-- **Scope of `auto`** is the widest one, global `~/.claude/CLAUDE.md` (created if missing). To limit it to one project, run without `auto` and pick the project.
-- **Undo** by deleting everything from `<!-- oh-my-fable:start -->` to `<!-- oh-my-fable:end -->` in CLAUDE.md.
+- **CLAUDE.md is never edited.** The plugin hook loads the rules at session start. Claude Code blocks an AI from editing its own instruction file, so a file-editing approach was ruled out from the start.
+- **Unattended mode** (headless, CI, agents): `/fable-setup unattended` adds the "the user is not watching" paragraph. `/fable-setup interactive` switches back.
+- **Conflicts with existing rules**: `/fable-setup` lists them in a table; you decide what to change.
+- **Turn off**: write `{"enabled": false}` to `~/.claude/oh-my-fable.json`, or `claude plugin uninstall oh-my-fable@oh-my-fable`.
 
 <details>
 <summary>Procedure for the AI (Claude reads this README and executes it)</summary>
@@ -108,8 +103,8 @@ You type only the three bold steps.
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Confirm `oh-my-fable@oh-my-fable` appears in `claude plugin list`
-4. Tell the user only this: "Type `/reload-plugins` and press Enter. When the `Reloaded:` message appears, type `/fable-setup auto` and press Enter. Do not put both commands on one line."
-5. Say nothing else. `/fable-setup` gives the usage note at its end
+4. Tell the user only this: "Type `/reload-plugins` and press Enter. When the `Reloaded:` message appears you are done. Send vague requests as `/fable-prompt <request>`."
+5. Say nothing else. Do not edit CLAUDE.md.
 
 </details>
 
@@ -120,8 +115,8 @@ The guide's fixes fall into three layers, each applied differently.
 | Layer | What | How it is applied |
 |---|---|---|
 | **1. Every request** | goal, context, scope, done criteria, effort, the "assess only" exception, search nudge for time-sensitive questions, long-output note | filled in by `/fable-prompt` |
-| **2. Set once** | autonomy, scope and test limits, targeted edits, progress updates, formatting rule, batched tool calls | written to CLAUDE.md by `/fable-setup` |
-| **3. Settings** | effort default, thinking.display, conversation-history rules, subagents, vision crop | reported as a checklist by `/fable-setup`; changed by an admin |
+| **2. Always-on** | autonomy, scope and test limits, targeted edits, progress updates, formatting rule, batched tool calls | injected by the plugin hook at session start |
+| **3. Settings** | interactive/unattended mode, effort default, thinking.display, conversation-history rules, subagents, vision crop | `/fable-setup` switches the mode and reports the rest as a checklist |
 
 ## Layer 1 · every request
 
@@ -142,9 +137,9 @@ Add depending on the request:
 - **Dense prose** · `Please remove all mannered prose.`
 - **Summarising sources** · include one correct example (block J).
 
-## Layer 2 · set once
+## Layer 2 · always-on
 
-`/fable-setup` writes the following into CLAUDE.md as a `## Fable 5.1 prompting (oh-my-fable)` section. Running it again updates the same section in place. Everything written into CLAUDE.md is English regardless of your language (the model reads that file every turn, and the blocks were measured in English). Only the chat explanations use your language.
+The plugin's SessionStart hook loads the blocks below verbatim in English at every session start (file `hooks/always-on.md`). CLAUDE.md is not modified, and the text is English regardless of your language. The default is interactive mode, so the first paragraph of block A ("the user is not watching") is omitted; `/fable-setup unattended` turns it on.
 
 | Block | One-line gist | Note |
 |---|---|---|
@@ -157,6 +152,7 @@ Add depending on the request:
 
 ## Layer 3 · settings
 
+- Mode · `~/.claude/oh-my-fable.json` with `{"enabled": true, "mode": "interactive" | "unattended"}`. A project `.claude/oh-my-fable.json` wins over the global file. `/fable-setup` writes it for you.
 - `CLAUDE_CODE_EFFORT_LEVEL` · recommend `high`. Effort names do not map to the same thinking across models, so do not carry Fable 5 values over unchanged.
 - Direct API integrations · set `thinking.display: "updates"` or progress notes never reach the UI. Keep history append-only (thinking blocks included), send per-turn reminders as turn-scoped system messages, use server-side compaction or block K.
 - Subagents · the start tool returns immediately; results come back as later messages.
@@ -182,16 +178,19 @@ Full block texts: [`skills/fable-prompt/references/prompt-blocks.md`](skills/fab
 ## FAQ
 
 **My CLAUDE.md already has similar rules.**
-`/fable-setup` flags them first. Same meaning: marked "already covered", not duplicated. Opposite meaning (no formatting, hold findings until the end): a replacement is proposed.
+`/fable-setup` lists them. Same meaning: "already covered". Opposite meaning (no formatting, hold findings until the end): it proposes replacement text. You make the edit yourself, because Claude Code blocks an AI from editing its own CLAUDE.md.
+
+**Why a hook instead of writing to CLAUDE.md?**
+Two reasons. Claude Code's permission classifier blocks an AI from editing its own instruction file, so a one-sentence install only works if no file is touched. And a SessionStart hook loads once per session, so the token cost equals CLAUDE.md.
 
 **Does `/fable-prompt` attach long English blocks every time?**
-No. When CLAUDE.md contains the `oh-my-fable` section, only the four fields and the request-specific lines are attached. The blocks are inlined only when the section is missing, and `/fable-setup` is suggested.
+No. The always-on blocks come from the hook, so only the four fields and the request-specific lines are attached.
 
 **Does it work with models other than Fable 5.1?**
 Yes. The four-field request shape and the working rules (scope limits, targeted edits, progress updates, batched tool calls) help regardless of model. The formatting rule, the autonomy block, and the effort recommendations were measured on Fable 5.1, so they may matter less elsewhere, but they do no harm.
 
 **How do I remove it?**
-Delete the `<!-- oh-my-fable:start -->` to `<!-- oh-my-fable:end -->` section from CLAUDE.md and run `claude plugin uninstall oh-my-fable@oh-my-fable`.
+`claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
 
 ## Layout
 
@@ -200,8 +199,13 @@ oh-my-fable/
 ├── .claude-plugin/
 │   ├── plugin.json            plugin manifest
 │   └── marketplace.json       registers this repo as a marketplace
+├── hooks/
+│   ├── hooks.json             registers the SessionStart hook
+│   ├── session-start.sh       injects the always-on rules at session start (reads the mode)
+│   ├── always-on.md           the injected block text (English)
+│   └── autonomy-unattended.md paragraph added only in unattended mode
 ├── skills/
-│   ├── fable-setup/SKILL.md   one-time setup (layers 2 and 3)
+│   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)
 │   └── fable-prompt/
 │       ├── SKILL.md           per-request rewrite (layer 1)
 │       └── references/        block texts (A to K) and before/after examples

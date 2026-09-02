@@ -8,8 +8,8 @@ Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com
 Fixed guide blocks: `references/prompt-blocks.md`. Before/after samples: `references/examples.md`.
 
 This skill handles the **per-request layer** only: the four fields every request needs, plus the guide
-blocks that depend on the request. Always-on rules (autonomy, scope limits, targeted edits, progress
-updates, formatting) belong in CLAUDE.md and are installed once by `/fable-setup`.
+blocks that depend on the request. The always-on rules (autonomy, scope limits, targeted edits, progress
+updates, formatting, batching) are injected by this plugin's SessionStart hook, so never repeat them here.
 
 ## Mode
 - **Default: rewrite, show, then execute in the same turn.** Do not stop after showing the prompt.
@@ -48,10 +48,8 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
    block **J** (quoting example). Writing → block **F** (short form). Code task → phrase checks as
    "Are there any bugs?" not "Does it compile?" (safeguard false positives).
 
-**Dedupe against CLAUDE.md.** Before attaching always-on blocks A/B/C/D/E, check whether the project or
-global CLAUDE.md already contains the `## Fable 5.1 prompting (oh-my-fable)` section. If it does, do not
-repeat those blocks; the prompt stays short. If it does not, attach A (first paragraph), C, and D inline
-and suggest running `/fable-setup` once at the end.
+**Never attach blocks A, B, C, D, E, or I.** They are already active through the plugin hook. The improved
+request stays short: four fields, effort, and only the conditional lines from item 6.
 
 ## Step 4 · Show, then run
 Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), then execute it as if

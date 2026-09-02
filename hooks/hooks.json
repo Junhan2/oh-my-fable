@@ -1,0 +1,15 @@
+{
+  "description": "oh-my-fable: injects the always-on Fable 5.1 prompting rules at session start (no CLAUDE.md edit needed)",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

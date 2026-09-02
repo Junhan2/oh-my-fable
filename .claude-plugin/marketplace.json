@@ -8,7 +8,7 @@
     {
       "name": "oh-my-fable",
       "source": ".",
-      "description": "/fable-setup configures CLAUDE.md and settings for Fable 5.1 once; /fable-prompt rewrites rough requests into guide-aligned prompts and runs them."
+      "description": "Always-on Fable 5.1 prompting rules via SessionStart hook; /fable-prompt rewrites rough requests; /fable-setup audits and switches interactive/unattended mode."
     }
   ]
 }

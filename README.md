@@ -38,7 +38,7 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 - [초보자 흐름](#초보자-흐름)
 - [작동 원리: 세 층](#작동-원리-세-층)
 - [1층 · 매번 요청에](#1층--매번-요청에)
-- [2층 · 한 번 깔아 두기](#2층--한-번-깔아-두기)
+- [2층 · 상시 규칙](#2층--상시-규칙)
 - [3층 · 설정값](#3층--설정값)
 - [증상별 처방](#증상별-처방)
 - [FAQ](#faq)
@@ -47,10 +47,11 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 
 ## 무엇을 하나
 
-| 스킬 | 언제 | 하는 일 |
+| 구성 | 언제 | 하는 일 |
 |---|---|---|
-| `/fable-setup` | 설치 후 한 번 | 환경(CLAUDE.md, 설정, 에이전트 파일)을 읽고 충돌하는 옛 규칙을 짚은 뒤, 상시 규칙을 CLAUDE.md에 씁니다. `auto`를 붙이면 질문 없이 진행합니다 |
+| **상시 규칙 훅** | 설치하면 자동 | 세션이 시작될 때마다 Fable 5.1 가이드의 상시 규칙(자율 진행, 범위 제한, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 불러옵니다. CLAUDE.md는 건드리지 않습니다 |
 | `/fable-prompt` | 요청이 짧거나 막연할 때마다 | 목표·맥락·범위·완료 기준·effort를 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
+| `/fable-setup` | 선택, 필요할 때 | 기존 CLAUDE.md·설정에서 가이드와 충돌하는 규칙을 표로 짚고, 대화형/무인 모드를 바꾸고, effort 설정을 점검합니다 |
 
 Fable 5.1은 긴 작업을 혼자 끝까지 해내는 능력이 커진 대신 버릇이 바뀌었습니다. 작업 중 말수가 줄고, 한 번에 도구 하나씩만 부르고, 작은 수정에도 파일을 통째로 다시 쓰고, low effort에서는 검색 대신 기억으로 답합니다. 공식 가이드는 이 변화에 대한 증상별 처방이고, 이 플러그인은 그 처방을 자동으로 적용합니다.
 
@@ -69,38 +70,32 @@ claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
 
-그다음 Claude Code 안에서 **한 줄씩 따로** 입력합니다. 슬래시 명령은 한 줄에 하나만 인식되므로 두 줄을 한꺼번에 붙여 넣으면 첫 번째만 실행됩니다.
+그다음 Claude Code 안에서 한 줄:
 
 ```
 /reload-plugins
 ```
-`Reloaded: … plugins` 가 뜨면
-```
-/fable-setup auto
-```
 
-끝입니다. 이후에는 막연한 요청 앞에 `/fable-prompt`를 붙이세요.
+`Reloaded: … plugins` 가 뜨면 끝입니다. 상시 규칙은 이 세션부터 자동으로 켜져 있고, 막연한 요청 앞에 `/fable-prompt`를 붙이면 됩니다. 무인 세션(헤드리스, CI, 에이전트)용 전체 자율 진행 문구가 필요하면 `/fable-setup unattended` 한 번.
 
 > **요구 사항** Claude Code 2.1.258 이상(`/reload-plugins` 명령 기준). 그 이전 버전은 설치 후 재시작하면 됩니다.
 
 ## 초보자 흐름
 
-직접 입력하는 것은 굵게 표시한 세 번뿐입니다.
+직접 입력하는 것은 굵게 표시한 두 번뿐입니다.
 
 | 순서 | 누가 | 무엇 |
 |---|---|---|
 | 1 | **사용자** | Claude Code에 `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 이 README를 읽고 마켓플레이스 등록, 플러그인 설치, 설치 확인을 스스로 실행 |
-| 3 | Claude | "먼저 `/reload-plugins` 를 입력하고 Enter, 완료 메시지가 뜨면 `/fable-setup auto` 를 입력하고 Enter" 라고 안내 |
-| 4 | **사용자** | `/reload-plugins` 입력 후 Enter. `Reloaded: … plugins` 메시지가 뜨면 플러그인이 켜진 것 |
-| 5 | **사용자** | 그다음 줄에 `/fable-setup auto` 입력 후 Enter (4번과 한 줄에 붙여 쓰면 앞의 것만 실행됨) |
-| 6 | Claude | 환경을 읽고, 충돌하는 옛 규칙을 표로 보여 주고, CLAUDE.md에 상시 규칙 구간을 쓴 뒤, 쓴 내용과 되돌리는 법을 보여 줌. 질문 없음 |
-| 7 | Claude | 사용법 세 줄 안내: "막연한 요청은 `/fable-prompt <요청>`. 보기만은 `프롬프트만`" |
-| 8 | 사용자 | 이후 평소처럼. `/fable-prompt 이거 좀 고쳐줘` |
+| 3 | Claude | "`/reload-plugins` 를 입력하고 Enter를 누르세요" 라고 안내 |
+| 4 | **사용자** | `/reload-plugins` 입력 후 Enter. `Reloaded: … plugins` 가 뜨면 상시 규칙이 켜진 것 |
+| 5 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
 
-- **질문을 받고 싶으면** 5번에서 `auto`를 빼고 `/fable-setup`. 질문은 두 개입니다: 주 사용 방식(대화형 / 무인 / API 연동), 규칙 위치(글로벌 `~/.claude/CLAUDE.md` 전체 적용 / 이 프로젝트의 `CLAUDE.md`만).
-- **`auto`의 범위**는 가장 넓은 글로벌 `~/.claude/CLAUDE.md`입니다(없으면 만듭니다). 프로젝트 하나에만 넣으려면 `auto` 없이 실행해 고릅니다.
-- **되돌리기**는 CLAUDE.md에서 `<!-- oh-my-fable:start -->` 부터 `<!-- oh-my-fable:end -->` 까지 지우면 끝입니다.
+- **CLAUDE.md는 수정하지 않습니다.** 규칙은 플러그인 훅이 세션 시작 때 불러옵니다. Claude Code는 AI가 자기 지시문 파일(CLAUDE.md)을 고치는 것을 막기 때문에, 파일을 고치는 방식은 처음부터 쓰지 않습니다.
+- **무인 모드**(헤드리스, CI, 에이전트)가 필요하면 `/fable-setup unattended`. "사용자가 지켜보고 있지 않다"는 문단이 추가됩니다. 되돌리려면 `/fable-setup interactive`.
+- **기존 규칙과의 충돌**이 궁금하면 `/fable-setup`. 표로 짚어 주고, 고치는 것은 사용자가 결정합니다.
+- **끄기**: `~/.claude/oh-my-fable.json`에 `{"enabled": false}` 를 쓰거나 `claude plugin uninstall oh-my-fable@oh-my-fable`.
 
 <details>
 <summary>AI가 따르는 절차 (Claude가 이 README를 읽고 실행)</summary>
@@ -108,8 +103,8 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `claude plugin list`로 `oh-my-fable@oh-my-fable`이 보이는지 확인
-4. 사용자에게 이렇게만 안내한다: "먼저 `/reload-plugins` 를 입력하고 Enter를 누르세요. `Reloaded:` 메시지가 뜨면 `/fable-setup auto` 를 입력하고 Enter를 누르세요. 두 명령은 한 줄에 같이 쓰면 안 됩니다."
-5. 그 밖의 설명은 하지 않는다. 사용법 안내는 `/fable-setup`이 끝에서 한다
+4. 사용자에게 이렇게만 안내한다: "`/reload-plugins` 를 입력하고 Enter를 누르세요. `Reloaded:` 메시지가 뜨면 끝입니다. 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
+5. 그 밖의 설명은 하지 않는다. CLAUDE.md를 수정하지 않는다.
 
 </details>
 
@@ -120,8 +115,8 @@ claude plugin install oh-my-fable@oh-my-fable
 | 층 | 무엇 | 어떻게 적용 |
 |---|---|---|
 | **1. 매번 요청에** | 목표·맥락·범위·완료 기준, effort, 진단만 하라는 예외, 시사성 질문의 검색 요청, 장문 안내문 | `/fable-prompt`가 채움 |
-| **2. 한 번 깔아 두기** | 자율 진행, 범위·테스트 제한, 부분 편집, 진행 보고, 서식 규칙, 도구 일괄 호출 | `/fable-setup`이 CLAUDE.md에 씀 |
-| **3. 설정값** | effort 기본값, thinking.display, 대화 이력 규칙, 서브에이전트, 비전 crop | `/fable-setup`이 점검표로 알려 줌. 변경은 관리자 |
+| **2. 상시 규칙** | 자율 진행, 범위·테스트 제한, 부분 편집, 진행 보고, 서식 규칙, 도구 일괄 호출 | 플러그인 훅이 세션 시작 때 자동 주입 |
+| **3. 설정값** | 대화형/무인 모드, effort 기본값, thinking.display, 대화 이력 규칙, 서브에이전트, 비전 crop | `/fable-setup`이 모드를 바꾸고 나머지는 점검표로 알려 줌 |
 
 ## 1층 · 매번 요청에
 
@@ -142,9 +137,9 @@ claude plugin install oh-my-fable@oh-my-fable
 - **글이 빽빽할 때** · `Please remove all mannered prose.`
 - **자료 요약** · 올바른 답 예시 1건(블록 J)을 같이 줌.
 
-## 2층 · 한 번 깔아 두기
+## 2층 · 상시 규칙
 
-`/fable-setup`이 아래를 `## Fable 5.1 prompting (oh-my-fable)` 섹션으로 CLAUDE.md에 넣습니다. 다시 실행하면 같은 자리를 갱신합니다. CLAUDE.md에 쓰이는 내용은 사용자 언어와 무관하게 전부 영어입니다(모델이 매 턴 읽는 파일이고, 블록은 영어로 효과가 측정됐습니다). 채팅 설명만 사용자 언어로 나옵니다.
+플러그인의 SessionStart 훅이 세션마다 아래 블록을 영어 원문 그대로 불러옵니다(파일 `hooks/always-on.md`). CLAUDE.md는 수정하지 않으며, 사용자 언어와 무관하게 영어입니다. 기본은 대화형 모드라 블록 A의 첫 문단("사용자가 지켜보고 있지 않다")은 빠져 있고, `/fable-setup unattended` 로 켤 수 있습니다.
 
 | 블록 | 한 줄 요지 | 주의 |
 |---|---|---|
@@ -157,6 +152,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 3층 · 설정값
 
+- 모드 · `~/.claude/oh-my-fable.json` 의 `{"enabled": true, "mode": "interactive" | "unattended"}`. 프로젝트의 `.claude/oh-my-fable.json` 이 있으면 그것이 우선. `/fable-setup` 이 대신 써 줍니다.
 - `CLAUDE_CODE_EFFORT_LEVEL` · 기본 `high` 권장. 모델마다 단계의 실제 사고량이 달라 Fable 5 값을 그대로 옮기지 말 것.
 - API 직접 연동 · `thinking.display: "updates"`를 켜야 진행 메모가 화면에 옴. 대화 이력은 덧붙이기만(thinking 블록 포함), 턴마다 넣는 알림은 turn-scoped system message로. 압축은 서버 압축 또는 블록 K.
 - 서브에이전트 · 시작 도구는 즉시 반환, 결과는 나중 메시지로.
@@ -182,16 +178,19 @@ claude plugin install oh-my-fable@oh-my-fable
 ## FAQ
 
 **CLAUDE.md에 이미 비슷한 규칙이 있으면?**
-`/fable-setup`이 먼저 표로 짚어 줍니다. 같은 뜻이면 중복하지 않고 "이미 있음"으로 표시하고, 반대 뜻(서식 금지, 마지막에 한꺼번에 보고)이면 교체를 제안합니다.
+`/fable-setup`이 표로 짚어 줍니다. 같은 뜻이면 "이미 있음", 반대 뜻(서식 금지, 마지막에 한꺼번에 보고)이면 바꿔 넣을 문장을 제안합니다. 실제 수정은 사용자가 합니다. Claude Code가 AI의 CLAUDE.md 자기 수정을 막기 때문입니다.
+
+**왜 CLAUDE.md에 안 쓰고 훅으로 넣나요?**
+두 가지 이유입니다. Claude Code의 권한 분류기가 AI가 자기 지시문 파일을 고치는 것을 차단하므로 "설치해줘" 한마디로 끝나려면 파일을 안 건드려야 합니다. 그리고 훅은 세션 시작 때 한 번만 불러오므로 CLAUDE.md와 토큰 비용이 같습니다.
 
 **`/fable-prompt`가 매번 긴 영어 문구를 붙이나요?**
-아닙니다. CLAUDE.md에 `oh-my-fable` 구간이 있으면 상시 블록은 붙이지 않고 네 칸과 요청별 문구만 붙입니다. 구간이 없을 때만 인라인으로 붙이고 `/fable-setup`을 권합니다.
+아닙니다. 상시 블록은 훅이 이미 넣었으므로 네 칸과 요청별 문구만 붙습니다.
 
 **Fable 5.1이 아닌 모델에서도 되나요?**
 됩니다. 네 칸 요청 틀과 작업 규율(범위 제한, 부분 편집, 진행 보고, 도구 일괄 호출)은 모델과 무관하게 이득입니다. 서식 규칙, 자율 진행 블록, effort 권고값은 Fable 5.1 기준으로 측정된 것이라 다른 모델에서는 효과가 작을 수 있지만 해는 없습니다.
 
 **되돌리려면?**
-CLAUDE.md에서 `<!-- oh-my-fable:start -->` ~ `<!-- oh-my-fable:end -->` 구간을 지우고, `claude plugin uninstall oh-my-fable@oh-my-fable`.
+`claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
 
 ## 구성
 
@@ -200,8 +199,13 @@ oh-my-fable/
 ├── .claude-plugin/
 │   ├── plugin.json            플러그인 매니페스트
 │   └── marketplace.json       이 저장소를 마켓플레이스로 등록
+├── hooks/
+│   ├── hooks.json             SessionStart 훅 등록
+│   ├── session-start.sh       상시 규칙을 세션 시작 때 주입 (모드 설정 반영)
+│   ├── always-on.md           주입되는 블록 원문 (영어)
+│   └── autonomy-unattended.md 무인 모드에서만 추가되는 문단
 ├── skills/
-│   ├── fable-setup/SKILL.md   한 번 세팅 (2층·3층)
+│   ├── fable-setup/SKILL.md   충돌 점검·모드 전환·설정 점검 (2층·3층)
 │   └── fable-prompt/
 │       ├── SKILL.md           매번 요청 개선 (1층)
 │       └── references/        블록 원문(A~K)과 전후 예시
