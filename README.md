@@ -11,7 +11,7 @@ Claude Code를 열고 이렇게만 말하세요.
 https://github.com/Junhan2/oh-my-fable 설치해줘
 ```
 
-Claude가 아래 순서를 스스로 진행합니다. 사용자가 할 일은 중간에 Claude Code를 한 번 재시작하는 것뿐입니다(새로 설치한 플러그인은 다음 세션부터 로드됩니다).
+Claude가 아래 순서를 스스로 진행합니다. 사용자가 할 일은 Claude가 안내하는 `/reload-plugins` 와 `/fable-setup auto` 두 줄을 입력하는 것뿐입니다. 재시작은 필요 없습니다.
 
 <details>
 <summary>AI가 따르는 절차 (Claude가 이 README를 읽고 실행)</summary>
@@ -19,8 +19,8 @@ Claude가 아래 순서를 스스로 진행합니다. 사용자가 할 일은 �
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `claude plugin list`로 `oh-my-fable@oh-my-fable`이 보이는지 확인
-4. 사용자에게: "Claude Code를 재시작한 뒤 `/fable-setup auto` 라고 입력하세요" 한 줄만 안내
-5. (재시작 후) `/fable-setup auto`는 질문 없이 환경을 읽고 CLAUDE.md에 상시 규칙을 넣은 뒤 결과와 되돌리는 법을 보여 줍니다. 질문을 받고 싶으면 `auto` 없이 `/fable-setup`.
+4. 사용자에게 정확히 이 두 줄만 안내: 먼저 `/reload-plugins` (설치한 플러그인을 재시작 없이 활성화, Claude Code 2.1.258 기준), 그다음 `/fable-setup auto`
+5. `/fable-setup auto`는 질문 없이 환경을 읽고 CLAUDE.md에 상시 규칙을 넣은 뒤 결과와 되돌리는 법을 보여 줍니다. 질문을 받고 싶으면 `auto` 없이 `/fable-setup`.
 
 </details>
 
