@@ -1,0 +1,10 @@
+{
+  "name": "oh-my-fable",
+  "version": "1.0.0",
+  "description": "Get the best out of Claude Fable 5.1 in Claude Code: /fable-setup audits and configures your environment once, /fable-prompt turns a rough request into a guide-aligned prompt every time.",
+  "author": { "name": "Junhan2", "url": "https://github.com/Junhan2" },
+  "homepage": "https://github.com/Junhan2/oh-my-fable",
+  "repository": "https://github.com/Junhan2/oh-my-fable",
+  "license": "MIT",
+  "keywords": ["claude", "fable", "prompting", "claude-code", "skills"]
+}

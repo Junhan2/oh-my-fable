@@ -1,0 +1,14 @@
+{
+  "name": "oh-my-fable",
+  "owner": {
+    "name": "Junhan2"
+  },
+  "description": "Claude Fable 5.1 prompting guide as two skills: one-time environment setup and per-request prompt improvement.",
+  "plugins": [
+    {
+      "name": "oh-my-fable",
+      "source": ".",
+      "description": "/fable-setup configures CLAUDE.md and settings for Fable 5.1 once; /fable-prompt rewrites rough requests into guide-aligned prompts and runs them."
+    }
+  ]
+}
