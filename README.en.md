@@ -29,6 +29,8 @@ Effort: high
 
 Two skills that apply the fixes from Anthropic's official [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1). The prompt blocks are used verbatim.
 
+> **Fable only?** No. The four-field request shape (goal, context, scope, done) and the scope, targeted-edit, and progress rules help with any model, including Opus and Sonnet. Only a few lines are Fable 5.1 specific (the formatting rule, the autonomy block, the effort recommendations), and they do no harm elsewhere.
+
 ## Contents
 
 - [What it does](#what-it-does)
@@ -183,7 +185,7 @@ Full block texts: [`skills/fable-prompt/references/prompt-blocks.md`](skills/fab
 No. When CLAUDE.md contains the `oh-my-fable` section, only the four fields and the request-specific lines are attached. The blocks are inlined only when the section is missing, and `/fable-setup` is suggested.
 
 **Does it work with models other than Fable 5.1?**
-The four-field request shape helps with any model. The blocks are tuned to Fable 5.1's habits and are not guaranteed to help elsewhere.
+Yes. The four-field request shape and the working rules (scope limits, targeted edits, progress updates, batched tool calls) help regardless of model. The formatting rule, the autonomy block, and the effort recommendations were measured on Fable 5.1, so they may matter less elsewhere, but they do no harm.
 
 **How do I remove it?**
 Delete the `<!-- oh-my-fable:start -->` to `<!-- oh-my-fable:end -->` section from CLAUDE.md and run `claude plugin uninstall oh-my-fable@oh-my-fable`.

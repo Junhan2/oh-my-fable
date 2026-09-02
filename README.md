@@ -29,6 +29,8 @@ effort: high
 
 Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)의 처방을 스킬 두 개에 담았습니다. 문구는 원문 그대로 씁니다.
 
+> **Fable에서만 쓸 수 있나요?** 아닙니다. 네 칸 요청 틀(목표·맥락·범위·완료 기준)과 범위 제한·부분 편집·진행 보고 규칙은 Opus, Sonnet 등 어떤 모델에서도 그대로 도움이 됩니다. Fable 5.1 전용인 것은 그 모델의 버릇을 되돌리는 문구 몇 개(서식 규칙, 자율 진행 블록, effort 권고값)뿐이고, 다른 모델에 있어도 해가 되지 않습니다.
+
 ## 목차
 
 - [무엇을 하나](#무엇을-하나)
@@ -183,7 +185,7 @@ claude plugin install oh-my-fable@oh-my-fable
 아닙니다. CLAUDE.md에 `oh-my-fable` 구간이 있으면 상시 블록은 붙이지 않고 네 칸과 요청별 문구만 붙입니다. 구간이 없을 때만 인라인으로 붙이고 `/fable-setup`을 권합니다.
 
 **Fable 5.1이 아닌 모델에서도 되나요?**
-네 칸 요청 틀은 어느 모델에나 도움이 됩니다. 다만 블록 문구는 Fable 5.1의 버릇에 맞춘 것이라 다른 모델에서는 효과를 보장하지 않습니다.
+됩니다. 네 칸 요청 틀과 작업 규율(범위 제한, 부분 편집, 진행 보고, 도구 일괄 호출)은 모델과 무관하게 이득입니다. 서식 규칙, 자율 진행 블록, effort 권고값은 Fable 5.1 기준으로 측정된 것이라 다른 모델에서는 효과가 작을 수 있지만 해는 없습니다.
 
 **되돌리려면?**
 CLAUDE.md에서 `<!-- oh-my-fable:start -->` ~ `<!-- oh-my-fable:end -->` 구간을 지우고, `claude plugin uninstall oh-my-fable@oh-my-fable`.

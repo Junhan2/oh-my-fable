@@ -29,6 +29,8 @@ effort：high
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1) 的处方装进两个技能。提示词模块原文照用。
 
+> **只能用于 Fable 吗？** 不是。四字段请求结构（目标、上下文、范围、完成标准）以及范围限制、局部编辑、进度汇报规则对 Opus、Sonnet 等任何模型都同样有帮助。只有少数几条是 Fable 5.1 专用（排版规则、自主执行模块、effort 建议值），放在其他模型上也无害。
+
 ## 目录
 
 - [做什么](#做什么)
@@ -183,7 +185,7 @@ claude plugin install oh-my-fable@oh-my-fable
 不会。CLAUDE.md 中有 `oh-my-fable` 段落时，只附四个字段和按请求追加的内容。没有该段落时才内联，并建议运行 `/fable-setup`。
 
 **Fable 5.1 以外的模型能用吗？**
-四字段请求结构对任何模型都有帮助。模块文字针对 Fable 5.1 的习惯调校，在其他模型上不保证效果。
+能。四字段请求结构和工作规则（范围限制、局部编辑、进度汇报、批量工具调用）与模型无关，都有收益。排版规则、自主执行模块和 effort 建议值是在 Fable 5.1 上测得的，在其他模型上效果可能较小，但无害。
 
 **如何移除？**
 删除 CLAUDE.md 中 `<!-- oh-my-fable:start -->` 到 `<!-- oh-my-fable:end -->` 的段落，然后运行 `claude plugin uninstall oh-my-fable@oh-my-fable`。
