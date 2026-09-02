@@ -19,8 +19,10 @@ default); settings → mode, effort, and an admin checklist.
 `~/.claude/oh-my-fable.json`, `./.claude/oh-my-fable.json`, `~/.claude/rules/`, `./.claude/rules/`,
 `claude --version`, and the environment variable `CLAUDE_CODE_EFFORT_LEVEL`.
 
-## Step 2 · Questions: short, three at most, one AskUserQuestion each
-Keep every question and option to one line. No preamble, no explanation paragraphs.
+## Step 2 · Questions: short, one AskUserQuestion each
+Ask as many as the situation needs, but keep every question and option to one line. No preamble, no
+explanation paragraphs. The goal is zero manual steps for the user, so prefer asking over leaving something
+for them to do by hand.
 
 1. **Where should the rules live?**
    - `Hook (recommended)` · nothing to edit, active on install
@@ -34,8 +36,14 @@ Keep every question and option to one line. No preamble, no explanation paragrap
    - `medium` · Fable 5 quality at lower cost
    - `keep current` · shown with the current value from Step 1
 
-Ask in the user's language. If a git repo with its own CLAUDE.md is the current directory, add
-`(this project only)` variants to question 1 instead of a fourth question.
+4. **Scope?** (only when the current directory is a git repo with its own CLAUDE.md)
+   - `All projects (recommended)` · global files under `~/.claude`
+   - `This project only` · files under `./.claude`
+5. **Fix the conflicting rules for you?** (only when Step 4 finds conflicts; ask after showing the table)
+   - `Yes, apply the suggested edits` · edits CLAUDE.md, needs approval outside auto mode
+   - `No, just show me` · you edit by hand
+
+Ask in the user's language.
 
 ## Step 3 · Apply
 **Config** (always, global `~/.claude/oh-my-fable.json` or project `./.claude/oh-my-fable.json`):
@@ -60,8 +68,9 @@ regardless of the user's language.
 `modelSettings.<model>.effortLevel` or the env var `CLAUDE_CODE_EFFORT_LEVEL` overrides it, say which one wins
 in one line. If the write is refused, show the one-line change instead.
 
-## Step 4 · Audit (report only, one table)
-Rule found → verdict → one-line suggestion. Never edit CLAUDE.md here.
+## Step 4 · Audit (one table, then question 5)
+Rule found → verdict → one-line suggestion. Edit CLAUDE.md only if the user chose "Yes" in question 5; if
+the edit is refused, show the exact replacement text once and move on.
 Conflicts to flag: narration suppression ("hold findings for the final response", "no closing recap"),
 anti-formatting rules ("no bullets", "no headers"), "ask before every step". Same-meaning rules → "already covered".
 
