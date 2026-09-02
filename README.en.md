@@ -69,10 +69,13 @@ claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
 
-Then, inside Claude Code:
+Then, inside Claude Code, enter these **one line at a time**. Only one slash command is recognised per line, so pasting both together runs only the first.
 
 ```
 /reload-plugins
+```
+When `Reloaded: … plugins` appears:
+```
 /fable-setup auto
 ```
 
@@ -88,9 +91,9 @@ You type only the three bold steps.
 |---|---|---|
 | 1 | **You** | Tell Claude Code: `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | Reads this README, then registers the marketplace, installs the plugin, and verifies the install by itself |
-| 3 | Claude | Says: "Type these two lines: `/reload-plugins`, then `/fable-setup auto`" |
-| 4 | **You** | Type `/reload-plugins`. The plugin becomes active without a restart |
-| 5 | **You** | Type `/fable-setup auto` |
+| 3 | Claude | Says: "Type `/reload-plugins` and press Enter. When the reload message appears, type `/fable-setup auto` and press Enter" |
+| 4 | **You** | Type `/reload-plugins`, press Enter. `Reloaded: … plugins` means the plugin is active, no restart needed |
+| 5 | **You** | On the next line, type `/fable-setup auto`, press Enter (on the same line as step 4 only the first command runs) |
 | 6 | Claude | Reads your environment, shows a table of conflicting old rules, writes the always-on section into CLAUDE.md, then shows what it wrote and how to undo it. No questions |
 | 7 | Claude | Ends with a three-line usage note: "For short or vague requests use `/fable-prompt <request>`. Add `just the prompt` to see the rewrite only" |
 | 8 | You | Work as usual. `/fable-prompt fix this` |
@@ -105,7 +108,7 @@ You type only the three bold steps.
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Confirm `oh-my-fable@oh-my-fable` appears in `claude plugin list`
-4. Tell the user exactly two lines: first `/reload-plugins`, then `/fable-setup auto`
+4. Tell the user only this: "Type `/reload-plugins` and press Enter. When the `Reloaded:` message appears, type `/fable-setup auto` and press Enter. Do not put both commands on one line."
 5. Say nothing else. `/fable-setup` gives the usage note at its end
 
 </details>

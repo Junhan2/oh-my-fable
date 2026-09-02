@@ -69,10 +69,13 @@ claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
 
-然后在 Claude Code 中：
+然后在 Claude Code 中**逐行分别**输入。每行只识别一个斜杠命令，两行一起粘贴只会执行第一个。
 
 ```
 /reload-plugins
+```
+出现 `Reloaded: … plugins` 后：
+```
 /fable-setup auto
 ```
 
@@ -88,9 +91,9 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **你** | 对 Claude Code 说：`安装 https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | 读取本 README，自行完成注册市场、安装插件、确认安装 |
-| 3 | Claude | 提示："请输入这两行：`/reload-plugins`，然后 `/fable-setup auto`" |
-| 4 | **你** | 输入 `/reload-plugins`。插件无需重启即可生效 |
-| 5 | **你** | 输入 `/fable-setup auto` |
+| 3 | Claude | 提示："先输入 `/reload-plugins` 并回车，出现重载消息后再输入 `/fable-setup auto` 并回车" |
+| 4 | **你** | 输入 `/reload-plugins` 并回车。出现 `Reloaded: … plugins` 即表示插件已生效，无需重启 |
+| 5 | **你** | 在下一行输入 `/fable-setup auto` 并回车（与第 4 步写在同一行只会执行前一个） |
 | 6 | Claude | 读取环境，用表格列出冲突的旧规则，把常驻规则写入 CLAUDE.md，展示写入内容和撤销方法。不提问 |
 | 7 | Claude | 最后给出三行用法："请求简短或模糊时用 `/fable-prompt <请求>`。只看改写加 `只要提示词`" |
 | 8 | 你 | 之后照常工作。`/fable-prompt 帮我修一下这个` |
@@ -105,7 +108,7 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 用 `claude plugin list` 确认出现 `oh-my-fable@oh-my-fable`
-4. 只告诉用户这两行：先 `/reload-plugins`，再 `/fable-setup auto`
+4. 只这样告诉用户："先输入 `/reload-plugins` 并回车。出现 `Reloaded:` 消息后，输入 `/fable-setup auto` 并回车。两个命令不要写在同一行。"
 5. 不做其他说明。用法提示由 `/fable-setup` 在结尾给出
 
 </details>

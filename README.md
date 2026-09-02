@@ -69,10 +69,13 @@ claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
 
-그다음 Claude Code 안에서:
+그다음 Claude Code 안에서 **한 줄씩 따로** 입력합니다. 슬래시 명령은 한 줄에 하나만 인식되므로 두 줄을 한꺼번에 붙여 넣으면 첫 번째만 실행됩니다.
 
 ```
 /reload-plugins
+```
+`Reloaded: … plugins` 가 뜨면
+```
 /fable-setup auto
 ```
 
@@ -88,9 +91,9 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **사용자** | Claude Code에 `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 이 README를 읽고 마켓플레이스 등록, 플러그인 설치, 설치 확인을 스스로 실행 |
-| 3 | Claude | "다음 두 줄을 입력하세요: `/reload-plugins`, `/fable-setup auto`" 안내 |
-| 4 | **사용자** | `/reload-plugins` 입력. 방금 설치한 플러그인이 재시작 없이 켜짐 |
-| 5 | **사용자** | `/fable-setup auto` 입력 |
+| 3 | Claude | "먼저 `/reload-plugins` 를 입력하고 Enter, 완료 메시지가 뜨면 `/fable-setup auto` 를 입력하고 Enter" 라고 안내 |
+| 4 | **사용자** | `/reload-plugins` 입력 후 Enter. `Reloaded: … plugins` 메시지가 뜨면 플러그인이 켜진 것 |
+| 5 | **사용자** | 그다음 줄에 `/fable-setup auto` 입력 후 Enter (4번과 한 줄에 붙여 쓰면 앞의 것만 실행됨) |
 | 6 | Claude | 환경을 읽고, 충돌하는 옛 규칙을 표로 보여 주고, CLAUDE.md에 상시 규칙 구간을 쓴 뒤, 쓴 내용과 되돌리는 법을 보여 줌. 질문 없음 |
 | 7 | Claude | 사용법 세 줄 안내: "막연한 요청은 `/fable-prompt <요청>`. 보기만은 `프롬프트만`" |
 | 8 | 사용자 | 이후 평소처럼. `/fable-prompt 이거 좀 고쳐줘` |
@@ -105,7 +108,7 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `claude plugin list`로 `oh-my-fable@oh-my-fable`이 보이는지 확인
-4. 사용자에게 정확히 이 두 줄만 안내: 먼저 `/reload-plugins`, 그다음 `/fable-setup auto`
+4. 사용자에게 이렇게만 안내한다: "먼저 `/reload-plugins` 를 입력하고 Enter를 누르세요. `Reloaded:` 메시지가 뜨면 `/fable-setup auto` 를 입력하고 Enter를 누르세요. 두 명령은 한 줄에 같이 쓰면 안 됩니다."
 5. 그 밖의 설명은 하지 않는다. 사용법 안내는 `/fable-setup`이 끝에서 한다
 
 </details>
