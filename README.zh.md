@@ -19,15 +19,14 @@
 
 👤 **你输入的**
 ```
-/fable-prompt 帮我修一下这个
+/fable-prompt 登录按钮点了没反应，帮我修一下
 ```
-🤖 **Claude 实际收到的请求**（自动补全）
+🤖 **Claude 实际收到的请求**（从对话上下文自动补全）
 ```
-目标：消除 apps/web/src/lib/pricing.ts 中的 TS2345 错误，使 tsc --noEmit 以 0 错误结束
-上下文：粘贴的错误原文。无相关决策
-范围：仅此文件和类型定义文件。旁边可见的其他错误不要修，作为后续事项汇报
-完成标准：pnpm tsc --noEmit 输出 0 errors。把输出原文附在汇报中
-effort：high
+目标：点击登录按钮时调用 /api/login，成功后跳转到 /dashboard
+上下文：src/components/LoginButton.tsx，控制台错误 "TypeError: onSubmit is not a function"，昨天改认证方式的提交之后出现
+范围：只改这个按钮和它的处理函数。旁边的注册表单和其他错误不要修，作为后续事项汇报
+完成标准：实际复现点击并确认跳转到 /dashboard，控制台错误 0，附上改动文件列表
 ```
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1) 的处方装进两个技能。提示词模块原文照用。
@@ -67,7 +66,7 @@ Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：�
 安装 https://github.com/Junhan2/oh-my-fable
 ```
 
-Claude 会安装插件，问三个简短问题，按答案完成设置，然后让你输入一行 `/reload-plugins`。这一行是你唯一需要自己输入的内容。
+Claude 会安装插件，问一次（三个选项），并按答案完成设置。下次打开 Claude Code 时自动生效，你不需要输入任何命令。想在当前会话立即使用，输入 `/clear`。
 
 <details>
 <summary>手动安装</summary>
@@ -76,9 +75,9 @@ Claude 会安装插件，问三个简短问题，按答案完成设置，然后�
 claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
-在 Claude Code 中：`/reload-plugins`，然后 `/fable-setup`。不想回答问题、直接用默认值：`/fable-setup auto`。
+新开会话，或 `/reload-plugins` 后 `/clear`。然后 `/fable-setup`（不提问用默认值：`/fable-setup auto`）。
 
-> **要求** Claude Code 2.1.258 或更新（`/reload-plugins` 命令）。更早版本安装后重启。
+> **要求** Claude Code 2.1.258 或更新。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。
 
 </details>
 
@@ -98,11 +97,10 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **你** | `安装 https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | 注册市场、安装插件、确认安装 |
-| 3 | Claude | 三个简短问题：规则位置 · 使用方式 · effort（每项一行选项，标注推荐） |
+| 3 | Claude | 问一次：规则位置 · 使用方式 · effort（每项一行选项，标注推荐）。在项目内会再问范围，有冲突会问是否修复 |
 | 4 | Claude | 按答案写入配置（以及所选的规则文件或 CLAUDE.md 段落），用表格列出与现有规则的冲突 |
-| 5 | Claude | 提示"输入 `/reload-plugins` 并回车" |
-| 6 | **你** | 输入 `/reload-plugins`。出现 `Reloaded: … plugins` 即完成 |
-| 7 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
+| 5 | Claude | 提示"下次会话自动生效，现在就用请输入 `/clear`" |
+| 6 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
 
 **规则的三种位置**（问题 1）
 
@@ -111,12 +109,14 @@ claude plugin install oh-my-fable@oh-my-fable
 | 在哪里 | 插件内部（`hooks/always-on.md`） | `~/.claude/rules/oh-my-fable.md`（自动加载） | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v1 -->` 段落 |
 | 文件改动 | 无 | 新增一个文件，不碰 CLAUDE.md | 编辑 CLAUDE.md，需批准（auto 模式不可） |
 | 手动修改 | 仅模式（配置文件） | 自由 | 自由 |
+| 对子代理和团队也生效 | 否（仅主会话） | 是 | 是 |
+| 插件更新后 | 始终最新 | 再运行 `/fable-setup` 刷新 | 同左 |
 | 移除 | 卸载或 `{"enabled": false}` | 删除文件 | 删除段落 |
 
-同一时间只有一种生效。选择文件方式会记录到配置中，钩子随即静默。之后想改，再运行 `/fable-setup`。
+同一时间只有一种生效。选择文件方式，或 CLAUDE.md 中已有段落时，钩子会自动静默（从旧版本升级也不会重复注入）。经常使用子代理或代理团队的话，请选规则文件。
 
-- **无人值守会话**（无头、CI、代理）：问题 2 选"无人值守"，会加上"用户没有在看"段落。
-- **effort**：指南默认 `high`；想省成本选 `medium`（Fable 5 水平）。写入设置中的 `effortLevel`。
+- **无人值守会话**（无头、CI、代理）：问题 2 选"无人值守"，会加上"用户没有在看"段落。该模式只能在全局配置中开启，仓库内的配置文件无法开启，以防克隆的仓库把你的代理切换为无人值守。
+- **effort**：指南默认 `high`；想省成本选 `medium`（Fable 5 水平）。写入设置中的 `effortLevel`，可能出现批准提示。
 
 <details>
 <summary>AI 执行的步骤（Claude 读取本 README 后执行）</summary>
@@ -124,9 +124,9 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 从 `~/.claude/plugins/installed_plugins.json` 读取 `oh-my-fable@oh-my-fable` 的 `installPath`
-4. 读取 `<installPath>/skills/fable-setup/SKILL.md` 并**在本会话中立即**按其步骤执行（`${CLAUDE_PLUGIN_ROOT}` 即 `<installPath>`）。只问文件中写明的三个简短问题
-5. 完成后只告诉用户："输入 `/reload-plugins` 并回车。出现 `Reloaded:` 即完成。模糊的请求用 `/fable-prompt <请求>` 发送。"
-6. 不做其他说明
+4. 读取 `<installPath>/skills/fable-setup/SKILL.md` 并**在本会话中立即**按其步骤执行（`${CLAUDE_PLUGIN_ROOT}` 即 `<installPath>`）。按该文件要求把问题合并为一次提问
+5. 完成后只告诉用户："安装和设置已完成。下次会话自动生效。现在就用请输入 `/clear`。模糊的请求用 `/fable-prompt <请求>` 发送。"
+6. 不做其他说明。不要建议 `/reload-plugins`（钩子只在会话开始、`/clear` 和压缩时运行）
 
 </details>
 
@@ -138,7 +138,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | **1. 每次请求** | 目标、上下文、范围、完成标准、effort、"只诊断不修改"的例外、时效性问题的搜索提示、长输出提示 | 由 `/fable-prompt` 补全 |
 | **2. 常驻规则** | 自主执行、范围与测试限制、局部编辑、进度汇报、排版规则、批量工具调用 | 由插件钩子在会话开始时注入 |
-| **3. 设置项** | 交互式/无人值守模式、effort 默认值、thinking.display、对话历史规则、子代理、视觉裁剪 | `/fable-setup` 切换模式，其余以清单提示 |
+| **3. 设置项** | 交互式/无人值守模式、effort 默认值、thinking.display、对话历史规则、子代理、视觉裁剪 | `/fable-setup` 写入模式和 effort，其余以清单提示 |
 
 ## 第 1 层 · 每次请求
 
@@ -209,7 +209,10 @@ claude plugin install oh-my-fable@oh-my-fable
 能。四字段请求结构和工作规则（范围限制、局部编辑、进度汇报、批量工具调用）与模型无关，都有收益。排版规则、自主执行模块和 effort 建议值是在 Fable 5.1 上测得的，在其他模型上效果可能较小，但无害。
 
 **如何移除？**
-`claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
+`/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
+
+**我直接使用 API 或 Agent SDK。**
+`/fable-setup` 需要提问工具，在 SDK 下只能用 `/fable-setup auto`。最简单的做法是把 `hooks/always-on.md` 原样放进你的 system prompt。第 3 层的 API 项目（thinking.display 等）是你那边的设置。
 
 ## 结构
 
@@ -234,6 +237,6 @@ oh-my-fable/
 
 ## 贡献与许可
 
-欢迎 Issue 和 PR。指南更新时只需修改 `skills/fable-prompt/references/prompt-blocks.md`，两个技能共用。
+欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）和 `skills/fable-prompt/references/prompt-blocks.md`（完整模块列表）。
 
 MIT © Junhan2。指南原文版权归 Anthropic 所有。

@@ -19,15 +19,14 @@
 
 👤 **당신이 치는 것**
 ```
-/fable-prompt 이거 좀 고쳐줘
+/fable-prompt 로그인 버튼 눌러도 아무 반응 없어 고쳐줘
 ```
-🤖 **Claude가 실제로 받는 요청** (자동으로 채워짐)
+🤖 **Claude가 실제로 받는 요청** (대화 맥락에서 자동으로 채워짐)
 ```
-목표: apps/web/src/lib/pricing.ts 의 TS2345 오류를 없애고 tsc --noEmit 이 0 오류로 끝나게 한다
-맥락: 붙여넣은 오류 원문. 관련 결정 없음
-범위: 이 파일과 타입 정의 파일만. 옆에 보이는 다른 오류는 고치지 말고 후속 과제로 보고
-완료 기준: pnpm tsc --noEmit 출력 0 errors. 출력 원문을 보고에 첨부
-effort: high
+목표: 로그인 버튼을 누르면 /api/login 이 호출되고, 성공하면 /dashboard 로 이동하게 한다
+맥락: src/components/LoginButton.tsx, 콘솔 오류 "TypeError: onSubmit is not a function", 어제 인증 방식을 바꾼 커밋 이후 발생
+범위: 이 버튼과 그 핸들러만. 옆의 회원가입 폼이나 다른 오류는 고치지 말고 후속 과제로 보고
+완료 기준: 실제 클릭을 재현해 /dashboard 이동 확인, 콘솔 오류 0, 변경 파일 목록 첨부
 ```
 
 Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)의 처방을 스킬 두 개에 담았습니다. 문구는 원문 그대로 씁니다.
@@ -67,7 +66,7 @@ Claude Code에 이렇게만 말하세요.
 https://github.com/Junhan2/oh-my-fable 설치해줘
 ```
 
-Claude가 설치하고, 짧은 질문 3개를 하고, 답에 맞게 설정한 뒤 `/reload-plugins` 한 줄만 입력하라고 알려 줍니다. 그 한 줄이 사용자가 직접 치는 전부입니다.
+Claude가 설치하고, 질문 한 번(선택지 세 개)을 하고, 답에 맞게 설정까지 끝냅니다. 다음에 Claude Code를 열면 자동으로 적용됩니다. 사용자가 직접 칠 것은 없습니다. 지금 이 세션에서 바로 쓰고 싶으면 `/clear` 한 줄.
 
 <details>
 <summary>수동 설치</summary>
@@ -76,9 +75,9 @@ Claude가 설치하고, 짧은 질문 3개를 하고, 답에 맞게 설정한 �
 claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
-Claude Code에서 `/reload-plugins`, 그다음 `/fable-setup`. 질문 없이 기본값으로 가려면 `/fable-setup auto`.
+새 세션을 열거나 `/reload-plugins` 후 `/clear`. 그다음 `/fable-setup` (질문 없이 기본값은 `/fable-setup auto`).
 
-> **요구 사항** Claude Code 2.1.258 이상(`/reload-plugins` 명령 기준). 그 이전 버전은 설치 후 재시작.
+> **요구 사항** Claude Code 2.1.258 이상. **Windows는 Git for Windows(Git Bash) 필수**: 훅이 bash로 실행됩니다. 설치 뒤 훅 오류가 뜨면 이 문제입니다.
 
 </details>
 
@@ -98,25 +97,26 @@ Claude Code에서 `/reload-plugins`, 그다음 `/fable-setup`. 질문 없이 기
 |---|---|---|
 | 1 | **사용자** | `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 마켓플레이스 등록, 플러그인 설치, 설치 확인 |
-| 3 | Claude | 짧은 질문 3개: 규칙 위치 · 사용 방식 · effort (각각 한 줄 선택지, 추천 표시) |
+| 3 | Claude | 질문 한 번: 규칙 위치 · 사용 방식 · effort (각 한 줄 선택지, 추천 표시). 프로젝트 안이면 범위, 충돌이 있으면 고칠지 한 번 더 |
 | 4 | Claude | 답에 맞게 설정 파일(과 선택한 경우 규칙 파일 또는 CLAUDE.md 구간)을 쓰고, 기존 규칙과의 충돌을 표로 보여 줌 |
-| 5 | Claude | "`/reload-plugins` 를 입력하고 Enter" 안내 |
-| 6 | **사용자** | `/reload-plugins` 입력. `Reloaded: … plugins` 가 뜨면 끝 |
-| 7 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
+| 5 | Claude | "다음 세션부터 자동 적용. 지금 쓰려면 `/clear`" 안내 |
+| 6 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
 
-**규칙 위치 세 가지** (3번 질문)
+**규칙 위치 세 가지** (첫 질문)
 
 | | 훅 (기본) | 별도 규칙 파일 | CLAUDE.md 구간 |
 |---|---|---|---|
 | 어디에 | 플러그인 안 (`hooks/always-on.md`) | `~/.claude/rules/oh-my-fable.md` (자동 로드) | 내 CLAUDE.md 안 `<!-- oh-my-fable:start v1 -->` 구간 |
 | 파일 수정 | 없음 | 새 파일 1개, CLAUDE.md 무관 | CLAUDE.md 편집, 승인 필요(auto 모드 불가) |
 | 직접 고치기 | 모드만(설정 파일) | 자유 | 자유 |
+| 서브에이전트·팀에도 적용 | 아니요(메인 세션만) | 예 | 예 |
+| 플러그인 갱신 시 | 항상 최신 | `/fable-setup` 다시 실행해 갱신 | 같음 |
 | 제거 | 플러그인 삭제 또는 `{"enabled": false}` | 파일 삭제 | 구간 삭제 |
 
-셋 중 하나만 활성화됩니다. 파일 방식을 고르면 설정에 기록되어 훅이 조용해집니다. 나중에 바꾸려면 `/fable-setup` 다시.
+셋 중 하나만 활성화됩니다. 파일 방식을 고르거나 CLAUDE.md에 구간이 이미 있으면 훅은 스스로 조용해집니다(구판에서 올라온 경우도 이중 주입 없음). 서브에이전트나 에이전트 팀을 많이 쓰면 규칙 파일 방식을 고르세요.
 
-- **무인 세션**(헤드리스, CI, 에이전트)이면 사용 방식에서 "무인"을 고르세요. "사용자가 지켜보고 있지 않다" 문단이 추가됩니다.
-- **effort**는 가이드 기본 `high`, 비용을 아끼려면 `medium`(Fable 5 수준). 설정 파일 `effortLevel`에 씁니다.
+- **무인 세션**(헤드리스, CI, 에이전트)이면 사용 방식에서 "무인"을 고르세요. "사용자가 지켜보고 있지 않다" 문단이 추가됩니다. 이 모드는 글로벌 설정에서만 켜지며, 저장소 안의 설정 파일로는 켤 수 없습니다(클론한 저장소가 에이전트를 무인으로 바꾸는 것을 막기 위해).
+- **effort**는 가이드 기본 `high`, 비용을 아끼려면 `medium`(Fable 5 수준). settings.json의 `effortLevel`에 쓰며 승인 프롬프트가 뜰 수 있습니다.
 
 <details>
 <summary>AI가 따르는 절차 (Claude가 이 README를 읽고 실행)</summary>
@@ -124,9 +124,9 @@ Claude Code에서 `/reload-plugins`, 그다음 `/fable-setup`. 질문 없이 기
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `~/.claude/plugins/installed_plugins.json` 에서 `oh-my-fable@oh-my-fable` 의 `installPath` 를 읽는다
-4. `<installPath>/skills/fable-setup/SKILL.md` 를 읽고 그 절차를 **이 세션에서 바로** 따른다(`${CLAUDE_PLUGIN_ROOT}` 는 `<installPath>`). 질문은 그 파일에 적힌 대로 짧게 3개만
-5. 끝나면 사용자에게 이렇게만 안내한다: "`/reload-plugins` 를 입력하고 Enter를 누르세요. `Reloaded:` 가 뜨면 끝입니다. 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
-6. 그 밖의 설명은 하지 않는다
+4. `<installPath>/skills/fable-setup/SKILL.md` 를 읽고 그 절차를 **이 세션에서 바로** 따른다(`${CLAUDE_PLUGIN_ROOT}` 는 `<installPath>`). 질문은 그 파일에 적힌 대로 한 번에 묶어서
+5. 끝나면 사용자에게 이렇게만 안내한다: "설치와 설정이 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/clear` 를 입력하세요. 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
+6. 그 밖의 설명은 하지 않는다. `/reload-plugins` 를 권하지 않는다(훅은 세션 시작·`/clear`·압축 때만 실행된다)
 
 </details>
 
@@ -138,7 +138,7 @@ Claude Code에서 `/reload-plugins`, 그다음 `/fable-setup`. 질문 없이 기
 |---|---|---|
 | **1. 매번 요청에** | 목표·맥락·범위·완료 기준, effort, 진단만 하라는 예외, 시사성 질문의 검색 요청, 장문 안내문 | `/fable-prompt`가 채움 |
 | **2. 상시 규칙** | 자율 진행, 범위·테스트 제한, 부분 편집, 진행 보고, 서식 규칙, 도구 일괄 호출 | 플러그인 훅이 세션 시작 때 자동 주입 |
-| **3. 설정값** | 대화형/무인 모드, effort 기본값, thinking.display, 대화 이력 규칙, 서브에이전트, 비전 crop | `/fable-setup`이 모드를 바꾸고 나머지는 점검표로 알려 줌 |
+| **3. 설정값** | 대화형/무인 모드, effort 기본값, thinking.display, 대화 이력 규칙, 서브에이전트, 비전 crop | `/fable-setup`이 모드와 effort를 쓰고 나머지는 점검표로 알려 줌 |
 
 ## 1층 · 매번 요청에
 
@@ -209,7 +209,10 @@ Claude Code에서 `/reload-plugins`, 그다음 `/fable-setup`. 질문 없이 기
 됩니다. 네 칸 요청 틀과 작업 규율(범위 제한, 부분 편집, 진행 보고, 도구 일괄 호출)은 모델과 무관하게 이득입니다. 서식 규칙, 자율 진행 블록, effort 권고값은 Fable 5.1 기준으로 측정된 것이라 다른 모델에서는 효과가 작을 수 있지만 해는 없습니다.
 
 **되돌리려면?**
-`claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
+`/fable-setup remove` 가 설정 파일, 규칙 파일, CLAUDE.md 구간을 지웁니다. 그다음 `claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
+
+**API나 Agent SDK로 직접 붙이는 경우는?**
+`/fable-setup`은 질문 도구가 필요해 SDK에서는 `auto` 인자만 됩니다. 가장 간단한 방법은 `hooks/always-on.md` 내용을 시스템 프롬프트에 그대로 붙이는 것입니다. 3층의 API 항목(thinking.display 등)은 그쪽 설정입니다.
 
 ## 구성
 
@@ -234,6 +237,6 @@ oh-my-fable/
 
 ## 기여와 라이선스
 
-이슈와 PR을 환영합니다. 가이드가 갱신되면 `skills/fable-prompt/references/prompt-blocks.md`만 고치면 두 스킬에 함께 반영됩니다.
+이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문)와 `skills/fable-prompt/references/prompt-blocks.md`(전체 블록 목록) 두 곳을 같이 고칩니다.
 
 MIT © Junhan2. 가이드 원문의 저작권은 Anthropic에 있습니다.

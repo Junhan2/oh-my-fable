@@ -19,15 +19,14 @@
 
 👤 **What you type**
 ```
-/fable-prompt fix this
+/fable-prompt the login button does nothing, fix it
 ```
-🤖 **What Claude actually receives** (filled in automatically)
+🤖 **What Claude actually receives** (filled in from the conversation)
 ```
-Goal: remove the TS2345 error in apps/web/src/lib/pricing.ts so that tsc --noEmit ends with 0 errors
-Context: the pasted error text. No related decisions
-Scope: this file and the type definition file only. Report other visible errors as follow-ups, do not fix them
-Done: pnpm tsc --noEmit prints 0 errors. Attach the output to the report
-Effort: high
+Goal: clicking the login button calls /api/login and, on success, navigates to /dashboard
+Context: src/components/LoginButton.tsx, console error "TypeError: onSubmit is not a function", started after yesterday's auth change commit
+Scope: this button and its handler only. Do not touch the signup form or other errors; report them as follow-ups
+Done: reproduce the click and confirm navigation to /dashboard, 0 console errors, list of changed files attached
 ```
 
 Two skills that apply the fixes from Anthropic's official [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1). The prompt blocks are used verbatim.
@@ -67,7 +66,7 @@ Say this to Claude Code:
 install https://github.com/Junhan2/oh-my-fable
 ```
 
-Claude installs the plugin, asks three short questions, applies your answers, and tells you to type one line: `/reload-plugins`. That line is the only thing you type yourself.
+Claude installs the plugin, asks one question (three choices), and applies your answers. The rules apply automatically the next time you open Claude Code. Nothing to type yourself. To use them in this session right now, type `/clear`.
 
 <details>
 <summary>Manual install</summary>
@@ -76,9 +75,9 @@ Claude installs the plugin, asks three short questions, applies your answers, an
 claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
-In Claude Code: `/reload-plugins`, then `/fable-setup`. For defaults without questions: `/fable-setup auto`.
+Open a new session, or `/reload-plugins` then `/clear`. Then `/fable-setup` (defaults without questions: `/fable-setup auto`).
 
-> **Requirements** Claude Code 2.1.258 or newer (for `/reload-plugins`). On older versions, restart after installing.
+> **Requirements** Claude Code 2.1.258 or newer. **Windows needs Git for Windows (Git Bash)**: the hook runs through bash. A hook error right after install means this.
 
 </details>
 
@@ -98,11 +97,10 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 |---|---|---|
 | 1 | **You** | `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | registers the marketplace, installs the plugin, verifies |
-| 3 | Claude | three short questions: where the rules live · how you work · effort (one-line options, recommendation marked) |
+| 3 | Claude | one question: where the rules live · how you work · effort (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
 | 4 | Claude | writes the config (and, if chosen, the rules file or CLAUDE.md section), shows conflicts with existing rules as a table |
-| 5 | Claude | says "type `/reload-plugins` and press Enter" |
-| 6 | **You** | type `/reload-plugins`. `Reloaded: … plugins` means you are done |
-| 7 | You | work as usual. `/fable-prompt fix this` for vague requests |
+| 5 | Claude | says "applies from the next session; type `/clear` to use it now" |
+| 6 | You | work as usual. `/fable-prompt fix this` for vague requests |
 
 **Three places for the rules** (question 1)
 
@@ -111,12 +109,14 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 | Where | inside the plugin (`hooks/always-on.md`) | `~/.claude/rules/oh-my-fable.md` (auto-loaded) | `<!-- oh-my-fable:start v1 -->` section in your CLAUDE.md |
 | File edits | none | one new file, CLAUDE.md untouched | edits CLAUDE.md, needs approval (not in auto mode) |
 | Hand-editing | mode only (config file) | free | free |
+| Reaches subagents and teams | no (main session only) | yes | yes |
+| After a plugin update | always current | run `/fable-setup` again to refresh | same |
 | Removal | uninstall or `{"enabled": false}` | delete the file | delete the section |
 
-Only one is active at a time. Choosing a file option is recorded in the config and the hook goes silent. Run `/fable-setup` again to change.
+Only one is active at a time. If you pick a file option, or a CLAUDE.md section already exists, the hook goes silent by itself (no double injection after upgrading from an older version). If you use subagents or agent teams a lot, pick the rules file.
 
-- **Unattended sessions** (headless, CI, agents): pick "Unattended" in question 2. Adds the "the user is not watching" paragraph.
-- **Effort**: `high` is the guide default; `medium` gives Fable 5 quality at lower cost. Written to `effortLevel` in settings.
+- **Unattended sessions** (headless, CI, agents): pick "Unattended" in question 2. Adds the "the user is not watching" paragraph. This mode can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended.
+- **Effort**: `high` is the guide default; `medium` gives Fable 5 quality at lower cost. Written to `effortLevel` in settings.json; an approval prompt may appear.
 
 <details>
 <summary>Procedure for the AI (Claude reads this README and executes it)</summary>
@@ -124,9 +124,9 @@ Only one is active at a time. Choosing a file option is recorded in the config a
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Read `installPath` for `oh-my-fable@oh-my-fable` from `~/.claude/plugins/installed_plugins.json`
-4. Read `<installPath>/skills/fable-setup/SKILL.md` and follow it **in this session right away** (`${CLAUDE_PLUGIN_ROOT}` is `<installPath>`). Ask only the three short questions written there
-5. Then tell the user only this: "Type `/reload-plugins` and press Enter. When `Reloaded:` appears you are done. Send vague requests as `/fable-prompt <request>`."
-6. Say nothing else
+4. Read `<installPath>/skills/fable-setup/SKILL.md` and follow it **in this session right away** (`${CLAUDE_PLUGIN_ROOT}` is `<installPath>`). Bundle the questions as that file says
+5. Then tell the user only this: "Installed and configured. The rules apply from the next session. To use them now, type `/clear`. Send vague requests as `/fable-prompt <request>`."
+6. Say nothing else. Do not suggest `/reload-plugins` (the hook runs only on session start, `/clear`, and compaction)
 
 </details>
 
@@ -138,7 +138,7 @@ The guide's fixes fall into three layers, each applied differently.
 |---|---|---|
 | **1. Every request** | goal, context, scope, done criteria, effort, the "assess only" exception, search nudge for time-sensitive questions, long-output note | filled in by `/fable-prompt` |
 | **2. Always-on** | autonomy, scope and test limits, targeted edits, progress updates, formatting rule, batched tool calls | injected by the plugin hook at session start |
-| **3. Settings** | interactive/unattended mode, effort default, thinking.display, conversation-history rules, subagents, vision crop | `/fable-setup` switches the mode and reports the rest as a checklist |
+| **3. Settings** | interactive/unattended mode, effort default, thinking.display, conversation-history rules, subagents, vision crop | `/fable-setup` writes mode and effort and reports the rest as a checklist |
 
 ## Layer 1 · every request
 
@@ -209,7 +209,10 @@ Pick it in the first `/fable-setup` question: hook (no file), a separate rules f
 Yes. The four-field request shape and the working rules (scope limits, targeted edits, progress updates, batched tool calls) help regardless of model. The formatting rule, the autonomy block, and the effort recommendations were measured on Fable 5.1, so they may matter less elsewhere, but they do no harm.
 
 **How do I remove it?**
-`claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
+`/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
+
+**I use the API or the Agent SDK directly.**
+`/fable-setup` needs the question tool, so only `/fable-setup auto` works under the SDK. The simplest route is to paste `hooks/always-on.md` into your system prompt. The layer 3 API items (thinking.display and so on) are settings on your side.
 
 ## Layout
 
@@ -234,6 +237,6 @@ oh-my-fable/
 
 ## Contributing and license
 
-Issues and PRs are welcome. When the guide changes, edit only `skills/fable-prompt/references/prompt-blocks.md`; both skills read from it.
+Issues and PRs are welcome. When the guide changes, update both `hooks/always-on.md` (the injected text) and `skills/fable-prompt/references/prompt-blocks.md` (the full block list).
 
 MIT © Junhan2. The guide text itself is copyright Anthropic.

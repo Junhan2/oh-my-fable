@@ -12,21 +12,21 @@ default); settings → mode, effort, and an admin checklist.
 
 ## Arguments (skip the matching question)
 `auto` (no questions, keep defaults) · `hook` | `rules-file` | `claude-md` (delivery) ·
-`interactive` | `unattended` (mode) · `high` | `medium` (effort).
+`interactive` | `unattended` (mode) · `high` | `medium` (effort) · `remove` (undo everything, see Step 6).
 
 ## Step 1 · Detect (one batch of reads, silent)
 `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `./.claude/settings.json`,
 `~/.claude/oh-my-fable.json`, `./.claude/oh-my-fable.json`, `~/.claude/rules/`, `./.claude/rules/`,
 `claude --version`, and the environment variable `CLAUDE_CODE_EFFORT_LEVEL`.
 
-## Step 2 · Questions: short, one AskUserQuestion each
-Ask as many as the situation needs, but keep every question and option to one line. No preamble, no
-explanation paragraphs. The goal is zero manual steps for the user, so prefer asking over leaving something
-for them to do by hand.
+## Step 2 · Questions: one AskUserQuestion call with up to three questions
+Bundle questions 1 to 3 into a single AskUserQuestion call (it supports several questions at once), each with
+one-line options and the recommended one marked. No preamble, no explanation paragraphs. The goal is zero manual
+steps for the user, so prefer asking over leaving something for them to do by hand.
 
 1. **Where should the rules live?**
    - `Hook (recommended)` · nothing to edit, active on install
-   - `Separate rules file` · `~/.claude/rules/oh-my-fable.md`, auto-loaded, editable, CLAUDE.md untouched
+   - `Separate rules file` · `~/.claude/rules/oh-my-fable.md`, auto-loaded, editable, also reaches subagents and teams
    - `CLAUDE.md section` · inside your CLAUDE.md, needs edit approval (not in auto mode)
 2. **How do you mostly work?**
    - `Interactive (recommended)` · you watch and steer
@@ -36,6 +36,7 @@ for them to do by hand.
    - `medium` · Fable 5 quality at lower cost
    - `keep current` · shown with the current value from Step 1
 
+Ask afterwards, only when relevant, one more call:
 4. **Scope?** (only when the current directory is a git repo with its own CLAUDE.md)
    - `All projects (recommended)` · global files under `~/.claude`
    - `This project only` · files under `./.claude`
@@ -64,9 +65,13 @@ regardless of the user's language.
   chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
   with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.
 
-**Effort**: `high` or `medium` → set `effortLevel` in `~/.claude/settings.json` (merge, keep other keys). If a
+**Effort**: `high` or `medium` → set `effortLevel` in `~/.claude/settings.json` (merge, keep other keys; valid
+values are low, medium, high, xhigh). An approval prompt may appear; that is expected. If a
 `modelSettings.<model>.effortLevel` or the env var `CLAUDE_CODE_EFFORT_LEVEL` overrides it, say which one wins
 in one line. If the write is refused, show the one-line change instead.
+
+**Copies are snapshots.** A rules file or CLAUDE.md section is the text at install time. After a plugin update,
+run `/fable-setup` again to refresh it; the hook delivery always uses the current text.
 
 ## Step 4 · Audit (one table, then question 5)
 Rule found → verdict → one-line suggestion. Edit CLAUDE.md only if the user chose "Yes" in question 5; if
@@ -75,11 +80,20 @@ Conflicts to flag: narration suppression ("hold findings for the final response"
 anti-formatting rules ("no bullets", "no headers"), "ask before every step". Same-meaning rules → "already covered".
 
 ## Step 5 · Verify and close
-Hook: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set and confirm
-`(Mode: …)` appears. Rules file / CLAUDE.md: confirm the file exists (delimiters exactly once) and the hook prints
-nothing. Then close with exactly this, translated:
+Hook: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set and confirm the
+last line starts with `(oh-my-fable: mode`. Rules file / CLAUDE.md: confirm the file exists (markers exactly once)
+and the hook prints nothing. Then close with exactly this, translated:
 
-> Done. Rules: <delivery>, mode: <mode>, effort: <effort>. Takes effect from the next session (or `/reload-plugins`).
-> Ask as usual; for short or vague requests use `/fable-prompt <request>`. Add "just the prompt" to preview only.
+> Done. Rules: <delivery>, mode: <mode>, effort: <effort>. They apply automatically from the next Claude Code
+> session. To use them in this session right now, type `/clear` (SessionStart hooks run on startup, /clear, and
+> compaction, not on /reload-plugins). Ask as usual; for short or vague requests use `/fable-prompt <request>`.
+> Add "just the prompt" to preview only.
 
 One status line: DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT.
+
+## Step 6 · `/fable-setup remove`
+Undo everything this skill may have written, then tell the user to run `claude plugin uninstall oh-my-fable@oh-my-fable`:
+- delete `~/.claude/oh-my-fable.json` and `./.claude/oh-my-fable.json`
+- delete `~/.claude/rules/oh-my-fable.md` and `./.claude/rules/oh-my-fable.md`
+- remove the `<!-- oh-my-fable:start` … `<!-- oh-my-fable:end -->` section (and its heading line) from any CLAUDE.md
+- `effortLevel` in settings.json is left as is; say so in one line

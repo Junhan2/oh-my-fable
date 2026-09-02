@@ -1,6 +1,6 @@
 ---
 name: fable-prompt
-description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's "Prompting Claude Fable 5.1" guide, then carry it out. Use when the user explicitly asks ("/fable-prompt …", "프롬프트 개선해서", "가이드에 맞게 요청해", "제대로 시켜줘", "improve this prompt", "prompt it properly"), or when a TASK request (build, fix, change, analyze, write, research) arrives as a bare one-liner with unresolved referents or no goal, scope, or done-criteria ("뭐 이거 뭐 어떻게 해줘", "이거 좀 고쳐", "fix this"). Do NOT use for conversational questions, single-fact lookups, or requests that already state goal, scope, and verification.
+description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's "Prompting Claude Fable 5.1" guide, then carry it out. Use only when the user invokes it: "/fable-prompt …", "프롬프트 개선해서", "가이드에 맞게 요청해", "제대로 시켜줘", "improve this prompt", "prompt it properly". Do not trigger on ordinary requests by yourself.
 ---
 # fable-prompt · guide-aligned request rewrite (per-request layer)
 
@@ -41,9 +41,10 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
 2. **Context** · resolved paths, symbols, error text, related decisions.
 3. **Scope** · what is in, what is explicitly out.
 4. **Done criteria** · the exact check: a command, a count, a file that must exist, a reproduced workflow.
-5. **Effort** · one line. Default `high`. `medium` for routine edits. `low` only for quick lookups, and
-   then add block **H** (search nudge) if the topic is time-sensitive. `xhigh`/`max` only when the user asked
-   for maximum quality; then add block **G** with the real `max_tokens`.
+5. **Effort** · do not write an effort line into the request; a line in a prompt changes nothing in Claude Code.
+   Effort is a setting (`effortLevel` in settings.json or `CLAUDE_CODE_EFFORT_LEVEL`). Mention it only when it
+   matters for this request: time-sensitive research at `low` → add block **H**; a long deliverable at `xhigh`
+   → add block **G**.
 6. **Conditional blocks** · Assessment → the "report findings, don't fix" sentence. Research/summary →
    block **J** (quoting example). Writing → block **F** (short form). Code task → phrase checks as
    "Are there any bugs?" not "Does it compile?" (safeguard false positives).
@@ -52,7 +53,7 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
 request stays short: four fields, effort, and only the conditional lines from item 6.
 
 ## Step 4 · Show, then run
-Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), then execute it as if
+Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), four fields only plus any conditional lines, then execute it as if
 the user had sent it. Open with one line on what you are doing, give brief updates, and close with a
 recap that stands on its own. End with exactly one status: DONE, DONE_WITH_CONCERNS, BLOCKED, or NEEDS_CONTEXT.
 
