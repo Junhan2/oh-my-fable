@@ -54,7 +54,7 @@ Two skills that apply the fixes from Anthropic's official [Prompting Claude Fabl
 
 | Part | When | What |
 |---|---|---|
-| **Always-on rules** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. The default is a hook, so no file is touched |
+| **Always-on rules** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Base rules live in an auto-loaded rules file, the hook adds the unattended paragraph per session. Reaches subagents and teams |
 | `/fable-prompt` | when a request is short or vague | shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to only see the rewrite |
 | `/fable-setup` | once right after install (Claude runs it for you) | three short questions set where the rules live (hook / separate rules file / CLAUDE.md), how you work (interactive / unattended), and the effort default (high / medium), then lists conflicts with your existing rules |
 
@@ -106,18 +106,18 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 
 **Three places for the rules** (question 1)
 
-| | Hook (default) | Separate rules file | CLAUDE.md section |
+| | Rules file + hook (default) | Hook only | CLAUDE.md section |
 |---|---|---|---|
-| Where | inside the plugin (`hooks/always-on.md`) | `~/.claude/rules/oh-my-fable.md` (auto-loaded) | `<!-- oh-my-fable:start v1 -->` section in your CLAUDE.md |
-| File edits | none | one new file, CLAUDE.md untouched | edits CLAUDE.md, needs approval (not in auto mode) |
-| Hand-editing | mode only (config file) | free | free |
-| Reaches subagents and teams | no (main session only) | yes | yes |
-| After a plugin update | always current | run `/fable-setup` again to refresh | same |
-| Removal | uninstall or `{"enabled": false}` | delete the file | delete the section |
+| Where | base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded), unattended paragraph added by the hook per session | inside the plugin (`hooks/always-on.md`) | `<!-- oh-my-fable:start v1 -->` section in your CLAUDE.md |
+| File edits | one rules file, CLAUDE.md untouched | none | edits CLAUDE.md, needs approval (not in auto mode) |
+| Interactive/unattended auto-detect | yes | yes | no (static) |
+| Reaches subagents and teams | yes | no (main session only) | yes |
+| After a plugin update | run `/fable-setup` again to refresh the rules file | always current | same |
+| Removal | delete the file + uninstall | uninstall or `{"enabled": false}` | delete the section |
 
-Only one is active at a time. If you pick a file option, or a CLAUDE.md section already exists, the hook goes silent by itself (no double injection after upgrading from an older version). If you use subagents or agent teams a lot, pick the rules file.
+Only one is active at a time. If a CLAUDE.md section or a hand-made rules file exists, the hook goes silent by itself (no double injection). The default is rules file + hook because a hook cannot reach subagents started with the Agent tool (they get no session-start event).
 
-- **The mode is auto-detected by default.** A session opened in the terminal or IDE runs interactive; one started headless (`claude -p`), through the Agent SDK, or by an agent harness runs unattended, decided per session from the `CLAUDE_CODE_ENTRYPOINT` value Claude Code sets. Mixing interactive and headless use needs no switching. To pin one mode, pick "Interactive" or "Unattended" in question 2. Unattended adds the "the user is not watching" paragraph and can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended. Auto-detection works only with hook delivery; a rules file or CLAUDE.md section is static text, so pick one mode for those.
+- **The mode is auto-detected by default.** A session opened in the terminal or IDE runs interactive; one started headless (`claude -p`), through the Agent SDK, or by an agent harness runs unattended, decided per session from the `CLAUDE_CODE_ENTRYPOINT` value Claude Code sets. Mixing interactive and headless use needs no switching. To pin one mode, pick "Interactive" or "Unattended" in question 2. Unattended adds the "the user is not watching" paragraph and can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended. Auto-detection works with both hook-based deliveries; only the CLAUDE.md section is static text, so pick one mode for that.
 - **Effort**: `medium` recommended (Fable 5 quality at lower cost; raise hard tasks with `/effort high` in that session). Anthropic's guide default is `high`, pick it if quality comes first. Written to `effortLevel` in settings.json; an approval prompt may appear.
 
 <details>
@@ -228,8 +228,9 @@ oh-my-fable/
 │   └── marketplace.json       registers this repo as a marketplace
 ├── hooks/
 │   ├── hooks.json             registers the SessionStart hook
-│   ├── session-start.sh       injects the always-on rules at session start (reads the mode)
-│   ├── always-on.md           the injected block text (English)
+│   ├── session-start.sh       session-start hook (unattended paragraph only when a rules file exists, else everything)
+│   ├── always-on.md           block text (English)
+│   ├── rules-file.md          base rules that /fable-setup copies to ~/.claude/rules/oh-my-fable.md
 │   └── autonomy-unattended.md paragraph added only in unattended mode
 ├── skills/
 │   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)
