@@ -3,6 +3,7 @@
 # oh-my-fable
 
 **在 Claude Code 中用好 Claude Fable 5.1。配置一次，每次都用改进后的请求。**
+在 Opus 5 和 Sonnet 5 上输出质量同样会提升。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-2e7d32.svg)](https://github.com/Junhan2/oh-my-fable)
