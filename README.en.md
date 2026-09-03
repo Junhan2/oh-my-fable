@@ -31,7 +31,7 @@ Done: reproduce the click and confirm navigation to /dashboard, 0 console errors
 
 Two skills that apply the fixes from Anthropic's official [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1). The prompt blocks are used verbatim.
 
-> **Fable only?** No. The four-field request shape (goal, context, scope, done) and the scope, targeted-edit, and progress rules help with any model, including Opus and Sonnet. Only a few lines are Fable 5.1 specific (the formatting rule, the autonomy block, the effort recommendations), and they do no harm elsewhere.
+> **Fable only?** No. **Output quality goes up on Opus 5 and Sonnet 5 too.** The four-field request shape (goal, context, scope, done) cuts back-and-forth and off-target results on any model, and the scope, targeted-edit, progress, and finish-the-task rules raise the quality of the work regardless of model. Only a few lines are Fable 5.1 specific (the formatting rule, the autonomy block, the effort recommendations), and they do no harm elsewhere.
 
 ## Contents
 

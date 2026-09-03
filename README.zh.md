@@ -31,7 +31,7 @@
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1) 的处方装进两个技能。提示词模块原文照用。
 
-> **只能用于 Fable 吗？** 不是。四字段请求结构（目标、上下文、范围、完成标准）以及范围限制、局部编辑、进度汇报规则对 Opus、Sonnet 等任何模型都同样有帮助。只有少数几条是 Fable 5.1 专用（排版规则、自主执行模块、effort 建议值），放在其他模型上也无害。
+> **只能用于 Fable 吗？** 不是。**在 Opus 5 和 Sonnet 5 上输出质量同样会提升。** 四字段请求结构（目标、上下文、范围、完成标准）在任何模型上都能减少反复追问和跑偏的结果；范围限制、局部编辑、进度汇报、做到底等规则无论模型如何都会提高工作质量。只有少数几条是 Fable 5.1 专用（排版规则、自主执行模块、effort 建议值），放在其他模型上也无害。
 
 ## 目录
 
