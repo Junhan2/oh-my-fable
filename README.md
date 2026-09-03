@@ -2,7 +2,7 @@
 
 # oh-my-fable
 
-**Claude Fable 5.1을 Claude Code에서 가장 좋은 품질로 쓰는 법. 한 번 세팅하고, 매번 개선된 요청으로.**
+**Claude Fable 5.1을 Claude Code에서 가장 좋은 품질로 쓰는 법. 설치만 하면 알아서: 터미널이든 헤드리스든 서브에이전트든, 세션마다 맞는 규칙이 들어갑니다.**
 
 Opus 5, Sonnet 5에서도 결과 품질이 올라갑니다.
 
@@ -30,6 +30,13 @@ Opus 5, Sonnet 5에서도 결과 품질이 올라갑니다.
 범위: 이 버튼과 그 핸들러만. 옆의 회원가입 폼이나 다른 오류는 고치지 말고 후속 과제로 보고
 완료 기준: 실제 클릭을 재현해 /dashboard 이동 확인, 콘솔 오류 0, 변경 파일 목록 첨부
 ```
+
+**설치만 하면, 나머지는 자동입니다.**
+
+- **사용 형태를 세션마다 알아서 판정** · 터미널·IDE면 대화형, `claude -p`·Agent SDK·에이전트 하네스면 무인으로 감지해 "사용자가 지켜보고 있지 않다" 문단을 그때만 넣습니다. 섞어 써도 바꿀 것이 없습니다.
+- **서브에이전트까지 자동** · Agent 도구로 띄운 서브에이전트(규칙 파일을 안 읽는 Explore·Plan 포함)에 짧은 판을 따로 넣습니다.
+- **파일을 만들지 않습니다** · CLAUDE.md도 규칙 파일도 건드리지 않고, 훅이 세션마다 넣습니다. 그래서 갱신은 플러그인만 올리면 되고 제거하면 흔적이 없습니다.
+- **질문 없음** · 설정은 선택 사항입니다. 확인할 것은 설치 승인 하나뿐입니다.
 
 Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)의 처방을 스킬 두 개에 담았습니다. 문구는 원문 그대로 씁니다.
 
@@ -86,6 +93,15 @@ claude plugin install oh-my-fable@oh-my-fable
 
 </details>
 
+**60초 경로: 내 환경에서는?**
+
+| 환경 | 할 일 |
+|---|---|
+| 터미널 · 데스크톱 앱 · IDE 확장 | 설치만. 대화형으로 자동 감지 |
+| `claude -p` · Agent SDK · 에이전트 하네스(Buzz 등) | 설치만. 무인으로 자동 감지해 "지켜보고 있지 않다" 문단 추가. 단 `claude -p --bare`는 훅·플러그인·CLAUDE.md를 전부 건너뛰므로 `hooks/always-on.md`를 시스템 프롬프트에 직접 붙이세요 |
+| 플러그인을 못 까는 헤드리스 전용 환경 (별도 `CLAUDE_CONFIG_DIR`, CI) | `hooks/rules-file-unattended.md`를 그 환경의 `rules/oh-my-fable.md`로 복사 ([FAQ](#faq)) |
+| Cowork · claude.ai/code | 터미널 설치본은 쓰이지 않습니다. claude.ai 계정 설정에서 플러그인을 켜세요 |
+
 ## 사용법: 평소처럼
 
 그냥 평소처럼 요청하면 됩니다. 상시 규칙은 이미 켜져 있습니다. 요청이 짧거나 막연하면 앞에 `/fable-prompt`를 붙이세요.
@@ -103,15 +119,6 @@ claude plugin install oh-my-fable@oh-my-fable
 | 1 | **사용자** | `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 마켓플레이스 등록, 플러그인 설치, "다음 세션부터 자동 적용. 지금 쓰려면 `/reload-plugins` 다음 `/clear`" 안내 |
 | 3 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘`, 궁금하면 `/fable-status` |
-
-**60초 경로: 내 환경에서는?**
-
-| 환경 | 할 일 |
-|---|---|
-| 터미널 · 데스크톱 앱 · IDE 확장 | 설치만. 대화형으로 자동 감지 |
-| `claude -p` · Agent SDK · 에이전트 하네스(Buzz 등) | 설치만. 무인으로 자동 감지해 "지켜보고 있지 않다" 문단 추가. 단 `claude -p --bare`는 훅·플러그인·CLAUDE.md를 전부 건너뛰므로 `hooks/always-on.md`를 시스템 프롬프트에 직접 붙이세요 |
-| 플러그인을 못 까는 헤드리스 전용 환경 (별도 `CLAUDE_CONFIG_DIR`, CI) | `hooks/rules-file-unattended.md`를 그 환경의 `rules/oh-my-fable.md`로 복사 ([FAQ](#faq)) |
-| Cowork · claude.ai/code | 터미널 설치본은 쓰이지 않습니다. claude.ai 계정 설정에서 플러그인을 켜세요 |
 
 <details>
 <summary>선택 사항: 규칙 위치 바꾸기 (`/fable-setup`)</summary>

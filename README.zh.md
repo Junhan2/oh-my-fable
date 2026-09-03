@@ -2,7 +2,7 @@
 
 # oh-my-fable
 
-**在 Claude Code 中用好 Claude Fable 5.1。配置一次，每次都用改进后的请求。**
+**在 Claude Code 中用好 Claude Fable 5.1。装上就行：终端、无头还是子代理，每个会话都自动拿到合适的规则。**
 
 在 Opus 5 和 Sonnet 5 上输出质量同样会提升。
 
@@ -30,6 +30,13 @@
 范围：只改这个按钮和它的处理函数。旁边的注册表单和其他错误不要修，作为后续事项汇报
 完成标准：实际复现点击并确认跳转到 /dashboard，控制台错误 0，附上改动文件列表
 ```
+
+**装上之后，其余全自动。**
+
+- **每个会话自动判断使用方式** · 终端、IDE 为交互式；`claude -p`、Agent SDK、代理框架为无人值守，只在那时加入"用户不在旁边"段落。混用也无需切换。
+- **子代理也覆盖** · 用 Agent 工具启动的子代理（包括从不读规则文件的 Explore、Plan）会收到精简版规则。
+- **不创建文件** · 不碰 CLAUDE.md 和规则文件，由钩子每次会话注入。更新只需更新插件，卸载不留痕迹。
+- **不提问** · 设置是可选的。你唯一要确认的是插件安装。
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1) 的处方装进两个技能。提示词模块原文照用。
 
@@ -86,6 +93,15 @@ claude plugin install oh-my-fable@oh-my-fable
 
 </details>
 
+**60 秒路径：我的环境怎么办？**
+
+| 环境 | 要做的事 |
+|---|---|
+| 终端 · 桌面应用 · IDE 扩展 | 只需安装。识别为交互式 |
+| `claude -p` · Agent SDK · 代理框架（Buzz 等） | 只需安装。识别为无人值守并追加"用户不在旁边"段落。例外：`claude -p --bare` 会跳过钩子、插件和 CLAUDE.md，请把 `hooks/always-on.md` 直接贴进系统提示 |
+| 无法安装插件的纯无头环境（独立 `CLAUDE_CONFIG_DIR`、CI） | 把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（[常见问题](#常见问题)） |
+| Cowork · claude.ai/code | 不使用终端安装的插件。请在 claude.ai 账户设置中启用 |
+
 ## 用法：照常
 
 像平时一样提出请求即可，常驻规则已经生效。请求简短或模糊时在前面加：
@@ -103,15 +119,6 @@ claude plugin install oh-my-fable@oh-my-fable
 | 1 | **你** | `安装 https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | 注册市场、安装插件，提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
 | 3 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个`，想看状态用 `/fable-status` |
-
-**60 秒路径：我的环境怎么办？**
-
-| 环境 | 要做的事 |
-|---|---|
-| 终端 · 桌面应用 · IDE 扩展 | 只需安装。识别为交互式 |
-| `claude -p` · Agent SDK · 代理框架（Buzz 等） | 只需安装。识别为无人值守并追加"用户不在旁边"段落。例外：`claude -p --bare` 会跳过钩子、插件和 CLAUDE.md，请把 `hooks/always-on.md` 直接贴进系统提示 |
-| 无法安装插件的纯无头环境（独立 `CLAUDE_CONFIG_DIR`、CI） | 把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（[常见问题](#常见问题)） |
-| Cowork · claude.ai/code | 不使用终端安装的插件。请在 claude.ai 账户设置中启用 |
 
 <details>
 <summary>可选：把规则放到别处（`/fable-setup`）</summary>

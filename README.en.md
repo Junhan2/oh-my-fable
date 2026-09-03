@@ -2,7 +2,7 @@
 
 # oh-my-fable
 
-**Get the best out of Claude Fable 5.1 in Claude Code. Set up once, send an improved request every time.**
+**Get the best out of Claude Fable 5.1 in Claude Code. Install and forget: terminal, headless, or subagent, every session gets the rules that fit it.**
 
 Output quality goes up on Opus 5 and Sonnet 5 too.
 
@@ -30,6 +30,13 @@ Context: src/components/LoginButton.tsx, console error "TypeError: onSubmit is n
 Scope: this button and its handler only. Do not touch the signup form or other errors; report them as follow-ups
 Done: reproduce the click and confirm navigation to /dashboard, 0 console errors, list of changed files attached
 ```
+
+**Install it, and the rest is automatic.**
+
+- **Detects how you work, per session** · interactive in the terminal or IDE; unattended under `claude -p`, the Agent SDK, or an agent harness, where it adds the "the user is not watching" paragraph. Mixing both needs no switching.
+- **Covers subagents** · subagents started with the Agent tool (including Explore and Plan, which never read rules files) get a short version of the rules.
+- **Creates no files** · CLAUDE.md and rules files stay untouched; the hook injects the rules per session. Updating is just updating the plugin, uninstalling leaves nothing behind.
+- **No questions** · setup is optional. The only thing you confirm is the plugin install.
 
 Two skills that apply the fixes from Anthropic's official [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1). The prompt blocks are used verbatim.
 
@@ -86,6 +93,15 @@ Open a new session, or `/reload-plugins` then `/clear`. Nothing to configure. `/
 
 </details>
 
+**60-second path: what about my environment?**
+
+| Environment | What to do |
+|---|---|
+| Terminal · desktop app · IDE extension | install only. Detected as interactive |
+| `claude -p` · Agent SDK · agent harnesses (Buzz etc.) | install only. Detected as unattended, the "not watching" paragraph is added. Exception: `claude -p --bare` skips hooks, plugins and CLAUDE.md, so paste `hooks/always-on.md` into your system prompt |
+| Headless-only environments where the plugin cannot be installed (separate `CLAUDE_CONFIG_DIR`, CI) | copy `hooks/rules-file-unattended.md` to that environment's `rules/oh-my-fable.md` ([FAQ](#faq)) |
+| Cowork · claude.ai/code | the terminal install is not used there. Enable the plugin in your claude.ai account settings |
+
 ## Usage: as usual
 
 Just ask as you normally do; the always-on rules are already active. When a request is short or vague, prefix it:
@@ -103,15 +119,6 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 | 1 | **You** | `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | registers the marketplace, installs the plugin, says "applies from the next session; for now type `/reload-plugins` then `/clear`" |
 | 3 | You | work as usual. `/fable-prompt fix this` for vague requests, `/fable-status` when curious |
-
-**60-second path: what about my environment?**
-
-| Environment | What to do |
-|---|---|
-| Terminal · desktop app · IDE extension | install only. Detected as interactive |
-| `claude -p` · Agent SDK · agent harnesses (Buzz etc.) | install only. Detected as unattended, the "not watching" paragraph is added. Exception: `claude -p --bare` skips hooks, plugins and CLAUDE.md, so paste `hooks/always-on.md` into your system prompt |
-| Headless-only environments where the plugin cannot be installed (separate `CLAUDE_CONFIG_DIR`, CI) | copy `hooks/rules-file-unattended.md` to that environment's `rules/oh-my-fable.md` ([FAQ](#faq)) |
-| Cowork · claude.ai/code | the terminal install is not used there. Enable the plugin in your claude.ai account settings |
 
 <details>
 <summary>Optional: move the rules somewhere else (`/fable-setup`)</summary>
