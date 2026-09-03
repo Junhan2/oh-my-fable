@@ -54,10 +54,10 @@
 
 | 组成 | 何时 | 做什么 |
 |---|---|---|
-| **常驻规则** | 安装后自动 | 每次会话开始时按英文原文加载 Fable 5.1 指南的常驻规则（自主执行、范围限制、局部编辑、进度汇报、排版、批量工具调用）。基础规则放在自动加载的规则文件中，钩子每次会话追加无人值守段落。用 Agent 工具启动的子代理由钩子单独注入精简版 |
+| **常驻规则** | 安装后自动，不写文件 | 每次会话开始时钩子按英文原文注入 Fable 5.1 指南的常驻规则（自主执行、范围限制、局部编辑、进度汇报、排版、批量工具调用）。无头和 SDK 会话自动追加"用户不在旁边"段落，用 Agent 工具启动的子代理另收精简版。不创建规则文件，也不改 CLAUDE.md |
 | `/fable-prompt` | 请求简短或模糊时 | 展示补全了目标、上下文、范围、完成标准和 effort 的请求并直接执行。加 `只要提示词` 则只展示 |
 | `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
-| `/fable-setup` | 安装后一次（由 Claude 代为执行） | 三个简短问题决定规则位置（钩子 / 独立规则文件 / CLAUDE.md）、使用方式（交互式 / 无人值守）、effort 默认值（high / medium），并列出与现有规则的冲突 |
+| `/fable-setup` | 可选 | 只在想改默认值时：把规则放进文件（代理团队用）或 CLAUDE.md 段落、固定一种模式、写入 effort 默认值、检查 CLAUDE.md 中的冲突规则 |
 
 Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：工作中话更少，可能每轮只调用一个工具，小改动也倾向重写整个文件，low effort 下凭记忆作答而不搜索。官方指南是针对这些变化的"症状对处方"清单，本插件替你自动应用。
 
@@ -69,7 +69,7 @@ Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：�
 安装 https://github.com/Junhan2/oh-my-fable
 ```
 
-Claude 会安装插件，问一次（三个选项），并按答案完成设置。下次打开 Claude Code 时自动生效，你不需要输入任何命令。想在当前会话立即使用，先输入 `/reload-plugins`（加载刚安装的插件），再输入 `/clear`（注入规则），每行一个。
+Claude 装好就结束了。没有提问，也没有配置文件。下次打开 Claude Code 时自动生效。想在当前会话立即使用，先输入 `/reload-plugins`（加载刚安装的插件），再输入 `/clear`（注入规则），每行一个。
 
 <details>
 <summary>手动安装</summary>
@@ -78,7 +78,7 @@ Claude 会安装插件，问一次（三个选项），并按答案完成设置�
 claude plugin marketplace add Junhan2/oh-my-fable
 claude plugin install oh-my-fable@oh-my-fable
 ```
-新开会话，或 `/reload-plugins` 后 `/clear`。然后 `/fable-setup`（不提问用默认值：`/fable-setup auto`）。
+新开会话，或 `/reload-plugins` 后 `/clear`。无需配置。只在想改默认值时运行 `/fable-setup`。
 
 > **要求** Claude Code 2.1.258 或更新。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。
 >
@@ -101,15 +101,24 @@ claude plugin install oh-my-fable@oh-my-fable
 | 步骤 | 谁 | 做什么 |
 |---|---|---|
 | 1 | **你** | `安装 https://github.com/Junhan2/oh-my-fable` |
-| 2 | Claude | 注册市场、安装插件、确认安装 |
-| 3 | Claude | 问一次：规则位置 · 使用方式（推荐自动检测） · effort（推荐 medium）（每项一行选项，标注推荐）。在项目内会再问范围，有冲突会问是否修复 |
-| 4 | Claude | 按答案写入配置（以及所选的规则文件或 CLAUDE.md 段落），用表格列出与现有规则的冲突 |
-| 5 | Claude | 提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
-| 6 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
+| 2 | Claude | 注册市场、安装插件，提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
+| 3 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个`，想看状态用 `/fable-status` |
+
+**60 秒路径：我的环境怎么办？**
+
+| 环境 | 要做的事 |
+|---|---|
+| 终端 · 桌面应用 · IDE 扩展 | 只需安装。识别为交互式 |
+| `claude -p` · Agent SDK · 代理框架（Buzz 等） | 只需安装。识别为无人值守并追加"用户不在旁边"段落。例外：`claude -p --bare` 会跳过钩子、插件和 CLAUDE.md，请把 `hooks/always-on.md` 直接贴进系统提示 |
+| 无法安装插件的纯无头环境（独立 `CLAUDE_CONFIG_DIR`、CI） | 把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（[常见问题](#常见问题)） |
+| Cowork · claude.ai/code | 不使用终端安装的插件。请在 claude.ai 账户设置中启用 |
+
+<details>
+<summary>可选：把规则放到别处（`/fable-setup`）</summary>
 
 **规则的三种位置**（问题 1）
 
-| | 规则文件 + 钩子（默认） | 仅钩子 | CLAUDE.md 段落 |
+| | 仅钩子（默认） | 规则文件 + 钩子（代理团队用） | CLAUDE.md 段落 |
 |---|---|---|---|
 | 在哪里 | 基础规则在 `~/.claude/rules/oh-my-fable.md`（自动加载），无人值守段落由钩子每次会话追加 | 插件内部（`hooks/always-on.md`） | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v1 -->` 段落 |
 | 文件改动 | 一个规则文件，不碰 CLAUDE.md | 无 | 编辑 CLAUDE.md，需批准（auto 模式不可） |
@@ -124,15 +133,16 @@ claude plugin install oh-my-fable@oh-my-fable
 - **使用方式默认自动检测。** 在终端或 IDE 打开的会话为交互式；以无头方式（`claude -p`）、Agent SDK 或代理框架启动的会话为无人值守，按 Claude Code 设置的 `CLAUDE_CODE_ENTRYPOINT` 值逐会话判断。混用交互式和无头也无需切换。想固定为一种，在问题 2 选"交互式"或"无人值守"。无人值守会加上"用户没有在看"段落，且只能在全局配置中开启，仓库内的配置文件无法开启，以防克隆的仓库把你的代理切换为无人值守。自动检测在两种含钩子的方式下都有效；只有 CLAUDE.md 段落是静态文本，需选定一种模式。
 - **effort**：推荐 `medium`（以更低成本达到 Fable 5 水平，困难任务在该会话用 `/effort high` 提高）。Anthropic 指南默认为 `high`，优先质量可选它。写入设置中的 `effortLevel`，可能出现批准提示。
 
+</details>
+
 <details>
 <summary>AI 执行的步骤（Claude 读取本 README 后执行）</summary>
 
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 从 `~/.claude/plugins/installed_plugins.json` 读取 `oh-my-fable@oh-my-fable` 的 `installPath`
-4. 读取 `<installPath>/skills/fable-setup/SKILL.md` 并**在本会话中立即**按其步骤执行（`${CLAUDE_PLUGIN_ROOT}` 即 `<installPath>`）。按该文件要求把问题合并为一次提问
-5. 完成后只告诉用户："安装和设置已完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable-prompt <请求>` 发送。"
-6. 不做其他说明。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入
+4. 确认安装后只告诉用户："安装完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable-prompt <请求>` 发送。"
+5. 不做其他说明，也不运行 `/fable-setup`（它是可选的，默认值无需任何配置即可工作）。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入
 
 </details>
 
@@ -144,7 +154,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | **1. 每次请求** | 目标、上下文、范围、完成标准、effort、"只诊断不修改"的例外、时效性问题的搜索提示、长输出提示 | 由 `/fable-prompt` 补全 |
 | **2. 常驻规则** | 自主执行、范围与测试限制、局部编辑、进度汇报、排版规则、批量工具调用 | 由插件钩子在会话开始时注入 |
-| **3. 设置项** | 交互式/无人值守模式、effort 默认值、thinking.display、对话历史规则、子代理、视觉裁剪 | `/fable-setup` 写入模式和 effort，其余以清单提示 |
+| **3. 设置项** | 交互式/无人值守模式、effort 默认值、thinking.display、对话历史规则、子代理、视觉裁剪 | 模式自动检测；只在想改时由 `/fable-setup` 写入模式和 effort，其余以清单提示 |
 
 ## 第 1 层 · 每次请求
 
@@ -167,7 +177,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 第 2 层 · 常驻规则
 
-插件的 SessionStart 钩子在每次会话开始时按英文原文加载以下模块（文件 `hooks/always-on.md`）。不修改 CLAUDE.md，且无论用户语言如何都是英文。默认是交互式模式，模块 A 的第一段（"用户没有在看"）被省略，`/fable-setup unattended` 可开启。
+插件的 SessionStart 钩子在每次会话开始时按英文原文加载以下模块（文件 `hooks/always-on.md`）。不修改 CLAUDE.md，且无论用户语言如何都是英文。模块 A 的第一段（"用户没有在看"）只在无头和 SDK 会话中自动加入，终端和 IDE 中省略；`/fable-setup unattended` 可固定开启。
 
 | 模块 | 一句话要点 | 注意 |
 |---|---|---|
@@ -209,7 +219,7 @@ claude plugin install oh-my-fable@oh-my-fable
 `/fable-setup` 会用表格列出。意思相同标为"已有"；意思相反（禁止排版、最后统一汇报）则给出替换文本。修改由你自己完成，因为 Claude Code 会阻止 AI 修改自己的 CLAUDE.md。
 
 **我想把规则放在 CLAUDE.md 以外的地方。**
-在 `/fable-setup` 的第一个问题中选择：钩子（无文件）、独立规则文件（`~/.claude/rules/oh-my-fable.md`，自动加载）或 CLAUDE.md 段落。比较表见[新手流程](#新手流程)。
+默认就是这样。规则只存在于插件内部，由钩子每次会话注入，所以既不创建规则文件也不改 CLAUDE.md。如果确实想要文件（使用代理团队，或与队友共享同一份文件），在 `/fable-setup` 中选择规则文件或 CLAUDE.md 段落。比较表见[新手流程](#新手流程)中的"可选"。
 
 **Fable 5.1 以外的模型能用吗？**
 能。四字段请求结构和工作规则（范围限制、局部编辑、进度汇报、批量工具调用）与模型无关，都有收益。排版规则、自主执行模块和 effort 建议值是在 Fable 5.1 上测得的，在其他模型上效果可能较小，但无害。

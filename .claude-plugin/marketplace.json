@@ -3,12 +3,12 @@
   "owner": {
     "name": "Junhan2"
   },
-  "description": "Claude Fable 5.1 prompting guide as two skills: one-time environment setup and per-request prompt improvement.",
+  "description": "Claude Fable 5.1 prompting guide as a plugin: install and forget. Always-on rules by hook, per-request prompt improvement, optional setup.",
   "plugins": [
     {
       "name": "oh-my-fable",
       "source": ".",
-      "description": "Always-on Fable 5.1 prompting rules via SessionStart hook; /fable-prompt rewrites rough requests; /fable-setup audits and switches interactive/unattended mode."
+      "description": "Always-on Fable 5.1 prompting rules via SessionStart and SubagentStart hooks, unattended sessions detected automatically; /fable-prompt rewrites rough requests; /fable-status shows what is in effect; /fable-setup is optional."
     }
   ]
 }

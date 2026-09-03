@@ -1,17 +1,17 @@
 ---
 name: fable-setup
-description: Optional one-time setup for Claude Fable 5.1 in Claude Code. The plugin already injects the always-on prompting rules at every session start through a hook, so nothing needs to be edited for the defaults. Use /fable-setup to choose where the rules live (hook, a separate rules file, or a CLAUDE.md section), switch interactive/unattended mode, pick the effort default, and audit CLAUDE.md for conflicting rules. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "unattended mode", "rules file".
+description: Optional. The plugin works with no setup (hook delivery, auto-detected mode, subagents covered). Use /fable-setup only to change the defaults - keep the rules in a rules file (agent teams) or a CLAUDE.md section, pin interactive/unattended mode, write the effort default - or to audit CLAUDE.md for conflicting rules. To see what is in effect, use /fable-status instead. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "unattended mode", "rules file".
 ---
 # fable-setup · choose delivery, mode, effort; audit conflicts
 
 Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md` for unattended mode).
 Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable-prompt/references/prompt-blocks.md`.
 
-Three layers: per request → `/fable-prompt`; always-on rules → delivered by this skill's choice (hook by
-default); settings → mode, effort, and an admin checklist.
+Three layers: per request → `/fable-prompt`; always-on rules → hook by default, this skill can move them to a
+file; settings → mode, effort, and an admin checklist. Nothing here is required: the defaults work without any file.
 
 ## Arguments (skip the matching question)
-`auto` (no questions, keep defaults) · `hook` (= rules file + hook) | `hook-only` | `claude-md` (delivery) ·
+`auto` (no questions, keep defaults) · `hook` (= hook only, the default) | `rules-file` (rules file + hook) | `claude-md` (delivery; `hook-only` is accepted as an alias of `hook`) ·
 `auto` | `interactive` | `unattended` (mode) · `medium` | `high` (effort) · `refresh` (re-copy the rules file only, no
 questions, see Step 7) · `remove` (undo everything, see Step 6). To see what is in effect without changing anything, use
 `/fable-status`.
@@ -27,8 +27,8 @@ one-line options and the recommended one marked. No preamble, no explanation par
 steps for the user, so prefer asking over leaving something for them to do by hand.
 
 1. **Where should the rules live?**
-   - `Rules file + hook (recommended)` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded, reaches regular subagents and teams); the hook adds the unattended paragraph per session and a short version for Explore/Plan subagents
-   - `Hook only` · nothing written; the hook carries everything for the main session and sends the short version to every subagent (agent teams: unverified)
+   - `Hook only (default, recommended)` · nothing written; the hook carries everything for the main session and sends the short version to every subagent. Always current after a plugin update, nothing to clean up on uninstall
+   - `Rules file + hook` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded; per the docs agent teammates load it, the hook does not reach them in a verified way); the hook adds the unattended paragraph per session and the short version for Explore/Plan subagents. Pick this for agent teams
    - `CLAUDE.md section` · inside your CLAUDE.md, static, needs edit approval (not in auto mode)
 2. **How do you mostly work?**
    - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
@@ -60,14 +60,16 @@ If the write is refused, print the JSON and path; defaults apply without a file.
 regardless of the user's language. The rules file carries the base rules only; the unattended paragraph is always
 added by the hook per session, so `auto` mode works with the default delivery. Only the CLAUDE.md section is static.
 
-- `hook` (rules file + hook, default): copy `${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim to
+- `hook` (hook only, default): write nothing besides the config; make sure no `rules/oh-my-fable.md` with the marker is left
+  behind (delete one written earlier by this skill; never touch a file without the marker). Main session and every subagent
+  get the rules from the hook.
+- `rules-file` (rules file + hook): copy `${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim to
   `~/.claude/rules/oh-my-fable.md` (project scope: `./.claude/rules/oh-my-fable.md`). It starts with the marker
   `<!-- oh-my-fable:rules v1` which tells the hook to add only the unattended paragraph per session. Claude Code
   loads `rules/*.md` for the main session and for subagents and teams, so CLAUDE.md is not edited. Keep
   `"delivery": "hook"` in the config. If the write is refused (auto permission mode may block instruction files),
   say so in one line: the hook then carries everything for the main session, and the user can create the file by
   hand from the shown path. When the plugin ships a newer file, the hook says so at session start; `/fable-setup refresh` updates the copy.
-- `hook-only`: write nothing; set `"delivery": "hook"` and make sure no rules file exists. Main session only.
 - `claude-md`: insert or replace between `<!-- oh-my-fable:start v1 -->` and `<!-- oh-my-fable:end -->` in the
   chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
   with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.

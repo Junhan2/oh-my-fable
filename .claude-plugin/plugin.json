@@ -1,7 +1,7 @@
 {
   "name": "oh-my-fable",
-  "version": "1.7.0",
-  "description": "Get the best out of Claude Fable 5.1 in Claude Code (output quality goes up on Opus 5 and Sonnet 5 too): always-on prompting rules load at every session start, /fable-prompt turns a rough request into a guide-aligned prompt, /fable-setup audits your environment.",
+  "version": "2.0.0",
+  "description": "Get the best out of Claude Fable 5.1 in Claude Code (output quality goes up on Opus 5 and Sonnet 5 too): install and forget: the always-on prompting rules load at every session start and reach subagents, unattended sessions are detected automatically, /fable-prompt turns a rough request into a guide-aligned prompt, /fable-status shows what is in effect, /fable-setup is optional.",
   "author": {
     "name": "Junhan2",
     "url": "https://github.com/Junhan2"
