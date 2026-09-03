@@ -1,6 +1,7 @@
 # GitHub Pages (Jekyll) settings for https://junhan2.github.io/oh-my-fable
 title: oh-my-fable
-description: "Claude Fable 5.1 프롬프팅 가이드를 Claude Code 플러그인으로. 한 번 세팅하고 매번 개선된 요청으로. Opus 5, Sonnet 5에서도 결과 품질이 올라갑니다. Claude Code plugin that applies Anthropic's Fable 5.1 prompting guide automatically."
+tagline: "Claude Fable 5.1 프롬프팅 가이드를 Claude Code 플러그인으로"
+description: "Anthropic의 Fable 5.1 프롬프팅 가이드를 자동 적용하는 Claude Code 플러그인. 한 번 세팅하고 매번 개선된 요청으로. Opus 5, Sonnet 5에서도 결과 품질이 올라갑니다. Claude Code plugin that applies Anthropic's Fable 5.1 prompting guide automatically."
 url: "https://junhan2.github.io"
 baseurl: "/oh-my-fable"
 lang: ko
