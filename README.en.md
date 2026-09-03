@@ -97,7 +97,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 |---|---|---|
 | 1 | **You** | `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | registers the marketplace, installs the plugin, verifies |
-| 3 | Claude | one question: where the rules live · how you work · effort (medium recommended) (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
+| 3 | Claude | one question: where the rules live · how you work (auto-detect recommended) · effort (medium recommended) (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
 | 4 | Claude | writes the config (and, if chosen, the rules file or CLAUDE.md section), shows conflicts with existing rules as a table |
 | 5 | Claude | says "applies from the next session; for now type `/reload-plugins` then `/clear`" |
 | 6 | You | work as usual. `/fable-prompt fix this` for vague requests |
@@ -115,7 +115,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 
 Only one is active at a time. If you pick a file option, or a CLAUDE.md section already exists, the hook goes silent by itself (no double injection after upgrading from an older version). If you use subagents or agent teams a lot, pick the rules file.
 
-- **Unattended sessions** (headless, CI, agents): pick "Unattended" in question 2. Adds the "the user is not watching" paragraph. This mode can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended.
+- **The mode is auto-detected by default.** A session opened in the terminal or IDE runs interactive; one started headless (`claude -p`), through the Agent SDK, or by an agent harness runs unattended, decided per session from the `CLAUDE_CODE_ENTRYPOINT` value Claude Code sets. Mixing interactive and headless use needs no switching. To pin one mode, pick "Interactive" or "Unattended" in question 2. Unattended adds the "the user is not watching" paragraph and can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended. Auto-detection works only with hook delivery; a rules file or CLAUDE.md section is static text, so pick one mode for those.
 - **Effort**: `medium` recommended (Fable 5 quality at lower cost; raise hard tasks with `/effort high` in that session). Anthropic's guide default is `high`, pick it if quality comes first. Written to `effortLevel` in settings.json; an approval prompt may appear.
 
 <details>

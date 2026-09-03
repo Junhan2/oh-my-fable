@@ -1,6 +1,6 @@
 {
   "name": "oh-my-fable",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Get the best out of Claude Fable 5.1 in Claude Code: the always-on prompting rules load at every session start, /fable-prompt turns a rough request into a guide-aligned prompt, /fable-setup audits your environment and switches modes.",
   "author": {
     "name": "Junhan2",

@@ -12,7 +12,7 @@ default); settings → mode, effort, and an admin checklist.
 
 ## Arguments (skip the matching question)
 `auto` (no questions, keep defaults) · `hook` | `rules-file` | `claude-md` (delivery) ·
-`interactive` | `unattended` (mode) · `medium` | `high` (effort) · `remove` (undo everything, see Step 6).
+`auto` | `interactive` | `unattended` (mode) · `medium` | `high` (effort) · `remove` (undo everything, see Step 6).
 
 ## Step 1 · Detect (one batch of reads, silent)
 `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `./.claude/settings.json`,
@@ -29,8 +29,9 @@ steps for the user, so prefer asking over leaving something for them to do by ha
    - `Separate rules file` · `~/.claude/rules/oh-my-fable.md`, auto-loaded, editable, also reaches subagents and teams
    - `CLAUDE.md section` · inside your CLAUDE.md, needs edit approval (not in auto mode)
 2. **How do you mostly work?**
-   - `Interactive (recommended)` · you watch and steer
-   - `Unattended` · headless, CI, agents; adds "the user is not watching"
+   - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
+   - `Interactive` · always as if you watch and steer
+   - `Unattended` · always adds "the user is not watching", even in the terminal
 3. **Effort default?**
    - `medium (recommended)` · Fable 5 quality at lower cost; raise per task with `/effort high`
    - `high` · Anthropic's guide default
@@ -49,12 +50,13 @@ Ask in the user's language.
 ## Step 3 · Apply
 **Config** (always, global `~/.claude/oh-my-fable.json` or project `./.claude/oh-my-fable.json`):
 ```json
-{"enabled": true, "mode": "interactive", "delivery": "hook"}
+{"enabled": true, "mode": "auto", "delivery": "hook"}
 ```
 If the write is refused, print the JSON and path; defaults apply without a file.
 
 **Rules text** = `always-on.md`, with `autonomy-unattended.md` inserted after the heading when unattended. English
-regardless of the user's language.
+regardless of the user's language. Note: only the hook delivery can detect the mode per session (`auto`); a rules
+file or CLAUDE.md section is static, so for those ask the user to pick interactive or unattended explicitly.
 
 - `hook`: nothing else to write.
 - `rules-file`: write the rules text to `~/.claude/rules/oh-my-fable.md` (project: `./.claude/rules/oh-my-fable.md`).
