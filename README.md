@@ -80,6 +80,8 @@ claude plugin install oh-my-fable@oh-my-fable
 새 세션을 열거나 `/reload-plugins` 후 `/clear`. 그다음 `/fable-setup` (질문 없이 기본값은 `/fable-setup auto`).
 
 > **요구 사항** Claude Code 2.1.258 이상. **Windows는 Git for Windows(Git Bash) 필수**: 훅이 bash로 실행됩니다. 설치 뒤 훅 오류가 뜨면 이 문제입니다.
+>
+> **자동 갱신** 서드파티 마켓플레이스는 Claude Code가 자동 갱신을 기본으로 꺼 둡니다. 새 버전을 자동으로 받으려면 한 번만: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. 아니면 가끔 `claude plugin update oh-my-fable@oh-my-fable`.
 
 </details>
 

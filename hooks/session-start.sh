@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # oh-my-fable SessionStart hook: emit the always-on Fable 5.1 rules as session context.
 #
-# Config (optional). Global: $HOME/.claude/oh-my-fable.json  Project: $CLAUDE_PROJECT_DIR/.claude/oh-my-fable.json
+# Config (optional). Global: $CLAUDE_CONFIG_DIR/oh-my-fable.json (default ~/.claude)  Project: $CLAUDE_PROJECT_DIR/.claude/oh-my-fable.json
 #   {"enabled": true, "mode": "auto" | "interactive" | "unattended", "delivery": "hook" | "rules-file" | "claude-md"}
 # mode "auto" (default): unattended when Claude Code was started through the SDK or headless mode
 # (CLAUDE_CODE_ENTRYPOINT is sdk-cli, sdk-ts, or sdk-py; `claude -p`, Agent SDK apps, and agent harnesses set
@@ -20,7 +20,8 @@
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ="${CLAUDE_PROJECT_DIR:-.}"
-GLOBAL="$HOME/.claude/oh-my-fable.json"
+CFG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"   # Claude Code moves settings, rules and plugins with CLAUDE_CONFIG_DIR
+GLOBAL="$CFG/oh-my-fable.json"
 LOCAL="$PROJ/.claude/oh-my-fable.json"
 
 # read a JSON string/bool value for key $2 from file $1, ignoring whitespace; empty if absent
@@ -40,7 +41,7 @@ d="$(val "$GLOBAL" delivery)"; [ -n "$d" ] && DELIVERY="$d"
 [ "$DELIVERY" = hook ] || exit 0
 
 # CLAUDE.md section (static, user-managed): stay silent.
-for f in "$HOME/.claude/CLAUDE.md" "$PROJ/CLAUDE.md" "$PROJ/.claude/CLAUDE.md"; do
+for f in "$CFG/CLAUDE.md" "$PROJ/CLAUDE.md" "$PROJ/.claude/CLAUDE.md"; do
   [ -f "$f" ] && grep -q 'oh-my-fable:start' "$f" && exit 0
 done
 
@@ -50,7 +51,7 @@ done
 #    paragraph when this session is unattended (hybrid delivery, the default since 1.6.0).
 #  - any other rules file with that name (user-managed, static): stay silent to avoid duplicates.
 RULES=""
-for f in "$PROJ/.claude/rules/oh-my-fable.md" "$HOME/.claude/rules/oh-my-fable.md"; do
+for f in "$PROJ/.claude/rules/oh-my-fable.md" "$CFG/rules/oh-my-fable.md"; do
   [ -f "$f" ] && { RULES="$f"; break; }
 done
 if [ -n "$RULES" ]; then

@@ -80,6 +80,8 @@ claude plugin install oh-my-fable@oh-my-fable
 新开会话，或 `/reload-plugins` 后 `/clear`。然后 `/fable-setup`（不提问用默认值：`/fable-setup auto`）。
 
 > **要求** Claude Code 2.1.258 或更新。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。
+>
+> **自动更新** Claude Code 对第三方市场默认关闭自动更新。要自动收到新版本，只需一次：`/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update。或者不定期运行 `claude plugin update oh-my-fable@oh-my-fable`。
 
 </details>
 

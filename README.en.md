@@ -80,6 +80,8 @@ claude plugin install oh-my-fable@oh-my-fable
 Open a new session, or `/reload-plugins` then `/clear`. Then `/fable-setup` (defaults without questions: `/fable-setup auto`).
 
 > **Requirements** Claude Code 2.1.258 or newer. **Windows needs Git for Windows (Git Bash)**: the hook runs through bash. A hook error right after install means this.
+>
+> **Auto-update** Claude Code keeps auto-update off for third-party marketplaces. To receive new versions automatically, once: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. Or run `claude plugin update oh-my-fable@oh-my-fable` now and then.
 
 </details>
 
