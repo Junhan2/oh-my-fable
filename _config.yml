@@ -6,7 +6,7 @@ url: "https://junhan2.github.io"
 baseurl: "/oh-my-fable"
 lang: ko
 author: Junhan2
-theme: jekyll-theme-minimal
+theme: jekyll-theme-primer
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
