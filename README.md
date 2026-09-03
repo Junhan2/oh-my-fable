@@ -97,7 +97,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **사용자** | `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 마켓플레이스 등록, 플러그인 설치, 설치 확인 |
-| 3 | Claude | 질문 한 번: 규칙 위치 · 사용 방식 · effort (각 한 줄 선택지, 추천 표시). 프로젝트 안이면 범위, 충돌이 있으면 고칠지 한 번 더 |
+| 3 | Claude | 질문 한 번: 규칙 위치 · 사용 방식 · effort(추천 medium) (각 한 줄 선택지, 추천 표시). 프로젝트 안이면 범위, 충돌이 있으면 고칠지 한 번 더 |
 | 4 | Claude | 답에 맞게 설정 파일(과 선택한 경우 규칙 파일 또는 CLAUDE.md 구간)을 쓰고, 기존 규칙과의 충돌을 표로 보여 줌 |
 | 5 | Claude | "다음 세션부터 자동 적용. 지금 쓰려면 `/reload-plugins` 다음 `/clear`" 안내 |
 | 6 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘` |
@@ -116,7 +116,7 @@ claude plugin install oh-my-fable@oh-my-fable
 셋 중 하나만 활성화됩니다. 파일 방식을 고르거나 CLAUDE.md에 구간이 이미 있으면 훅은 스스로 조용해집니다(구판에서 올라온 경우도 이중 주입 없음). 서브에이전트나 에이전트 팀을 많이 쓰면 규칙 파일 방식을 고르세요.
 
 - **무인 세션**(헤드리스, CI, 에이전트)이면 사용 방식에서 "무인"을 고르세요. "사용자가 지켜보고 있지 않다" 문단이 추가됩니다. 이 모드는 글로벌 설정에서만 켜지며, 저장소 안의 설정 파일로는 켤 수 없습니다(클론한 저장소가 에이전트를 무인으로 바꾸는 것을 막기 위해).
-- **effort**는 가이드 기본 `high`, 비용을 아끼려면 `medium`(Fable 5 수준). settings.json의 `effortLevel`에 쓰며 승인 프롬프트가 뜰 수 있습니다.
+- **effort**는 `medium` 추천(Fable 5 수준 품질을 더 싸게, 어려운 작업만 그 세션에서 `/effort high`). Anthropic 가이드의 기본값은 `high`이니 품질을 우선하면 그것을 고르세요. settings.json의 `effortLevel`에 쓰며 승인 프롬프트가 뜰 수 있습니다.
 
 <details>
 <summary>AI가 따르는 절차 (Claude가 이 README를 읽고 실행)</summary>
@@ -155,7 +155,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 - **문제를 설명만 할 때** · "진단만 하고 고치지 마". 가이드의 명시적 예외.
 - **최신 정보가 필요할 때** · effort를 high 이상으로 두거나 "사용자가 쓴 이름 그대로 한 번은 검색해" (블록 H).
-- **effort** · 기본 `high`. 일상 편집은 `medium`. `low`는 검색을 건너뛸 수 있음. `xhigh`/`max`로 긴 문서를 시키면 초안을 두 번 써서 느려지니 장문 안내문(블록 G)을 붙이고 `max_tokens`를 넉넉히.
+- **effort** · 추천 `medium`(가이드 기본은 `high`). 어려운 작업만 `/effort high`. `low`는 검색을 건너뛸 수 있음. `xhigh`/`max`로 긴 문서를 시키면 초안을 두 번 써서 느려지니 장문 안내문(블록 G)을 붙이고 `max_tokens`를 넉넉히.
 - **글이 빽빽할 때** · `Please remove all mannered prose.`
 - **자료 요약** · 올바른 답 예시 1건(블록 J)을 같이 줌.
 
@@ -175,7 +175,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ## 3층 · 설정값
 
 - 모드 · `~/.claude/oh-my-fable.json` 의 `{"enabled": true, "mode": "interactive" | "unattended"}`. 프로젝트의 `.claude/oh-my-fable.json` 이 있으면 그것이 우선. `/fable-setup` 이 대신 써 줍니다.
-- `CLAUDE_CODE_EFFORT_LEVEL` · 기본 `high` 권장. 모델마다 단계의 실제 사고량이 달라 Fable 5 값을 그대로 옮기지 말 것.
+- effort · 설정 파일 `effortLevel`(전역) 또는 `modelSettings.<model>.effortLevel`(모델별). 환경 변수 `CLAUDE_CODE_EFFORT_LEVEL`이 있으면 그것이 이기니 모델별 값을 쓰려면 환경 변수를 비울 것. 추천 `medium`, 가이드 기본 `high`. 모델마다 단계의 실제 사고량이 달라 Fable 5 값을 그대로 옮기지 말 것.
 - API 직접 연동 · `thinking.display: "updates"`를 켜야 진행 메모가 화면에 옴. 대화 이력은 덧붙이기만(thinking 블록 포함), 턴마다 넣는 알림은 turn-scoped system message로. 압축은 서버 압축 또는 블록 K.
 - 서브에이전트 · 시작 도구는 즉시 반환, 결과는 나중 메시지로.
 - 비전 · 차트·표는 crop-and-zoom 도구를 붙이면 대부분의 이득.

@@ -12,7 +12,7 @@ default); settings → mode, effort, and an admin checklist.
 
 ## Arguments (skip the matching question)
 `auto` (no questions, keep defaults) · `hook` | `rules-file` | `claude-md` (delivery) ·
-`interactive` | `unattended` (mode) · `high` | `medium` (effort) · `remove` (undo everything, see Step 6).
+`interactive` | `unattended` (mode) · `medium` | `high` (effort) · `remove` (undo everything, see Step 6).
 
 ## Step 1 · Detect (one batch of reads, silent)
 `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `./.claude/settings.json`,
@@ -32,8 +32,8 @@ steps for the user, so prefer asking over leaving something for them to do by ha
    - `Interactive (recommended)` · you watch and steer
    - `Unattended` · headless, CI, agents; adds "the user is not watching"
 3. **Effort default?**
-   - `high (recommended)` · guide default
-   - `medium` · Fable 5 quality at lower cost
+   - `medium (recommended)` · Fable 5 quality at lower cost; raise per task with `/effort high`
+   - `high` · Anthropic's guide default
    - `keep current` · shown with the current value from Step 1
 
 Ask afterwards, only when relevant, one more call:

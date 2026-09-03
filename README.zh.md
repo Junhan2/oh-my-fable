@@ -97,7 +97,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **你** | `安装 https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | 注册市场、安装插件、确认安装 |
-| 3 | Claude | 问一次：规则位置 · 使用方式 · effort（每项一行选项，标注推荐）。在项目内会再问范围，有冲突会问是否修复 |
+| 3 | Claude | 问一次：规则位置 · 使用方式 · effort（推荐 medium）（每项一行选项，标注推荐）。在项目内会再问范围，有冲突会问是否修复 |
 | 4 | Claude | 按答案写入配置（以及所选的规则文件或 CLAUDE.md 段落），用表格列出与现有规则的冲突 |
 | 5 | Claude | 提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
 | 6 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个` |
@@ -116,7 +116,7 @@ claude plugin install oh-my-fable@oh-my-fable
 同一时间只有一种生效。选择文件方式，或 CLAUDE.md 中已有段落时，钩子会自动静默（从旧版本升级也不会重复注入）。经常使用子代理或代理团队的话，请选规则文件。
 
 - **无人值守会话**（无头、CI、代理）：问题 2 选"无人值守"，会加上"用户没有在看"段落。该模式只能在全局配置中开启，仓库内的配置文件无法开启，以防克隆的仓库把你的代理切换为无人值守。
-- **effort**：指南默认 `high`；想省成本选 `medium`（Fable 5 水平）。写入设置中的 `effortLevel`，可能出现批准提示。
+- **effort**：推荐 `medium`（以更低成本达到 Fable 5 水平，困难任务在该会话用 `/effort high` 提高）。Anthropic 指南默认为 `high`，优先质量可选它。写入设置中的 `effortLevel`，可能出现批准提示。
 
 <details>
 <summary>AI 执行的步骤（Claude 读取本 README 后执行）</summary>
@@ -155,7 +155,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 - **只是描述问题时** · "只诊断，不修改"。指南的明确例外。
 - **需要最新信息时** · effort 保持 high 以上，或加上"按我写的名称至少搜索一次"（模块 H）。
-- **effort** · 默认 `high`。日常编辑 `medium`。`low` 可能跳过搜索。用 `xhigh`/`max` 生成长文档会打两遍草稿而变慢，请附上长输出提示（模块 G）并给 `max_tokens` 留足空间。
+- **effort** · 推荐 `medium`（指南默认 `high`）。仅困难任务 `/effort high`。`low` 可能跳过搜索。用 `xhigh`/`max` 生成长文档会打两遍草稿而变慢，请附上长输出提示（模块 G）并给 `max_tokens` 留足空间。
 - **文字过密** · `Please remove all mannered prose.`
 - **总结资料** · 附上一个正确示例（模块 J）。
 
@@ -175,7 +175,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ## 第 3 层 · 设置项
 
 - 模式 · `~/.claude/oh-my-fable.json` 内容为 `{"enabled": true, "mode": "interactive" | "unattended"}`。项目的 `.claude/oh-my-fable.json` 优先于全局文件。`/fable-setup` 会替你写入。
-- `CLAUDE_CODE_EFFORT_LEVEL` · 建议 `high`。不同模型同名级别的实际思考量不同，不要照搬 Fable 5 的值。
+- effort · 设置文件中的 `effortLevel`（全局）或 `modelSettings.<model>.effortLevel`（按模型）。环境变量 `CLAUDE_CODE_EFFORT_LEVEL` 优先于两者，要用按模型值请清除它。推荐 `medium`，指南默认 `high`。不同模型同名级别的实际思考量不同，不要照搬 Fable 5 的值。
 - 直接对接 API · 需开启 `thinking.display: "updates"`，否则进度备注不会到达界面。对话历史只追加（含 thinking 块），每轮提醒用 turn-scoped system message，压缩用服务端压缩或模块 K。
 - 子代理 · 启动工具立即返回，结果以后续消息送回。
 - 视觉 · 图表和表格配上裁剪放大工具即可获得大部分收益。

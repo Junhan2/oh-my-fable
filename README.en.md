@@ -97,7 +97,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 |---|---|---|
 | 1 | **You** | `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | registers the marketplace, installs the plugin, verifies |
-| 3 | Claude | one question: where the rules live · how you work · effort (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
+| 3 | Claude | one question: where the rules live · how you work · effort (medium recommended) (one-line options, recommendation marked). Plus scope inside a project, and whether to fix conflicts if any |
 | 4 | Claude | writes the config (and, if chosen, the rules file or CLAUDE.md section), shows conflicts with existing rules as a table |
 | 5 | Claude | says "applies from the next session; for now type `/reload-plugins` then `/clear`" |
 | 6 | You | work as usual. `/fable-prompt fix this` for vague requests |
@@ -116,7 +116,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 Only one is active at a time. If you pick a file option, or a CLAUDE.md section already exists, the hook goes silent by itself (no double injection after upgrading from an older version). If you use subagents or agent teams a lot, pick the rules file.
 
 - **Unattended sessions** (headless, CI, agents): pick "Unattended" in question 2. Adds the "the user is not watching" paragraph. This mode can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended.
-- **Effort**: `high` is the guide default; `medium` gives Fable 5 quality at lower cost. Written to `effortLevel` in settings.json; an approval prompt may appear.
+- **Effort**: `medium` recommended (Fable 5 quality at lower cost; raise hard tasks with `/effort high` in that session). Anthropic's guide default is `high`, pick it if quality comes first. Written to `effortLevel` in settings.json; an approval prompt may appear.
 
 <details>
 <summary>Procedure for the AI (Claude reads this README and executes it)</summary>
@@ -155,7 +155,7 @@ Add depending on the request:
 
 - **When you only describe a problem** · "assess only, do not fix". The guide's explicit exception.
 - **When fresh information matters** · keep effort at high or above, or add "search the name as I wrote it at least once" (block H).
-- **Effort** · default `high`. Routine edits `medium`. `low` may skip searches. Long documents at `xhigh`/`max` get drafted twice and slow down, so attach the long-output note (block G) and leave room in `max_tokens`.
+- **Effort** · `medium` recommended (guide default is `high`). Hard tasks only: `/effort high`. `low` may skip searches. Long documents at `xhigh`/`max` get drafted twice and slow down, so attach the long-output note (block G) and leave room in `max_tokens`.
 - **Dense prose** · `Please remove all mannered prose.`
 - **Summarising sources** · include one correct example (block J).
 
@@ -175,7 +175,7 @@ The plugin's SessionStart hook loads the blocks below verbatim in English at eve
 ## Layer 3 · settings
 
 - Mode · `~/.claude/oh-my-fable.json` with `{"enabled": true, "mode": "interactive" | "unattended"}`. A project `.claude/oh-my-fable.json` wins over the global file. `/fable-setup` writes it for you.
-- `CLAUDE_CODE_EFFORT_LEVEL` · recommend `high`. Effort names do not map to the same thinking across models, so do not carry Fable 5 values over unchanged.
+- Effort · `effortLevel` (global) or `modelSettings.<model>.effortLevel` (per model) in settings.json. An env var `CLAUDE_CODE_EFFORT_LEVEL` wins over both, so unset it to use per-model values. Recommended `medium`, guide default `high`. Effort names do not map to the same thinking across models, so do not carry Fable 5 values over unchanged.
 - Direct API integrations · set `thinking.display: "updates"` or progress notes never reach the UI. Keep history append-only (thinking blocks included), send per-turn reminders as turn-scoped system messages, use server-side compaction or block K.
 - Subagents · the start tool returns immediately; results come back as later messages.
 - Vision · a crop-and-zoom tool gives most of the gain on charts and tables.
