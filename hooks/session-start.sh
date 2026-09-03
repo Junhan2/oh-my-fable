@@ -8,7 +8,7 @@
 #   {"enabled": true, "mode": "auto" | "interactive" | "unattended", "delivery": "hook" | "rules-file" | "claude-md"}
 # mode "auto" (default): unattended when Claude Code was started through the SDK or headless mode
 # (CLAUDE_CODE_ENTRYPOINT is sdk-cli, sdk-ts, or sdk-py; `claude -p`, Agent SDK apps, and agent harnesses set
-# this), interactive otherwise (terminal, IDE). The SessionStart hook input carries no permission mode or model,
+# this), interactive otherwise (terminal, IDE). The SessionStart hook input carries no permission mode and not always the model,
 # so the entrypoint is the only per-session signal.
 # Merge rule: a project file may only turn the plugin OFF ("enabled": false). "mode" and "delivery" are read
 # from the global file only, so a cloned repository cannot switch an agent to unattended mode.
@@ -76,8 +76,20 @@ fi
 [ "$STATE" = hook-only ] && [ "$DELIVERY" = claude-md ] && STATE=claude-md   # config says CLAUDE.md, section not found yet
 [ "$ENABLED" = true ] || STATE=disabled
 
-# effort in effect: hook env from Claude Code, else the user's env override, else settings.json
-EFFORT="${CLAUDE_EFFORT:-${CLAUDE_CODE_EFFORT_LEVEL:-$(val "$CFG/settings.json" effortLevel)}}"; [ -n "$EFFORT" ] || EFFORT=default
+# effort in effect: hook env from Claude Code, else the user's env override (it beats settings.json), else
+# settings.json. There a per-model value (modelSettings.<model>.effortLevel) beats the global effortLevel, and the
+# SessionStart input does not always name the model, so when a per-model value could apply and the model is unknown
+# the hook says nothing rather than something wrong.
+MODEL="$(jget model)"
+EFFORT="${CLAUDE_EFFORT:-${CLAUDE_CODE_EFFORT_LEVEL:-}}"
+if [ -z "$EFFORT" ] && [ -f "$CFG/settings.json" ]; then
+  SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
+  PER_MODEL=""; [ -n "$MODEL" ] && PER_MODEL="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}" | grep -o '"effortLevel":"[a-z]*"' | head -1 | sed 's/.*://; s/"//g')"
+  if [ -n "$PER_MODEL" ]; then EFFORT="$PER_MODEL"
+  elif printf '%s' "$SJ" | grep -q '"modelSettings":{.*"effortLevel"'; then EFFORT=""   # per-model values exist, model unknown
+  else EFFORT="$(val "$CFG/settings.json" effortLevel)"; fi
+fi
+EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT}"; [ -n "$EFFORT" ] || EFFORT="(per model; see /effort)"
 
 case "$STATE" in
   claude-md)  HOW="CLAUDE.md section${BASE:+ ($BASE)}; hook silent";;
@@ -86,7 +98,7 @@ case "$STATE" in
   hook-only)  HOW="hook only";;
   disabled)   HOW="disabled by config";;
 esac
-STATUS_LINE="oh-my-fable ${VERSION:-?} · mode $MODE$AUTO · rules: $HOW · effort $EFFORT"
+STATUS_LINE="oh-my-fable ${VERSION:-?} · mode $MODE$AUTO · rules: $HOW$EFFORT_SHOWN"
 UPGRADE=""
 [ "$STATE" = rules-file ] && [ -n "$PLUGIN_V" ] && [ "$RULES_V" != "$PLUGIN_V" ] && \
   UPGRADE="oh-my-fable: your rules file is v$RULES_V, the plugin ships v$PLUGIN_V. Run /fable-setup refresh to update it."
