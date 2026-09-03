@@ -216,6 +216,9 @@ The two commands do different things per the official docs. `/reload-plugins` "r
 **How do I remove it?**
 `/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
 
+**Headless-only environments where the plugin cannot be installed (separate CLAUDE_CONFIG_DIR, CI)?**
+Copy `hooks/rules-file-unattended.md` to that environment's `rules/oh-my-fable.md` (or symlink it to a checkout of this repo). The full unattended rules load without the plugin; the hook treats the file as user-managed and stays silent.
+
 **I use the API or the Agent SDK directly.**
 `/fable-setup` needs the question tool, so only `/fable-setup auto` works under the SDK. The simplest route is to paste `hooks/always-on.md` into your system prompt. The layer 3 API items (thinking.display and so on) are settings on your side.
 
@@ -231,6 +234,7 @@ oh-my-fable/
 │   ├── session-start.sh       session-start hook (unattended paragraph only when a rules file exists, else everything)
 │   ├── always-on.md           block text (English)
 │   ├── rules-file.md          base rules that /fable-setup copies to ~/.claude/rules/oh-my-fable.md
+│   ├── rules-file-unattended.md static rules (with the unattended paragraph) for headless-only environments without the plugin
 │   └── autonomy-unattended.md paragraph added only in unattended mode
 ├── skills/
 │   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)

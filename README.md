@@ -216,6 +216,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **되돌리려면?**
 `/fable-setup remove` 가 설정 파일, 규칙 파일, CLAUDE.md 구간을 지웁니다. 그다음 `claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
 
+**플러그인을 못 까는 헤드리스 전용 환경(별도 CLAUDE_CONFIG_DIR, CI)은?**
+`hooks/rules-file-unattended.md`를 그 환경의 `rules/oh-my-fable.md`로 복사(또는 이 저장소 체크아웃에 심링크)하면 플러그인 없이 무인 규칙 전체가 실립니다. 훅은 이 파일을 사용자 관리 파일로 보고 조용합니다.
+
 **API나 Agent SDK로 직접 붙이는 경우는?**
 `/fable-setup`은 질문 도구가 필요해 SDK에서는 `auto` 인자만 됩니다. 가장 간단한 방법은 `hooks/always-on.md` 내용을 시스템 프롬프트에 그대로 붙이는 것입니다. 3층의 API 항목(thinking.display 등)은 그쪽 설정입니다.
 
@@ -231,6 +234,7 @@ oh-my-fable/
 │   ├── session-start.sh       세션 시작 훅 (규칙 파일이 있으면 무인 문단만, 없으면 전체)
 │   ├── always-on.md           블록 원문 (영어)
 │   ├── rules-file.md          /fable-setup이 ~/.claude/rules/oh-my-fable.md 로 복사하는 기본 규칙
+│   ├── rules-file-unattended.md 플러그인 없는 헤드리스 전용 환경용 정적 규칙(무인 문단 포함)
 │   └── autonomy-unattended.md 무인 모드에서만 추가되는 문단
 ├── skills/
 │   ├── fable-setup/SKILL.md   충돌 점검·모드 전환·설정 점검 (2층·3층)

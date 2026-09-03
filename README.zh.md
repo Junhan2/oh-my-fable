@@ -216,6 +216,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
 
+**无法安装插件的纯无头环境（独立 CLAUDE_CONFIG_DIR、CI）怎么办？**
+把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（或软链接到本仓库的检出目录）。无需插件即可加载完整的无人值守规则；钩子把该文件视为用户管理文件并保持静默。
+
 **我直接使用 API 或 Agent SDK。**
 `/fable-setup` 需要提问工具，在 SDK 下只能用 `/fable-setup auto`。最简单的做法是把 `hooks/always-on.md` 原样放进你的 system prompt。第 3 层的 API 项目（thinking.display 等）是你那边的设置。
 
@@ -231,6 +234,7 @@ oh-my-fable/
 │   ├── session-start.sh       会话开始钩子（有规则文件时只追加无人值守段落，否则全部）
 │   ├── always-on.md           模块原文（英文）
 │   ├── rules-file.md          /fable-setup 复制到 ~/.claude/rules/oh-my-fable.md 的基础规则
+│   ├── rules-file-unattended.md 无插件的纯无头环境用静态规则（含无人值守段落）
 │   └── autonomy-unattended.md 仅无人值守模式追加的段落
 ├── skills/
 │   ├── fable-setup/SKILL.md   冲突检查、模式切换、设置检查（第 2、3 层）
