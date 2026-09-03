@@ -3,6 +3,7 @@
 # oh-my-fable
 
 **Get the best out of Claude Fable 5.1 in Claude Code. Set up once, send an improved request every time.**
+
 Output quality goes up on Opus 5 and Sonnet 5 too.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)

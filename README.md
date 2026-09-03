@@ -3,6 +3,7 @@
 # oh-my-fable
 
 **Claude Fable 5.1을 Claude Code에서 가장 좋은 품질로 쓰는 법. 한 번 세팅하고, 매번 개선된 요청으로.**
+
 Opus 5, Sonnet 5에서도 결과 품질이 올라갑니다.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
