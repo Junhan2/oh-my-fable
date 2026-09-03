@@ -12,7 +12,9 @@ default); settings → mode, effort, and an admin checklist.
 
 ## Arguments (skip the matching question)
 `auto` (no questions, keep defaults) · `hook` (= rules file + hook) | `hook-only` | `claude-md` (delivery) ·
-`auto` | `interactive` | `unattended` (mode) · `medium` | `high` (effort) · `remove` (undo everything, see Step 6).
+`auto` | `interactive` | `unattended` (mode) · `medium` | `high` (effort) · `refresh` (re-copy the rules file only, no
+questions, see Step 7) · `remove` (undo everything, see Step 6). To see what is in effect without changing anything, use
+`/fable-status`.
 
 ## Step 1 · Detect (one batch of reads, silent)
 `./CLAUDE.md`, `./.claude/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `./.claude/settings.json`,
@@ -25,8 +27,8 @@ one-line options and the recommended one marked. No preamble, no explanation par
 steps for the user, so prefer asking over leaving something for them to do by hand.
 
 1. **Where should the rules live?**
-   - `Rules file + hook (recommended)` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded, reaches subagents and teams); the hook adds the unattended paragraph per session
-   - `Hook only` · nothing written, main session only (subagents and teams do not get the rules)
+   - `Rules file + hook (recommended)` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded, reaches regular subagents and teams); the hook adds the unattended paragraph per session and a short version for Explore/Plan subagents
+   - `Hook only` · nothing written; the hook carries everything for the main session and sends the short version to every subagent (agent teams: unverified)
    - `CLAUDE.md section` · inside your CLAUDE.md, static, needs edit approval (not in auto mode)
 2. **How do you mostly work?**
    - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
@@ -64,7 +66,7 @@ added by the hook per session, so `auto` mode works with the default delivery. O
   loads `rules/*.md` for the main session and for subagents and teams, so CLAUDE.md is not edited. Keep
   `"delivery": "hook"` in the config. If the write is refused (auto permission mode may block instruction files),
   say so in one line: the hook then carries everything for the main session, and the user can create the file by
-  hand from the shown path. Re-run `/fable-setup` after a plugin update to refresh the copy.
+  hand from the shown path. When the plugin ships a newer file, the hook says so at session start; `/fable-setup refresh` updates the copy.
 - `hook-only`: write nothing; set `"delivery": "hook"` and make sure no rules file exists. Main session only.
 - `claude-md`: insert or replace between `<!-- oh-my-fable:start v1 -->` and `<!-- oh-my-fable:end -->` in the
   chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
@@ -75,8 +77,9 @@ values are low, medium, high, xhigh). An approval prompt may appear; that is exp
 `modelSettings.<model>.effortLevel` or the env var `CLAUDE_CODE_EFFORT_LEVEL` overrides it, say which one wins
 in one line. If the write is refused, show the one-line change instead.
 
-**Copies are snapshots.** A rules file or CLAUDE.md section is the text at install time. After a plugin update,
-run `/fable-setup` again to refresh it; the hook delivery always uses the current text.
+**Copies are snapshots.** A rules file or CLAUDE.md section is the text at install time. The rules file carries a
+version marker (`oh-my-fable:rules vN`); when the plugin ships a newer one, the hook shows a one-line notice at
+session start and `/fable-setup refresh` updates the copy. The hook delivery always uses the current text.
 
 ## Step 4 · Audit (one table, then question 5)
 Rule found → verdict → one-line suggestion. Edit CLAUDE.md only if the user chose "Yes" in question 5; if
@@ -86,7 +89,7 @@ anti-formatting rules ("no bullets", "no headers"), "ask before every step". Sam
 
 ## Step 5 · Verify and close
 Hook: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set and confirm the
-last line starts with `(oh-my-fable: mode`. Rules file + hook: confirm the file exists with the marker and the hook prints only the mode line (or the
+last line starts with `(oh-my-fable` and names the expected rules source (`--status` prints the same as a key list). Rules file + hook: confirm the file exists with the marker and the hook prints only the mode line (or the
 unattended paragraph). CLAUDE.md: confirm the markers appear exactly once and the hook prints nothing. Then close with exactly this, translated:
 
 > Done. Rules: <delivery>, mode: <mode>, effort: <effort>. They apply automatically from the next Claude Code
@@ -103,3 +106,10 @@ Undo everything this skill may have written, then tell the user to run `claude p
 - delete `~/.claude/rules/oh-my-fable.md` and `./.claude/rules/oh-my-fable.md`
 - remove the `<!-- oh-my-fable:start` … `<!-- oh-my-fable:end -->` section (and its heading line) from any CLAUDE.md
 - `effortLevel` in settings.json is left as is; say so in one line
+
+## Step 7 · `/fable-setup refresh`
+No questions. Find the rules file the hook uses (`./.claude/rules/oh-my-fable.md`, else `~/.claude/rules/oh-my-fable.md`
+or the one under `CLAUDE_CONFIG_DIR`). If it carries the marker `oh-my-fable:rules`, overwrite it with
+`${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim and report the old and new version numbers. If it has no marker
+it is the user's own file: do not touch it, say so, and stop. If there is no file, say that nothing needs refreshing
+(hook-only delivery is always current).

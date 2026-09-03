@@ -54,8 +54,9 @@
 
 | 组成 | 何时 | 做什么 |
 |---|---|---|
-| **常驻规则** | 安装后自动 | 每次会话开始时按英文原文加载 Fable 5.1 指南的常驻规则（自主执行、范围限制、局部编辑、进度汇报、排版、批量工具调用）。基础规则放在自动加载的规则文件中，钩子每次会话追加无人值守段落。子代理和团队也能收到 |
+| **常驻规则** | 安装后自动 | 每次会话开始时按英文原文加载 Fable 5.1 指南的常驻规则（自主执行、范围限制、局部编辑、进度汇报、排版、批量工具调用）。基础规则放在自动加载的规则文件中，钩子每次会话追加无人值守段落。用 Agent 工具启动的子代理由钩子单独注入精简版 |
 | `/fable-prompt` | 请求简短或模糊时 | 展示补全了目标、上下文、范围、完成标准和 effort 的请求并直接执行。加 `只要提示词` 则只展示 |
+| `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
 | `/fable-setup` | 安装后一次（由 Claude 代为执行） | 三个简短问题决定规则位置（钩子 / 独立规则文件 / CLAUDE.md）、使用方式（交互式 / 无人值守）、effort 默认值（high / medium），并列出与现有规则的冲突 |
 
 Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：工作中话更少，可能每轮只调用一个工具，小改动也倾向重写整个文件，low effort 下凭记忆作答而不搜索。官方指南是针对这些变化的"症状对处方"清单，本插件替你自动应用。
@@ -113,11 +114,12 @@ claude plugin install oh-my-fable@oh-my-fable
 | 在哪里 | 基础规则在 `~/.claude/rules/oh-my-fable.md`（自动加载），无人值守段落由钩子每次会话追加 | 插件内部（`hooks/always-on.md`） | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v1 -->` 段落 |
 | 文件改动 | 一个规则文件，不碰 CLAUDE.md | 无 | 编辑 CLAUDE.md，需批准（auto 模式不可） |
 | 交互式/无人值守自动检测 | 是 | 是 | 否（固定） |
-| 对子代理和团队也生效 | 是 | 否（仅主会话） | 是 |
-| 插件更新后 | 再运行 `/fable-setup` 刷新规则文件 | 始终最新 | 同左 |
+| 对子代理生效 | 是（普通子代理读文件，Explore、Plan 收钩子的精简版） | 是（SubagentStart 钩子向所有子代理发送精简版） | 是（Explore、Plan 收钩子的精简版） |
+| 对代理团队生效 | 是（按文档，团队成员会加载规则文件） | 未验证 | 是 |
+| 插件更新后 | 规则文件过旧时会话开始会提示，`/fable-setup refresh` 更新 | 始终最新 | 重新粘贴段落 |
 | 移除 | 删除文件 + 卸载 | 卸载或 `{"enabled": false}` | 删除段落 |
 
-同一时间只有一种生效。CLAUDE.md 中已有段落或存在手工创建的规则文件时，钩子会自动静默（不会重复注入）。默认采用规则文件 + 钩子，是因为钩子无法到达用 Agent 工具启动的子代理（它们没有会话开始事件）。
+同一时间只有一种生效。CLAUDE.md 中已有段落或存在手工创建的规则文件时，钩子会自动静默（不会重复注入）。从 1.7 起钩子自己负责子代理：在 Claude Code 的 `SubagentStart` 事件注入精简版（`hooks/subagent.md`：范围限制、局部编辑、批量调用、做到最后、"不要提问，汇报阻碍"）。Explore、Plan 子代理既不读 CLAUDE.md 也不读规则文件，所以无论哪种方式都会收到这份精简版。
 
 - **使用方式默认自动检测。** 在终端或 IDE 打开的会话为交互式；以无头方式（`claude -p`）、Agent SDK 或代理框架启动的会话为无人值守，按 Claude Code 设置的 `CLAUDE_CODE_ENTRYPOINT` 值逐会话判断。混用交互式和无头也无需切换。想固定为一种，在问题 2 选"交互式"或"无人值守"。无人值守会加上"用户没有在看"段落，且只能在全局配置中开启，仓库内的配置文件无法开启，以防克隆的仓库把你的代理切换为无人值守。自动检测在两种含钩子的方式下都有效；只有 CLAUDE.md 段落是静态文本，需选定一种模式。
 - **effort**：推荐 `medium`（以更低成本达到 Fable 5 水平，困难任务在该会话用 `/effort high` 提高）。Anthropic 指南默认为 `high`，优先质量可选它。写入设置中的 `effortLevel`，可能出现批准提示。
@@ -215,6 +217,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **为什么想立即使用要先 `/reload-plugins` 再 `/clear`？**
 按官方文档，两者作用不同。`/reload-plugins` 会"无需重启地重新加载插件、技能、代理、钩子、MCP 服务器"（[Plugins](https://code.claude.com/docs/en/plugins)）。注入规则的 SessionStart 钩子只在 `startup`、`resume`、`/clear`、`compact`、`fork` 时运行（[Hooks](https://code.claude.com/docs/en/hooks#sessionstart)）。所以 reload 只注册钩子而不运行它，在安装的那个会话里需要 `/clear` 让它运行一次。新开会话则两者都不需要。
 
+**现在生效的是什么？**
+`/fable-status`。一张表列出插件版本、规则位置、本会话模式（含自动检测依据）、effort、规则文件版本、CLAUDE.md 冲突，不做任何改动。新开会话时同样的信息会以一行提示显示在屏幕上（不进入 Claude 的上下文）。
+
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
 
@@ -232,14 +237,16 @@ oh-my-fable/
 │   ├── plugin.json            插件清单
 │   └── marketplace.json       把本仓库注册为市场
 ├── hooks/
-│   ├── hooks.json             注册 SessionStart 钩子
-│   ├── session-start.sh       会话开始钩子（有规则文件时只追加无人值守段落，否则全部）
+│   ├── hooks.json             注册 SessionStart、SubagentStart 钩子
+│   ├── session-start.sh       钩子本体（会话开始：有规则文件时只追加无人值守段落，否则全部 · 子代理：精简版 · --status）
 │   ├── always-on.md           模块原文（英文）
 │   ├── rules-file.md          /fable-setup 复制到 ~/.claude/rules/oh-my-fable.md 的基础规则
 │   ├── rules-file-unattended.md 无插件的纯无头环境用静态规则（含无人值守段落）
+│   ├── subagent.md            注入子代理的精简版
 │   └── autonomy-unattended.md 仅无人值守模式追加的段落
 ├── skills/
 │   ├── fable-setup/SKILL.md   冲突检查、模式切换、设置检查（第 2、3 层）
+│   ├── fable-status/SKILL.md  当前生效内容一张表（只读）
 │   └── fable-prompt/
 │       ├── SKILL.md           每次请求改写（第 1 层）
 │       └── references/        模块原文（A 到 K）与前后示例

@@ -1,9 +1,20 @@
 {
-  "description": "oh-my-fable: injects the always-on Fable 5.1 prompting rules at session start (no CLAUDE.md edit needed)",
+  "description": "oh-my-fable: injects the always-on Fable 5.1 prompting rules at session start and a short version into every subagent (no CLAUDE.md edit needed)",
   "hooks": {
     "SessionStart": [
       {
         "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
         "hooks": [
           {
             "type": "command",

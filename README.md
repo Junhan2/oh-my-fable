@@ -54,8 +54,9 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 
 | 구성 | 언제 | 하는 일 |
 |---|---|---|
-| **상시 규칙** | 설치하면 자동 | 세션이 시작될 때마다 Fable 5.1 가이드의 상시 규칙(자율 진행, 범위 제한, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 불러옵니다. 기본 규칙은 자동 로드되는 규칙 파일에, 무인 문단은 훅이 세션마다 얹습니다. 서브에이전트·팀에도 닿습니다 |
+| **상시 규칙** | 설치하면 자동 | 세션이 시작될 때마다 Fable 5.1 가이드의 상시 규칙(자율 진행, 범위 제한, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 불러옵니다. 기본 규칙은 자동 로드되는 규칙 파일에, 무인 문단은 훅이 세션마다 얹습니다. Agent 도구로 띄운 서브에이전트에는 훅이 짧은 판을 따로 넣습니다 |
 | `/fable-prompt` | 요청이 짧거나 막연할 때 | 목표·맥락·범위·완료 기준·effort를 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
+| `/fable-status` | 지금 뭐가 켜져 있는지 궁금할 때 | 플러그인 버전, 규칙 위치, 감지된 모드, effort, 규칙 파일이 최신인지, CLAUDE.md 충돌 수를 표 하나로 보여 줍니다. 아무것도 쓰지 않습니다 |
 | `/fable-setup` | 설치 직후 한 번 (Claude가 대신 실행) | 짧은 질문 3개로 규칙 위치(훅 / 별도 규칙 파일 / CLAUDE.md), 사용 방식(대화형 / 무인), effort(high / medium)를 정하고, 기존 규칙과의 충돌을 표로 짚습니다 |
 
 Fable 5.1은 긴 작업을 혼자 끝까지 해내는 능력이 커진 대신 버릇이 바뀌었습니다. 작업 중 말수가 줄고, 한 번에 도구 하나씩만 부르고, 작은 수정에도 파일을 통째로 다시 쓰고, low effort에서는 검색 대신 기억으로 답합니다. 공식 가이드는 이 변화에 대한 증상별 처방이고, 이 플러그인은 그 처방을 자동으로 적용합니다.
@@ -113,11 +114,12 @@ claude plugin install oh-my-fable@oh-my-fable
 | 어디에 | 기본 규칙은 `~/.claude/rules/oh-my-fable.md`(자동 로드), 무인 문단은 훅이 세션마다 | 플러그인 안 (`hooks/always-on.md`) | 내 CLAUDE.md 안 `<!-- oh-my-fable:start v1 -->` 구간 |
 | 파일 수정 | 규칙 파일 1개, CLAUDE.md 무관 | 없음 | CLAUDE.md 편집, 승인 필요(auto 모드 불가) |
 | 대화형/무인 자동 감지 | 예 | 예 | 아니요(고정) |
-| 서브에이전트·팀에도 적용 | 예 | 아니요(메인 세션만) | 예 |
-| 플러그인 갱신 시 | `/fable-setup` 다시 실행해 규칙 파일 갱신 | 항상 최신 | 같음 |
+| 서브에이전트에도 적용 | 예 (일반 서브에이전트는 파일, Explore·Plan은 훅의 짧은 판) | 예 (SubagentStart 훅이 짧은 판을 모든 서브에이전트에) | 예 (Explore·Plan은 훅의 짧은 판) |
+| 에이전트 팀에도 적용 | 예 (문서상 팀원은 규칙 파일을 로드) | 미검증 | 예 |
+| 플러그인 갱신 시 | 규칙 파일이 오래되면 세션 시작 때 알려 줌, `/fable-setup refresh` 로 갱신 | 항상 최신 | 구간을 다시 붙여 넣기 |
 | 제거 | 파일 삭제 + 플러그인 삭제 | 플러그인 삭제 또는 `{"enabled": false}` | 구간 삭제 |
 
-셋 중 하나만 활성화됩니다. CLAUDE.md에 구간이 있거나 사용자가 직접 만든 규칙 파일이 있으면 훅은 스스로 조용해집니다(이중 주입 없음). 훅이 Agent 도구로 띄우는 서브에이전트에는 닿지 않기 때문에(세션 시작 이벤트가 없음) 기본값을 규칙 파일 + 훅으로 두었습니다.
+셋 중 하나만 활성화됩니다. CLAUDE.md에 구간이 있거나 사용자가 직접 만든 규칙 파일이 있으면 훅은 스스로 조용해집니다(이중 주입 없음). 서브에이전트는 1.7부터 훅이 직접 챙깁니다: Claude Code의 `SubagentStart` 이벤트에 짧은 판(`hooks/subagent.md`, 범위 제한·부분 편집·일괄 호출·끝까지 하기·"묻지 말고 막힌 점을 보고")을 넣습니다. Explore·Plan 서브에이전트는 CLAUDE.md도 규칙 파일도 읽지 않으므로 어떤 방식에서든 이 짧은 판을 받습니다.
 
 - **사용 방식은 기본이 자동 감지**입니다. 터미널이나 IDE에서 열면 대화형, 헤드리스(`claude -p`)·Agent SDK·에이전트 하네스에서 열면 무인으로 세션마다 알아서 정합니다(Claude Code가 넣어 주는 `CLAUDE_CODE_ENTRYPOINT` 값 기준). 대화형과 무인을 섞어 써도 따로 바꿀 것이 없습니다. 항상 한쪽으로 고정하려면 질문에서 "대화형" 또는 "무인"을 고르세요. 무인은 "사용자가 지켜보고 있지 않다" 문단을 추가하며, 글로벌 설정에서만 켜지고 저장소 안의 설정 파일로는 켤 수 없습니다(클론한 저장소가 에이전트를 무인으로 바꾸는 것을 막기 위해). 자동 감지는 훅이 관여하는 두 방식에서 되고, CLAUDE.md 구간만 고정 텍스트라 한쪽을 골라야 합니다.
 - **effort**는 `medium` 추천(Fable 5 수준 품질을 더 싸게, 어려운 작업만 그 세션에서 `/effort high`). Anthropic 가이드의 기본값은 `high`이니 품질을 우선하면 그것을 고르세요. settings.json의 `effortLevel`에 쓰며 승인 프롬프트가 뜰 수 있습니다.
@@ -215,6 +217,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **왜 지금 바로 쓰려면 `/reload-plugins` 다음 `/clear` 인가요?**
 공식 문서 기준 두 명령은 하는 일이 다릅니다. `/reload-plugins`는 "플러그인, 스킬, 에이전트, 훅, MCP 서버를 재시작 없이 다시 로드"합니다([Plugins](https://code.claude.com/docs/en/plugins)). 규칙을 넣는 SessionStart 훅은 "새 세션(startup), 재개(resume), `/clear`, 압축(compact), 분기(fork)" 때만 실행됩니다([Hooks](https://code.claude.com/docs/en/hooks#sessionstart)). 즉 reload는 훅을 등록만 하고 실행하지 않으므로, 설치한 세션에서는 `/clear`로 한 번 실행시켜야 합니다. 새 세션을 열면 둘 다 필요 없습니다.
 
+**지금 뭐가 켜져 있는지 보려면?**
+`/fable-status`. 플러그인 버전, 규칙 위치, 이 세션의 모드(자동 감지 근거 포함), effort, 규칙 파일 버전, CLAUDE.md 충돌을 표 하나로 보여 주고 아무것도 바꾸지 않습니다. 새 세션을 열 때도 같은 내용이 한 줄로 화면에 뜹니다(Claude의 문맥에는 들어가지 않음).
+
 **되돌리려면?**
 `/fable-setup remove` 가 설정 파일, 규칙 파일, CLAUDE.md 구간을 지웁니다. 그다음 `claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
 
@@ -232,14 +237,16 @@ oh-my-fable/
 │   ├── plugin.json            플러그인 매니페스트
 │   └── marketplace.json       이 저장소를 마켓플레이스로 등록
 ├── hooks/
-│   ├── hooks.json             SessionStart 훅 등록
-│   ├── session-start.sh       세션 시작 훅 (규칙 파일이 있으면 무인 문단만, 없으면 전체)
+│   ├── hooks.json             SessionStart · SubagentStart 훅 등록
+│   ├── session-start.sh       훅 본체 (세션 시작: 규칙 파일이 있으면 무인 문단만, 없으면 전체 · 서브에이전트: 짧은 판 · --status)
+│   ├── subagent.md            서브에이전트에 넣는 짧은 판
 │   ├── always-on.md           블록 원문 (영어)
 │   ├── rules-file.md          /fable-setup이 ~/.claude/rules/oh-my-fable.md 로 복사하는 기본 규칙
 │   ├── rules-file-unattended.md 플러그인 없는 헤드리스 전용 환경용 정적 규칙(무인 문단 포함)
 │   └── autonomy-unattended.md 무인 모드에서만 추가되는 문단
 ├── skills/
 │   ├── fable-setup/SKILL.md   충돌 점검·모드 전환·설정 점검 (2층·3층)
+│   ├── fable-status/SKILL.md  지금 적용 중인 것 한 표로 (읽기 전용)
 │   └── fable-prompt/
 │       ├── SKILL.md           매번 요청 개선 (1층)
 │       └── references/        블록 원문(A~K)과 전후 예시

@@ -54,8 +54,9 @@ Two skills that apply the fixes from Anthropic's official [Prompting Claude Fabl
 
 | Part | When | What |
 |---|---|---|
-| **Always-on rules** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Base rules live in an auto-loaded rules file, the hook adds the unattended paragraph per session. Reaches subagents and teams |
+| **Always-on rules** | automatically once installed | At every session start, loads the Fable 5.1 guide's always-on rules (autonomy, scope limits, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Base rules live in an auto-loaded rules file, the hook adds the unattended paragraph per session. Subagents started with the Agent tool get a short version from the hook |
 | `/fable-prompt` | when a request is short or vague | shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to only see the rewrite |
+| `/fable-status` | when you wonder what is in effect | one table: plugin version, where the rules live, detected mode, effort, whether the rules file is current, CLAUDE.md conflicts. Writes nothing |
 | `/fable-setup` | once right after install (Claude runs it for you) | three short questions set where the rules live (hook / separate rules file / CLAUDE.md), how you work (interactive / unattended), and the effort default (high / medium), then lists conflicts with your existing rules |
 
 Fable 5.1 got much better at finishing long tasks on its own, and its habits shifted with it. It narrates less while working, may call one tool per turn, tends to rewrite whole files for small edits, and at low effort answers from memory instead of searching. The official guide is a symptom-to-fix list for those shifts; this plugin applies the fixes for you.
@@ -113,11 +114,12 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 | Where | base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded), unattended paragraph added by the hook per session | inside the plugin (`hooks/always-on.md`) | `<!-- oh-my-fable:start v1 -->` section in your CLAUDE.md |
 | File edits | one rules file, CLAUDE.md untouched | none | edits CLAUDE.md, needs approval (not in auto mode) |
 | Interactive/unattended auto-detect | yes | yes | no (static) |
-| Reaches subagents and teams | yes | no (main session only) | yes |
-| After a plugin update | run `/fable-setup` again to refresh the rules file | always current | same |
+| Reaches subagents | yes (regular subagents via the file, Explore and Plan via the hook's short version) | yes (the SubagentStart hook sends the short version to every subagent) | yes (Explore and Plan via the hook) |
+| Reaches agent teams | yes (per the docs, teammates load rules files) | unverified | yes |
+| After a plugin update | a stale rules file is flagged at session start; `/fable-setup refresh` updates it | always current | paste the section again |
 | Removal | delete the file + uninstall | uninstall or `{"enabled": false}` | delete the section |
 
-Only one is active at a time. If a CLAUDE.md section or a hand-made rules file exists, the hook goes silent by itself (no double injection). The default is rules file + hook because a hook cannot reach subagents started with the Agent tool (they get no session-start event).
+Only one is active at a time. If a CLAUDE.md section or a hand-made rules file exists, the hook goes silent by itself (no double injection). Since 1.7 the hook takes care of subagents itself: on Claude Code's `SubagentStart` event it injects a short version (`hooks/subagent.md`: scope limits, targeted edits, batched calls, finish the task, "report blockers instead of asking"). Explore and Plan subagents read neither CLAUDE.md nor rules files, so they get this short version under every delivery.
 
 - **The mode is auto-detected by default.** A session opened in the terminal or IDE runs interactive; one started headless (`claude -p`), through the Agent SDK, or by an agent harness runs unattended, decided per session from the `CLAUDE_CODE_ENTRYPOINT` value Claude Code sets. Mixing interactive and headless use needs no switching. To pin one mode, pick "Interactive" or "Unattended" in question 2. Unattended adds the "the user is not watching" paragraph and can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended. Auto-detection works with both hook-based deliveries; only the CLAUDE.md section is static text, so pick one mode for that.
 - **Effort**: `medium` recommended (Fable 5 quality at lower cost; raise hard tasks with `/effort high` in that session). Anthropic's guide default is `high`, pick it if quality comes first. Written to `effortLevel` in settings.json; an approval prompt may appear.
@@ -215,6 +217,9 @@ Yes. The four-field request shape and the working rules (scope limits, targeted 
 **Why `/reload-plugins` and then `/clear` to use it right away?**
 The two commands do different things per the official docs. `/reload-plugins` "reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers" without a restart ([Plugins](https://code.claude.com/docs/en/plugins)). The SessionStart hook that injects the rules fires only on `startup`, `resume`, `/clear`, `compact`, and `fork` ([Hooks](https://code.claude.com/docs/en/hooks#sessionstart)). So reload registers the hook but does not run it; in the install session, `/clear` runs it once. A new session needs neither.
 
+**What is in effect right now?**
+`/fable-status`. One table with the plugin version, where the rules live, this session's mode (with the auto-detection basis), effort, the rules file version, and CLAUDE.md conflicts; it changes nothing. The same information appears as a one-line notice when a new session opens (it does not enter Claude's context).
+
 **How do I remove it?**
 `/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
 
@@ -232,14 +237,16 @@ oh-my-fable/
 │   ├── plugin.json            plugin manifest
 │   └── marketplace.json       registers this repo as a marketplace
 ├── hooks/
-│   ├── hooks.json             registers the SessionStart hook
-│   ├── session-start.sh       session-start hook (unattended paragraph only when a rules file exists, else everything)
+│   ├── hooks.json             registers the SessionStart and SubagentStart hooks
+│   ├── session-start.sh       the hook (session start: unattended paragraph only when a rules file exists, else everything · subagents: short version · --status)
 │   ├── always-on.md           block text (English)
 │   ├── rules-file.md          base rules that /fable-setup copies to ~/.claude/rules/oh-my-fable.md
 │   ├── rules-file-unattended.md static rules (with the unattended paragraph) for headless-only environments without the plugin
+│   ├── subagent.md            short version injected into subagents
 │   └── autonomy-unattended.md paragraph added only in unattended mode
 ├── skills/
 │   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)
+│   ├── fable-status/SKILL.md  what is in effect, one table (read-only)
 │   └── fable-prompt/
 │       ├── SKILL.md           per-request rewrite (layer 1)
 │       └── references/        block texts (A to K) and before/after examples
