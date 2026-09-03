@@ -15,3 +15,5 @@ exclude:
   - hooks
   - skills
   - LICENSE
+include:
+  - google2e895426bd02f9f4.html
