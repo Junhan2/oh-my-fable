@@ -8,7 +8,7 @@
     {
       "name": "oh-my-fable",
       "source": ".",
-      "description": "Always-on Fable 5.1 prompting rules via SessionStart and SubagentStart hooks, unattended sessions detected automatically; /fable-prompt rewrites rough requests; /fable-status shows what is in effect; /fable-setup is optional."
+      "description": "Always-on Fable 5.1 prompting rules via SessionStart and SubagentStart hooks, unattended sessions detected automatically; /fable-prompt rewrites rough requests; /fable-status shows what is in effect; /fable-audit scores your rules against the guide, read-only; /fable-setup is optional."
     }
   ]
 }
