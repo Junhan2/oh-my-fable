@@ -1,6 +1,6 @@
 ---
 name: fable-audit
-description: Read-only. Scores your CLAUDE.md, rules files, and agent system prompts against the 16 sections of Anthropic's Fable 5.1 prompting guide - what is missing, what conflicts, what the plugin already covers. Changes nothing; it prints suggested wording and stops. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "프롬프트 점검", "규칙 점검", "audit my prompts", "check against the Fable guide", "which guide sections am I missing", "prompt compliance", "system prompt review".
+description: Read-only. Scores your CLAUDE.md, rules files, and agent system prompts against the 16 sections of Anthropic's Fable 5.1 prompting guide plus the Opus 5 / Opus 5.5 model notes - what is missing, what conflicts, what the plugin already covers. Changes nothing; it prints suggested wording and stops. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "프롬프트 점검", "규칙 점검", "audit my prompts", "check against the Fable guide", "which guide sections am I missing", "prompt compliance", "system prompt review".
 ---
 # fable-audit · score prompts against the Fable 5.1 guide
 
@@ -25,7 +25,7 @@ Default set:
 - every `*.md` in `~/.claude/rules/` and `./.claude/rules/`
 - `~/.claude/settings.json`, `./.claude/settings.json`, and `CLAUDE_CODE_EFFORT_LEVEL` (sections 1 and 14)
 - the plugin's active rule text: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md`, plus
-  `autonomy-unattended.md` and `subagent.md`. Read `~/.claude/oh-my-fable.json` first; if the plugin is disabled
+  `autonomy-unattended.md` (two paragraphs) and `subagent.md`. Read `~/.claude/oh-my-fable.json` first; if the plugin is disabled
   or absent, skip these and say so in the header line, because then nothing is covered for free.
 - when a path argument names a directory of agent prompts, each file in it is one audited surface
 
@@ -46,6 +46,10 @@ Two rules that decide most of the value of this audit:
 
 Sections 8 and 9 are scored in halves and by item; see the checklist.
 
+Then apply the model notes at the end of the checklist. A note gets a verdict only when the surface names its
+model (`model:` in agent frontmatter, or the user said which model it runs on); otherwise print it once as "if
+this surface runs on Opus 5 or 5.5" with no symbol. Notes are never part of the score.
+
 ## Step 3 · Report (one table, then three short lists)
 ```
 Fable 5.1 guide audit · <surface> · N files
@@ -62,6 +66,7 @@ excluded and why. Then:
    line to add and the file it belongs in. Prefer one agent's system prompt over a global rule when only that
    agent is affected.
 3. **Already covered by the plugin**, one line, so the user doesn't re-add what the hook delivers.
+4. **Model notes** (unscored), one line each, only the ones that apply to this surface.
 
 Ask in the user's language; keep the section names in English so they match the guide's anchors.
 
@@ -71,7 +76,7 @@ CLAUDE.md; `/fable-status` to confirm what is live. Then one status line: DONE, 
 files could not be read), or NEEDS_CONTEXT (say which path you need).
 
 ## Notes
-- The checklist is a snapshot of the guide as of 2026-09-07. If the live guide has more or differently named
+- The checklist is a snapshot of the guide as of 2026-09-07; the model notes as of 2026-09-23. If the live guide has more or differently named
   sections, say so in the header line rather than silently auditing an old list.
 - Auditing a Claude Code machine is the common case, so sections 4, 14 and 16 usually resolve to ⚪ or a setting
   finding. That is a correct result, not a thin one.

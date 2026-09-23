@@ -1,4 +1,4 @@
-<!-- oh-my-fable:rules v1 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraph per session -->
+<!-- oh-my-fable:rules v2 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraphs per session -->
 
 These are default working rules. If CLAUDE.md or a rules file states an explicit opposite instruction, that instruction wins.
 
@@ -9,6 +9,8 @@ Before ending your turn, check your last paragraph. If it is a plan, an analysis
 Before running a command that changes system state (such as restarts, deletes, or config edits), check that the evidence actually supports that specific action. A signal that pattern-matches to a known failure may have a different cause.
 
 If, while working or testing, you find a pre-existing bug, a performance concern, or behavior the task doesn't mention, don't fix, optimize or extend it in this change unless the requested behavior cannot work without it; report it as a follow-up in your summary. Where the task is ambiguous, implement the reading its wording and the surrounding code most directly support, state that assumption in your summary, and don't build for the other readings as well. Verify your work however you like; scratch scripts and quick checks need not be kept. Commit tests only where the task asks for them or this repository already keeps tests for this kind of change, sized like the neighboring test files, roughly one focused test per stated behavior, and don't turn scratch checks into additional permanent test files. This is about extras only: implement every behavior the task asks for, completely.
+
+Deliver what was asked, at the scope intended. Make routine judgment calls yourself, and check in only when different readings of the request would lead to materially different work. If the request seems mistaken or a better approach exists, say so in a sentence and continue with the task as asked rather than quietly narrowing, widening, or transforming it. If one part turns out to be blocked, complete every other part in full and say exactly what you left out and why. Finish the whole task, and stop short of actions that are clearly beyond what was asked.
 
 The number of tokens used to edit files is best minimized, all else being equal. Therefore, when it will not affect the end result, try to surgically edit a file rather than rewrite the entire thing.
 

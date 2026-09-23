@@ -1,15 +1,15 @@
 ---
 name: fable-prompt
-description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's "Prompting Claude Fable 5.1" guide, then carry it out. Use only when the user invokes it: "/fable-prompt …", "프롬프트 개선해서", "가이드에 맞게 요청해", "제대로 시켜줘", "improve this prompt", "prompt it properly". Do not trigger on ordinary requests by yourself.
+description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's Claude prompting guides (Fable 5.1, Opus 5.5), then carry it out. Use only when the user invokes it: "/fable-prompt …", "프롬프트 개선해서", "가이드에 맞게 요청해", "제대로 시켜줘", "improve this prompt", "prompt it properly". Do not trigger on ordinary requests by yourself.
 ---
 # fable-prompt · guide-aligned request rewrite (per-request layer)
 
-Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1).
+Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
 Fixed guide blocks: `references/prompt-blocks.md`. Before/after samples: `references/examples.md`.
 
 This skill handles the **per-request layer** only: the four fields every request needs, plus the guide
-blocks that depend on the request. The always-on rules (autonomy, scope limits, targeted edits, progress
-updates, formatting, batching) are injected by this plugin's SessionStart hook, so never repeat them here.
+blocks that depend on the request. The always-on rules (autonomy, scope limits, scope of the deliverable,
+targeted edits, progress updates, formatting, batching, and early stops in unattended sessions) are injected by this plugin's SessionStart hook, so never repeat them here.
 
 ## Mode
 - **Default: rewrite, show, then execute in the same turn.** Do not stop after showing the prompt.
@@ -42,14 +42,14 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
 3. **Scope** · what is in, what is explicitly out.
 4. **Done criteria** · the exact check: a command, a count, a file that must exist, a reproduced workflow.
 5. **Effort** · do not write an effort line into the request; a line in a prompt changes nothing in Claude Code.
-   Effort is a setting (`effortLevel` in settings.json or `CLAUDE_CODE_EFFORT_LEVEL`). Mention it only when it
+   Effort is a setting (`/effort` saves it per model in `modelSettings`; `CLAUDE_CODE_EFFORT_LEVEL` overrides). Mention it only when it
    matters for this request: time-sensitive research at `low` → add block **H**; a long deliverable at `xhigh`
    → add block **G**.
 6. **Conditional blocks** · Assessment → the "report findings, don't fix" sentence. Research/summary →
    block **J** (quoting example). Writing → block **F** (short form). Code task → phrase checks as
    "Are there any bugs?" not "Does it compile?" (safeguard false positives).
 
-**Never attach blocks A, B, C, D, E, or I.** They are already active through the plugin hook. The improved
+**Never attach blocks A, B, C, D, E, I, L, or M.** They are already active through the plugin hook. The improved
 request stays short: four fields, effort, and only the conditional lines from item 6.
 
 ## Step 4 · Show, then run
@@ -61,4 +61,4 @@ recap that stands on its own. End with exactly one status: DONE, DONE_WITH_CONCE
 - Do not widen the task while improving it. The rewrite clarifies; it does not add features.
 - Do not turn an Assessment into a Change.
 - Do not paraphrase block A's first paragraph; its opening sentence carries most of the effect.
-- Do not add anti-formatting rules; Fable 5.1 already under-formats.
+- Do not add anti-formatting rules; the conditional formatting rule (block I) is already active.

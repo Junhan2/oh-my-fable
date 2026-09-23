@@ -19,10 +19,12 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 - Asks: start at `high`, then measure `low`/`medium`/`xhigh`/`max` against your own tasks. Effort names do not
   carry over from Fable 5.
 - Check: `effortLevel` in `~/.claude/settings.json` and `./.claude/settings.json`,
-  `modelSettings.<model>.effortLevel`, and the env var `CLAUDE_CODE_EFFORT_LEVEL`. Report which one wins.
+  `modelSettings.<model>.effortLevel`, and the env var `CLAUDE_CODE_EFFORT_LEVEL`. Report which one wins. For an
+  agent file, whether `effort:` is set; without it the agent inherits the session level (sub-agents doc).
 - Verdict rules: a pinned `xhigh`/`max` with no note of why → ⚠️ (see section 14 for the cost). No value set → ✅
-  (the default is `high`, which is the guide's starting point).
-- Plugin: `/fable-setup` writes this; not part of the rules text.
+  (Fable 5.1 defaults to `high`, Opus 5.5 to `medium`: each is its guide's starting point). A user-scope top-level
+  `effortLevel` → note that Opus 5.5 ignores it.
+- Plugin: not written by the plugin since 2.2.0; `/fable-status` shows the level and its source.
 
 ## 2. ask-for-user-facing-progress-updates
 - Scope: prompt
@@ -84,8 +86,9 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
   - (b) delivering work: the request's scope is the deliverable; finish every part that is not blocked and say
     plainly what was left out and why.
 - 🟡 when only one half is present. ❌ when neither.
-- Plugin: (a) covered in unattended mode only (`autonomy-unattended.md`), plus the "check your last paragraph"
-  line in `always-on.md`. (b) not covered by the plugin — this is the most common real gap.
+- Plugin: (a) covered in unattended mode (`autonomy-unattended.md`: the Fable paragraph plus the Opus 5.5
+  early-stop paragraph) and the "check your last paragraph" line in `always-on.md`. (b) covered since 2.2.0
+  (`always-on.md` scope paragraph, the Opus 5 guide's short form of this block).
 
 ## 9. tell-the-model-what-to-preserve-in-compaction-summaries
 - Scope: prompt
@@ -146,3 +149,22 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 - Check: whether an image crop or zoom tool is available in the session. If yes ✅, if the work involves no
   images ⚪.
 - Plugin: not applicable.
+
+---
+
+## Model notes (Opus 5 / Opus 5.5 guides; reported, never scored)
+
+- N1 verification instructions · Opus 5 guide "Task scope and over-verification", "Self-correction": explicit
+  "verify with a subagent", "double-check", "re-verify before responding" lines cause over-verification on Opus 5
+  and cost tokens with no quality gain. ⚠️ on an Opus surface; ⚪ elsewhere. Narrowest edit: keep the check the
+  rule protects (a test, a build), drop the instruction to re-check.
+- N2 subagent spawning · Opus 5 guide "Controlling subagent spawning": Opus 5 delegates readily; Claude Code adds
+  its own delegation instruction with the `claude_code` preset, so a custom system prompt (SDK) needs the guide's
+  line. ✅ when present or when the surface is a Claude Code session; 🟡 for an SDK agent without it.
+- N3 early stops · Opus 5.5 guide "Unattended agentic runs": an agent that runs unattended should carry a
+  paragraph naming the early stops it must avoid (this plugin's block M). ✅ when present or the plugin's
+  unattended mode applies; ⚠️ when such a paragraph is in a human-in-the-loop prompt (the guide says leave it out
+  there).
+- N4 effort on Opus 5.5 · Opus 5.5 guide "Calibrate effort", Claude Code model-config doc: default `medium`; a
+  user-scope top-level `effortLevel` is ignored; save per model with `/effort`. Report which source is in effect.
+  For agent files: no `effort:` means inheriting the session level.

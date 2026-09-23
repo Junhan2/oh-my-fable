@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # oh-my-fable hook. Two events, one script:
-#   SessionStart  · the always-on Fable 5.1 rules for the main session (plus a one-line status for the user)
+#   SessionStart  · the always-on working rules for the main session (plus a one-line status for the user)
 #   SubagentStart · a short version of the rules for subagents spawned with the Agent tool
 #   --status      · print what is in effect (used by /fable-status); writes nothing
 #
@@ -17,7 +17,7 @@
 # Where the base rules come from, in this order:
 #   1. a CLAUDE.md section between oh-my-fable:start / oh-my-fable:end (static, user-managed): hook stays silent
 #   2. rules/oh-my-fable.md written by /fable-setup (marker oh-my-fable:rules vN): Claude Code auto-loads it for the
-#      main session, regular subagents and teams; the hook adds only the unattended paragraph per session and
+#      main session, regular subagents and teams; the hook adds only the unattended paragraphs per session and
 #      warns once per session when the plugin ships a newer version of that file
 #   3. any other rules/oh-my-fable.md (user-managed): hook stays silent
 #   4. nothing else: the hook carries everything (hook only)
@@ -76,20 +76,30 @@ fi
 [ "$STATE" = hook-only ] && [ "$DELIVERY" = claude-md ] && STATE=claude-md   # config says CLAUDE.md, section not found yet
 [ "$ENABLED" = true ] || STATE=disabled
 
-# effort in effect: hook env from Claude Code, else the user's env override (it beats settings.json), else
-# settings.json. There a per-model value (modelSettings.<model>.effortLevel) beats the global effortLevel, and the
-# SessionStart input does not always name the model, so when a per-model value could apply and the model is unknown
-# the hook says nothing rather than something wrong.
-MODEL="$(jget model)"
-EFFORT="${CLAUDE_EFFORT:-${CLAUDE_CODE_EFFORT_LEVEL:-}}"
-if [ -z "$EFFORT" ] && [ -f "$CFG/settings.json" ]; then
-  SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
-  PER_MODEL=""; [ -n "$MODEL" ] && PER_MODEL="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}" | grep -o '"effortLevel":"[a-z]*"' | head -1 | sed 's/.*://; s/"//g')"
-  if [ -n "$PER_MODEL" ]; then EFFORT="$PER_MODEL"
-  elif printf '%s' "$SJ" | grep -q '"modelSettings":{.*"effortLevel"'; then EFFORT=""   # per-model values exist, model unknown
-  else EFFORT="$(val "$CFG/settings.json" effortLevel)"; fi
+# effort shown in the status line. Claude Code sets CLAUDE_EFFORT (and the effort input field) only inside tool-use
+# contexts, never for SessionStart (hooks doc, common input fields; measured on 2.1.280), so a CLAUDE_EFFORT seen at
+# SessionStart was inherited from a parent session's Bash tool and describes that session: ignored. With --status (run
+# by the Bash tool inside the session) CLAUDE_EFFORT is the live level and wins. Otherwise: the env override, then the
+# user settings file, where modelSettings.<canonical model>.effortLevel beats the top-level effortLevel; Opus 5.5
+# ignores a user-scope top-level effortLevel and starts at its own default, medium (model-config doc).
+model_default() { case "$1" in claude-opus-5-5*) echo medium;; claude-opus-4-7*) echo xhigh;; "") ;; *) echo high;; esac; }
+effort_val() { grep -o '"effortLevel":"[a-z]*"' | head -1 | sed 's/.*://; s/"//g'; }
+EFFORT=""; SRC=""
+if [ "$STATUS" = true ] || [ -z "$EVENT" ] || { [ "$EVENT" = SessionStart ] && [ "$SOURCE" = startup ]; }; then   # only the startup status line and --status show it
+  MODEL="$(jget model | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//')"   # canonical id: no [1m], no date suffix
+  if [ "$STATUS" = true ] && [ -n "${CLAUDE_EFFORT:-}" ]; then EFFORT="$CLAUDE_EFFORT"; SRC=live
+  elif [ -n "${CLAUDE_CODE_EFFORT_LEVEL:-}" ]; then EFFORT="$CLAUDE_CODE_EFFORT_LEVEL"; SRC=env
+  elif [ -n "$MODEL" ]; then
+    SJ=""; [ -f "$CFG/settings.json" ] && SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
+    PER_MODEL="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}" | effort_val)"
+    TOP=""   # the user-scope top-level effortLevel, read only when needed; Opus 5.5 ignores it
+    case "$MODEL" in claude-opus-5-5*) ;; *) [ -n "$PER_MODEL" ] || TOP="$(printf '%s' "$SJ" | sed 's/"[^"]*":{[^{}]*"effortLevel":"[a-z]*"[^{}]*}//g' | effort_val)";; esac
+    if [ -n "$PER_MODEL" ]; then EFFORT="$PER_MODEL"; SRC=saved
+    elif [ -n "$TOP" ]; then EFFORT="$TOP"; SRC=settings
+    else EFFORT="$(model_default "$MODEL")"; SRC="model default"; fi
+  fi
 fi
-EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT}"; [ -n "$EFFORT" ] || EFFORT="(per model; see /effort)"
+EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT ($SRC)}"; [ -n "$EFFORT" ] || EFFORT="(not known at session start; /effort shows it)"
 
 case "$STATE" in
   claude-md)  HOW="CLAUDE.md section${BASE:+ ($BASE)}; hook silent";;
@@ -109,8 +119,8 @@ if [ "$STATUS" = true ]; then
     hook-only) SUB="short rules to every subagent (SubagentStart hook)";;
     *) SUB="base file reaches regular subagents; Explore and Plan get the short rules from the hook";;
   esac
-  printf 'plugin_version: %s\nconfig_dir: %s\nproject_dir: %s\nentrypoint: %s\nenabled: %s\nmode: %s%s\ndelivery_config: %s\nrules_source: %s\nbase_file: %s\nrules_file_version: %s\nplugin_rules_version: %s\neffort: %s\nsubagents: %s\nnotice: %s\n' \
-    "${VERSION:-?}" "$CFG" "$PROJ" "${CLAUDE_CODE_ENTRYPOINT:-(none, interactive)}" "$ENABLED" "$MODE" "$AUTO" "$DELIVERY" "$STATE" "${BASE:-(none)}" "${RULES_V:-(n/a)}" "${PLUGIN_V:-?}" "$EFFORT" "$SUB" "${UPGRADE:-(none)}"
+  printf 'plugin_version: %s\nconfig_dir: %s\nproject_dir: %s\nentrypoint: %s\nenabled: %s\nmode: %s%s\ndelivery_config: %s\nrules_source: %s\nbase_file: %s\nrules_file_version: %s\nplugin_rules_version: %s\neffort: %s\neffort_source: %s\nsubagents: %s\nnotice: %s\n' \
+    "${VERSION:-?}" "$CFG" "$PROJ" "${CLAUDE_CODE_ENTRYPOINT:-(none, interactive)}" "$ENABLED" "$MODE" "$AUTO" "$DELIVERY" "$STATE" "${BASE:-(none)}" "${RULES_V:-(n/a)}" "${PLUGIN_V:-?}" "$EFFORT" "${SRC:-(n/a)}" "$SUB" "${UPGRADE:-(none)}"
   exit 0
 fi
 
@@ -132,13 +142,13 @@ CTX=""
 case "$STATE" in
   claude-md|user-rules) ;;
   rules-file)
-    [ "$MODE" = unattended ] && CTX="$(printf '# Fable 5.1 prompting (oh-my-fable), unattended session\n\n%s\n' "$(cat "$HERE/autonomy-unattended.md")")";;
+    [ "$MODE" = unattended ] && CTX="$(printf '# Working rules (oh-my-fable), unattended session\n\n%s\n' "$(cat "$HERE/autonomy-unattended.md")")";;
   hook-only)
     BODY="$(cat "$HERE/always-on.md")"
     if [ "$MODE" = unattended ]; then
       HEAD="$(printf '%s\n' "$BODY" | sed -n '1p')"
       REST="$(printf '%s\n' "$BODY" | sed '1d')"
-      BODY="$HEAD"$'\n\n'"$(cat "$HERE/autonomy-unattended.md")""$REST"
+      BODY="$HEAD"$'\n\n'"$(cat "$HERE/autonomy-unattended.md")"$'\n'"$REST"
     fi
     CTX="$BODY";;
 esac

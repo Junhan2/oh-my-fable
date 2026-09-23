@@ -1,7 +1,7 @@
 {
   "name": "oh-my-fable",
-  "version": "2.1.0",
-  "description": "Get the best out of Claude Fable 5.1 in Claude Code (output quality goes up on Opus 5 and Sonnet 5 too): install and forget: the always-on prompting rules load at every session start and reach subagents, unattended sessions are detected automatically, /fable-prompt turns a rough request into a guide-aligned prompt, /fable-status shows what is in effect, /fable-audit scores your own rules against the guide, /fable-setup is optional.",
+  "version": "2.2.0",
+  "description": "Anthropic's prompting-guide rules for Claude Code, always on (Opus 5.5, Fable 5.1; Opus 5 and Sonnet 5 too): install and forget: the working rules load at every session start and reach subagents, unattended sessions are detected automatically and get the early-stop rules, /fable-prompt turns a rough request into a guide-aligned prompt, /fable-status shows what is in effect, /fable-audit scores your own rules against the guides, /fable-setup is optional.",
   "author": {
     "name": "Junhan2",
     "url": "https://github.com/Junhan2"
@@ -12,6 +12,7 @@
   "keywords": [
     "claude",
     "fable",
+    "opus",
     "prompting",
     "claude-code",
     "skills"
