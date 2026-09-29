@@ -4,7 +4,7 @@
 
 **Anthropic 프롬프팅 가이드(Opus 5.5, Fable 5.1)의 작업 규칙을 Claude Code에 상시 적용하는 법. 설치만 하면 알아서: 터미널이든 헤드리스든 서브에이전트든, 세션마다 맞는 규칙이 들어갑니다.**
 
-Opus 5.5(지금 Claude Code의 기본 모델)와 Fable 5.1 기준이며, Opus 5·Sonnet 5에서도 그대로 씁니다.
+Opus 5.5(지금 Claude Code의 기본 모델)와 Fable 5.1 기준이며, Sonnet 5.5(Claude Code 기본 effort가 Opus 5.5처럼 `medium`)·Opus 5·Sonnet 5에서도 그대로 씁니다.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-2e7d32.svg)](https://github.com/Junhan2/oh-my-fable)
@@ -36,11 +36,11 @@ Opus 5.5(지금 Claude Code의 기본 모델)와 Fable 5.1 기준이며, Opus 5�
 - **사용 형태를 세션마다 알아서 판정** · 터미널·IDE면 대화형, `claude -p`·Agent SDK·에이전트 하네스면 무인으로 감지해 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단을 그때만 넣습니다. 섞어 써도 바꿀 것이 없습니다.
 - **서브에이전트까지 자동** · Agent 도구로 띄운 서브에이전트(규칙 파일을 안 읽는 Explore·Plan 포함)에 짧은 판을 따로 넣습니다.
 - **파일을 만들지 않습니다** · CLAUDE.md도 규칙 파일도 건드리지 않고, 훅이 세션마다 넣습니다. 그래서 갱신은 플러그인만 올리면 되고 제거하면 흔적이 없습니다.
-- **질문 없음** · 설정은 선택 사항입니다. 확인할 것은 설치 승인 하나뿐입니다.
+- **질문 없음** · 설정은 선택 사항입니다. 확인할 것은 설치 승인 하나뿐입니다. 한 번은 `/fable-setup rules-file`을 권합니다. 기본 규칙을 규칙 파일로 두는 방식이고, Claude Code 훅 문서도 바뀌지 않는 규칙은 훅 텍스트보다 파일에 두라고 합니다.
 
 Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), 그리고 Opus 5.5 가이드가 출발점으로 지정한 [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)의 처방을 훅 하나와 스킬 네 개에 담았습니다. 문구는 원문을 거의 그대로 씁니다.
 
-> **어느 모델용인가요?** **Opus 5.5**(지금 Claude Code의 기본 모델)와 **Fable 5.1** 둘 다입니다. 끝까지 하기·범위 제한·진행 보고 규칙은 두 모델의 공식 가이드가 같은 말을 하고, 무인 세션에만 붙는 "중간 보고로 멈추지 말라" 문단은 Opus 5.5 가이드에서 왔습니다. 부분 편집·도구 일괄 호출·서식 규칙은 Fable 5.1 가이드에만 있는 처방이지만 다른 모델에 있어도 해가 되지 않습니다. 네 칸 요청 틀(목표·맥락·범위·완료 기준)은 모델이 무엇이든 되묻기와 빗나간 결과를 줄입니다. Opus 5, Sonnet 5에서도 그대로 씁니다.
+> **어느 모델용인가요?** **Opus 5.5**(지금 Claude Code의 기본 모델)와 **Fable 5.1** 둘 다입니다. 끝까지 하기·범위 제한·진행 보고 규칙은 두 모델의 공식 가이드가 같은 말을 하고, 무인 세션에만 붙는 "중간 보고로 멈추지 말라" 문단은 Opus 5.5 가이드에서 왔습니다. 부분 편집·도구 일괄 호출·서식 규칙은 Fable 5.1 가이드에만 있는 처방이지만 다른 모델에 있어도 해가 되지 않습니다. 네 칸 요청 틀(목표·맥락·범위·완료 기준)은 모델이 무엇이든 되묻기와 빗나간 결과를 줄입니다. Sonnet 5.5(Claude Code 기본 effort `medium`, Opus 5.5와 같음), Opus 5, Sonnet 5에서도 그대로 씁니다. 세션이 `xhigh`나 `max` effort로 시작하면 훅이 Sonnet 5.5 가이드의 블록 N도 넣습니다.
 
 ## 목차
 
@@ -61,11 +61,11 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 
 | 구성 | 언제 | 하는 일 |
 |---|---|---|
-| **상시 규칙** | 설치하면 자동, 파일 없음 | 세션이 시작될 때마다 훅이 공식 가이드의 상시 규칙(자율 진행, 범위 제한, 시킨 범위 그대로 끝내기, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 넣습니다. 헤드리스·SDK 세션이면 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단(Opus 5.5 가이드)을 자동으로 더하고, Agent 도구로 띄운 서브에이전트에는 짧은 판을 따로 넣습니다. 규칙 파일도 CLAUDE.md도 만들지 않습니다 |
+| **상시 규칙** | 설치하면 자동, 파일 없음 | 세션이 시작될 때마다 훅이 공식 가이드의 상시 규칙(자율 진행, 범위 제한, 시킨 범위 그대로 끝내기, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 넣습니다. 헤드리스·SDK 세션이면 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단(Opus 5.5 가이드)을 자동으로 더하고, `xhigh`/`max` effort 세션에는 "확인이 통과하면 멈춰라" 문단(블록 N, Sonnet 5.5 가이드)을 더하며, Agent 도구로 띄운 서브에이전트에는 짧은 판을 따로 넣습니다. 규칙 파일도 CLAUDE.md도 만들지 않습니다 |
 | `/fable-prompt` | 요청이 짧거나 막연할 때 | 목표·맥락·범위·완료 기준·effort를 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
 | `/fable-status` | 지금 뭐가 켜져 있는지 궁금할 때 | 플러그인 버전, 규칙 위치, 감지된 모드, effort(값과 출처), 규칙 파일이 최신인지, CLAUDE.md 충돌 수를 표 하나로 보여 줍니다. 아무것도 쓰지 않습니다 |
-| `/fable-audit` | 내 규칙이 가이드와 얼마나 맞는지 볼 때 | CLAUDE.md·규칙 파일·에이전트 프롬프트를 가이드 16개 절과 대조해 빠진 것·충돌하는 것·플러그인이 이미 덮는 것을 표로 보여 주고, Opus 5/5.5 가이드의 모델별 주의점은 점수 없이 따로 알려 줍니다. 읽기만 하고 아무것도 고치지 않습니다 |
-| `/fable-setup` | 선택 사항 | 기본값을 바꾸고 싶을 때만: 규칙을 파일로 두거나(에이전트 팀용) CLAUDE.md 구간으로, 모드를 한쪽으로 고정, effort가 어디서 오는지 안내, 기존 CLAUDE.md 규칙과의 충돌 점검 |
+| `/fable-audit` | 내 규칙에 가이드의 무엇이 빠졌는지 볼 때 | CLAUDE.md·규칙 파일·에이전트 프롬프트를 가이드 16개 절과 대조해 빠진 것·가이드와 반대로 가는 것·플러그인이 이미 덮는 것을 표로 보여 주고, Opus 5/5.5·Sonnet 5.5 가이드의 모델별 주의점은 점수 없이 따로 알려 줍니다. 읽기만 하고 아무것도 고치지 않습니다. 반대 방향의 일, 즉 낡았거나 틀렸거나 서로 부딪혀 지울 문구를 찾는 일은 Claude Code의 `/doctor prompt-audit`가 맡습니다 |
+| `/fable-setup` | 선택 사항, 한 번은 권장 | 규칙을 규칙 파일로(권장, 에이전트 팀도 이 방식) 또는 CLAUDE.md 구간으로 옮기기, 모드를 한쪽으로 고정, effort가 어디서 오는지 안내, 기존 CLAUDE.md 규칙과의 충돌 점검 |
 
 Fable 5.1은 긴 작업을 혼자 끝까지 해내는 능력이 커진 대신 버릇이 바뀌었습니다. 작업 중 말수가 줄고, 한 번에 도구 하나씩만 부르고, 작은 수정에도 파일을 통째로 다시 쓰고, low effort에서는 검색 대신 기억으로 답합니다. Opus 5.5는 긴 무인 작업 중간에 진행 보고만 하고 턴을 끝내 작업이 거기서 멈추는 버릇이 있습니다(공식 가이드 "Unattended agentic runs"). 공식 가이드는 이런 변화에 대한 증상별 처방이고, 이 플러그인은 그 처방을 자동으로 적용합니다.
 
@@ -126,9 +126,9 @@ claude plugin install oh-my-fable@oh-my-fable
 
 **규칙 위치 세 가지** (첫 질문)
 
-| | 규칙 파일 + 훅 (에이전트 팀용) | 훅만 (기본) | CLAUDE.md 구간 |
+| | 규칙 파일 + 훅 (권장) | 훅만 (설정이 없을 때의 기본) | CLAUDE.md 구간 |
 |---|---|---|---|
-| 어디에 | 기본 규칙은 `~/.claude/rules/oh-my-fable.md`(자동 로드), 무인 문단은 훅이 세션마다 | 플러그인 안 (`hooks/always-on.md`) | 내 CLAUDE.md 안 `<!-- oh-my-fable:start v2 -->` 구간 |
+| 어디에 | 기본 규칙은 `~/.claude/rules/oh-my-fable.md`(자동 로드), 무인 문단과 블록 N은 훅이 세션마다 | 플러그인 안 (`hooks/always-on.md`) | 내 CLAUDE.md 안 `<!-- oh-my-fable:start v2 -->` 구간 |
 | 파일 수정 | 규칙 파일 1개, CLAUDE.md 무관 | 없음 | CLAUDE.md 편집, 승인 필요(auto 모드 불가) |
 | 대화형/무인 자동 감지 | 예 | 예 | 아니요(고정) |
 | 서브에이전트에도 적용 | 예 (일반 서브에이전트는 파일, Explore·Plan은 훅의 짧은 판) | 예 (SubagentStart 훅이 짧은 판을 모든 서브에이전트에) | 예 (Explore·Plan은 훅의 짧은 판) |
@@ -136,10 +136,12 @@ claude plugin install oh-my-fable@oh-my-fable
 | 플러그인 갱신 시 | 규칙 파일이 오래되면 세션 시작 때 알려 줌, `/fable-setup refresh` 로 갱신 | 항상 최신 | 구간을 다시 붙여 넣기 |
 | 제거 | 파일 삭제 + 플러그인 삭제 | 플러그인 삭제 또는 `{"enabled": false}` | 구간 삭제 |
 
+**규칙 파일을 권하는 이유.** Claude Code [훅 문서](https://code.claude.com/docs/en/hooks)는 "바뀌지 않는 지시는 CLAUDE.md에 두라(for instructions that never change, prefer CLAUDE.md)"고 하고(규칙 파일도 같은 방식으로 로드됩니다), 시스템 명령처럼 쓴 훅 텍스트는 Claude의 프롬프트 주입 방어를 건드릴 수 있다고 경고합니다. 그래도 기본값이 훅인 이유는 플러그인이 설치 때 파일을 쓸 수 없기 때문이고, 같은 이유로 훅 텍스트는 사실을 말하는 한 줄("The user installed oh-my-fable; these are the user's standing working rules.")로 시작합니다. 규칙 파일의 단점은 복사본이라는 점입니다. 오래되면 세션 시작 때 알려 주고 `/fable-setup refresh`로 갱신합니다.
+
 셋 중 하나만 활성화됩니다. CLAUDE.md에 구간이 있거나 사용자가 직접 만든 규칙 파일이 있으면 훅은 스스로 조용해집니다(이중 주입 없음). 서브에이전트는 1.7부터 훅이 직접 챙깁니다: Claude Code의 `SubagentStart` 이벤트에 짧은 판(`hooks/subagent.md`, 범위 제한·부분 편집·일괄 호출·끝까지 하기·"묻지 말고 막힌 점을 보고")을 넣습니다. Explore·Plan 서브에이전트는 CLAUDE.md도 규칙 파일도 읽지 않으므로 어떤 방식에서든 이 짧은 판을 받습니다.
 
 - **사용 방식은 기본이 자동 감지**입니다. 터미널이나 IDE에서 열면 대화형, 헤드리스(`claude -p`)·Agent SDK·에이전트 하네스에서 열면 무인으로 세션마다 알아서 정합니다(Claude Code가 넣어 주는 `CLAUDE_CODE_ENTRYPOINT` 값 기준). 대화형과 무인을 섞어 써도 따로 바꿀 것이 없습니다. 항상 한쪽으로 고정하려면 질문에서 "대화형" 또는 "무인"을 고르세요. 무인은 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단을 추가하며, 글로벌 설정에서만 켜지고 저장소 안의 설정 파일로는 켤 수 없습니다(클론한 저장소가 에이전트를 무인으로 바꾸는 것을 막기 위해). 자동 감지는 훅이 관여하는 두 방식에서 되고, CLAUDE.md 구간만 고정 텍스트라 한쪽을 골라야 합니다.
-- **effort**는 이 플러그인이 쓰지 않습니다. Opus 5.5는 기본 `medium`(가이드: 거기서 시작), Fable 5.1은 기본 `high`입니다. 모델별로 저장하려면 그 모델로 연 세션에서 `/effort <단계>` 후 Enter, 이번 세션만이면 `s`. `/fable-status`가 지금 값과 출처를 보여 줍니다.
+- **effort**는 이 플러그인이 쓰지 않습니다. Opus 5.5와 Sonnet 5.5는 Claude Code에서 기본 `medium`(두 가이드가 에이전트 작업의 출발점으로 꼽는 값), Fable 5.1은 기본 `high`입니다. 모델별로 저장하려면 그 모델로 연 세션에서 `/effort <단계>` 후 Enter, 이번 세션만이면 `s`. `/fable-status`가 지금 값과 출처를 보여 줍니다.
 
 </details>
 
@@ -179,13 +181,13 @@ claude plugin install oh-my-fable@oh-my-fable
 
 - **문제를 설명만 할 때** · "진단만 하고 고치지 마". 가이드의 명시적 예외.
 - **최신 정보가 필요할 때** · effort를 high 이상으로 두거나 "사용자가 쓴 이름 그대로 한 번은 검색해" (블록 H).
-- **effort** · Opus 5.5는 `medium`이 기본이자 가이드의 출발점, Fable 5.1은 `high`가 기본. 어려운 작업만 그 세션에서 올리기(`/effort high` 다음 `s`). `low`는 검색을 건너뛸 수 있음. `xhigh`/`max`는 생각이 길어지고(Opus 5.5는 같은 단계에서 Opus 5보다 더 오래 생각함) 긴 문서는 초안을 두 번 써서 느려지니 장문 안내문(블록 G)을 붙이고 `max_tokens`를 넉넉히.
+- **effort** · Opus 5.5와 Sonnet 5.5는 `medium`이 기본이자 가이드의 출발점, Fable 5.1은 `high`가 기본. 어려운 작업만 그 세션에서 올리기(`/effort high` 다음 `s`). `low`는 검색을 건너뛸 수 있음. `xhigh`/`max`는 생각이 길어지고(Opus 5.5는 같은 단계에서 Opus 5보다 더 오래 생각함) 긴 문서는 초안을 두 번 써서 느려지니 장문 안내문(블록 G)을 붙이고 `max_tokens`를 넉넉히.
 - **글이 빽빽할 때** · `Please remove all mannered prose.`
 - **자료 요약** · 올바른 답 예시 1건(블록 J)을 같이 줌.
 
 ## 2층 · 상시 규칙
 
-플러그인의 SessionStart 훅이 세션마다 아래 블록을 영어 원문 그대로 불러옵니다(파일 `hooks/always-on.md`). CLAUDE.md는 수정하지 않으며, 사용자 언어와 무관하게 영어입니다. 블록 A의 첫 문단("사용자가 지켜보고 있지 않다")과 블록 M("중간 보고로 멈추지 말라")은 헤드리스·SDK 세션에서만 자동으로 들어가고 터미널·IDE에서는 빠집니다. 항상 넣으려면 `/fable-setup unattended`.
+플러그인의 SessionStart 훅이 세션마다 아래 블록을 영어 원문 그대로 불러옵니다(파일 `hooks/always-on.md`). CLAUDE.md는 수정하지 않으며, 사용자 언어와 무관하게 영어입니다. 블록 A의 첫 문단("사용자가 지켜보고 있지 않다")과 블록 M("중간 보고로 멈추지 말라")은 헤드리스·SDK 세션에서만 자동으로 들어가고 터미널·IDE에서는 빠집니다. 항상 넣으려면 `/fable-setup unattended`. 블록 N은 세션이 `xhigh`나 `max` effort로 시작할 때만 들어갑니다(`claude -p`에서는 훅이 모델을 전달받지 못해 `CLAUDE_CODE_EFFORT_LEVEL`만 기준이 됩니다). 훅이 넣는 각 부분은 사실을 말하는 한 줄로 시작합니다(예: "This session was started headless (entrypoint sdk-cli); the user's standing rules for such sessions follow."). Claude Code 훅 문서가 훅 텍스트를 시스템 명령이 아닌 사실 문장으로 쓰라고 하기 때문입니다.
 
 | 블록 | 한 줄 요지 | 주의 |
 |---|---|---|
@@ -197,11 +199,12 @@ claude plugin install oh-my-fable@oh-my-fable
 | **E** 진행 보고 | 시작 한 줄, 중간 갱신, 끝에는 마지막 메시지만 봐도 되는 요약 | 먼저 "마지막에 한꺼번에 보고" 류 옛 지시를 삭제 |
 | **I** 서식 규칙 | 내용이 다면적이면 목록, 요청하면 최소 서식, 대화체는 산문 | 옛 "서식 쓰지 마" 규칙은 삭제. 5.1은 이미 서식을 덜 씀 |
 | **B** 도구 일괄 호출 | 필요한 것을 먼저 나열하고 서로 독립인 것은 한 번에 요청 | |
+| **N** 확인이 통과하면 멈추기 | 부탁한 일이 끝나고 확인이 통과하면 멈추고 보고. 스스로 검토·보강을 몇 차례 더 돌리지 않고, 검토를 부탁받지 않았으면 검토용 서브에이전트도 띄우지 않으며, 더 깊은 검토가 필요해 보이면 끝에 말하기 | Sonnet 5.5 가이드에서 옴. `xhigh`/`max` effort 세션에만. 가이드의 시험(Sonnet 5.5, `max`)에서 검토용 서브에이전트가 사라지고 세션 비용이 약 3분의 1 줄었으며 품질 변화는 없었음 |
 
 ## 3층 · 설정값
 
 - 모드 · `~/.claude/oh-my-fable.json` 의 `{"enabled": true, "mode": "interactive" | "unattended"}`. 프로젝트의 `.claude/oh-my-fable.json` 이 있으면 그것이 우선. `/fable-setup` 이 대신 써 줍니다.
-- effort · `/effort <단계>` 후 Enter가 settings.json의 `modelSettings.<모델>.effortLevel`에 모델별로 저장합니다. 옛 전역 `effortLevel`은 Opus 5.5에는 적용되지 않습니다. 환경 변수 `CLAUDE_CODE_EFFORT_LEVEL`이 있으면 그것이 이기니 모델별 값을 쓰려면 환경 변수를 비울 것. 기본값은 Opus 5.5 `medium`, 그 밖의 모델 `high`(Opus 4.7은 `xhigh`). 모델마다 단계의 실제 사고량이 달라 다른 모델의 값을 그대로 옮기지 말 것.
+- effort · `/effort <단계>` 후 Enter가 settings.json의 `modelSettings.<모델>.effortLevel`에 모델별로 저장합니다. 옛 전역 `effortLevel`은 Opus 5.5와 Sonnet 5.5에는 적용되지 않습니다. 환경 변수 `CLAUDE_CODE_EFFORT_LEVEL`이 있으면 그것이 이기니 모델별 값을 쓰려면 환경 변수를 비울 것. `maxEffortLevel`(전역 또는 모델별)이 있으면 어느 값이든 그 상한으로 깎이고, `/fable-status`가 깎인 값을 보여 줍니다. 기본값은 Opus 5.5·Sonnet 5.5 `medium`, 그 밖의 모델 `high`(Opus 4.7은 `xhigh`). 모델마다 단계의 실제 사고량이 달라 다른 모델의 값을 그대로 옮기지 말 것.
 - API 직접 연동 · `thinking.display: "updates"`를 켜야 진행 메모가 화면에 옴. 대화 이력은 덧붙이기만(thinking 블록 포함), 턴마다 넣는 알림은 turn-scoped system message로. 압축은 서버 압축 또는 블록 K.
 - 서브에이전트 · 시작 도구는 즉시 반환, 결과는 나중 메시지로. Claude Code 서브에이전트는 세션의 effort를 그대로 물려받으니, 고정하려면 에이전트 파일 머리말(frontmatter)에 `effort:`.
 - 비전 · 차트·표는 crop-and-zoom 도구를 붙이면 대부분의 이득.
@@ -213,6 +216,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|
 | "할까요?" 하고 멈춤 | 블록 A·M (무인 세션이면 자동, 항상 넣으려면 `/fable-setup unattended`) |
 | 무인 실행이 진행 보고만 하고 턴을 끝냄 | 블록 M (무인 세션이면 자동) |
+| `xhigh`/`max`에서 일이 끝난 뒤에도 검토·보강을 계속하거나 검토용 서브에이전트를 띄움 | 블록 N (`xhigh`/`max`로 시작한 세션이면 자동), 또는 일상 작업은 `high` 이하로 |
 | 시키지 않은 곳까지 고침 | 블록 D |
 | 시킨 것보다 좁히거나 넓혀서 함 | 블록 L |
 | 몇 분씩 조용함 | 옛 지시 삭제 후 블록 E, API면 thinking.display |
@@ -231,10 +235,10 @@ claude plugin install oh-my-fable@oh-my-fable
 `/fable-setup`이 표로 짚어 줍니다. 같은 뜻이면 "이미 있음", 반대 뜻(서식 금지, 마지막에 한꺼번에 보고)이면 바꿔 넣을 문장을 제안합니다. 실제 수정은 사용자가 합니다. Claude Code가 AI의 CLAUDE.md 자기 수정을 막기 때문입니다.
 
 **규칙을 CLAUDE.md 말고 다른 곳에 두고 싶어요.**
-기본값이 이미 그렇습니다. 규칙은 플러그인 안에만 있고 훅이 세션마다 넣으므로 CLAUDE.md도 규칙 파일도 만들지 않습니다. 굳이 파일로 두고 싶으면(에이전트 팀을 쓰거나 팀원과 같은 파일을 공유하려면) `/fable-setup`에서 규칙 파일 또는 CLAUDE.md 구간을 고릅니다. 비교표는 [초보자 흐름](#초보자-흐름)의 "선택 사항"에 있습니다.
+기본값에서는 규칙이 플러그인 안에만 있고 훅이 세션마다 넣으므로 CLAUDE.md도 규칙 파일도 만들지 않습니다. 권장하는 설정은 규칙 파일(`/fable-setup rules-file`)입니다. Claude Code 훅 문서가 바뀌지 않는 규칙은 훅 텍스트보다 파일에 두라고 하고, 에이전트 팀도 이 파일을 읽습니다. CLAUDE.md 구간은 세 번째 선택지입니다. 비교표는 [초보자 흐름](#초보자-흐름)의 "선택 사항"에 있습니다.
 
 **Opus 5.5에서도 되나요?**
-됩니다. 지금 Claude Code의 기본 모델이 Opus 5.5라 2.2.0부터 두 모델을 함께 기준으로 삼습니다. 끝까지 하기·범위 제한·진행 보고는 두 가이드가 같은 말을 하고, 무인 세션의 "중간 보고로 멈추지 말라" 문단(블록 M)은 Opus 5.5 가이드에서 왔습니다. 서식 규칙·부분 편집·도구 일괄 호출은 Fable 5.1 가이드에서 온 것이라 Opus 5.5에서는 효과가 작을 수 있지만 해는 없습니다. Opus 5, Sonnet 5도 마찬가지입니다.
+됩니다. 지금 Claude Code의 기본 모델이 Opus 5.5라 2.2.0부터 두 모델을 함께 기준으로 삼습니다. 끝까지 하기·범위 제한·진행 보고는 두 가이드가 같은 말을 하고, 무인 세션의 "중간 보고로 멈추지 말라" 문단(블록 M)은 Opus 5.5 가이드에서 왔습니다. 서식 규칙·부분 편집·도구 일괄 호출은 Fable 5.1 가이드에서 온 것이라 Opus 5.5에서는 효과가 작을 수 있지만 해는 없습니다. Sonnet 5.5, Opus 5, Sonnet 5도 마찬가지입니다. Sonnet 5.5도 Claude Code에서 `medium` effort로 시작하고 사용자 설정의 전역 `effortLevel`을 무시하며, 상태 줄이 그 사실을 보여 줍니다.
 
 **왜 지금 바로 쓰려면 `/reload-plugins` 다음 `/clear` 인가요?**
 공식 문서 기준 두 명령은 하는 일이 다릅니다. `/reload-plugins`는 "플러그인, 스킬, 에이전트, 훅, MCP 서버를 재시작 없이 다시 로드"합니다([Plugins](https://code.claude.com/docs/en/plugins)). 규칙을 넣는 SessionStart 훅은 "새 세션(startup), 재개(resume), `/clear`, 압축(compact), 분기(fork)" 때만 실행됩니다([Hooks](https://code.claude.com/docs/en/hooks#sessionstart)). 즉 reload는 훅을 등록만 하고 실행하지 않으므로, 설치한 세션에서는 `/clear`로 한 번 실행시켜야 합니다. 새 세션을 열면 둘 다 필요 없습니다.
@@ -247,6 +251,12 @@ claude plugin install oh-my-fable@oh-my-fable
 
 **플러그인을 못 까는 헤드리스 전용 환경(별도 CLAUDE_CONFIG_DIR, CI)은?**
 `hooks/rules-file-unattended.md`를 그 환경의 `rules/oh-my-fable.md`로 복사(또는 이 저장소 체크아웃에 심링크)하면 플러그인 없이 무인 규칙 전체가 실립니다. 훅은 이 파일을 사용자 관리 파일로 보고 조용합니다.
+
+**`/fable-audit`와 `/doctor prompt-audit`는 뭐가 다른가요?**
+묻는 방향이 반대입니다. `/fable-audit`는 내 규칙에 프롬프팅 가이드의 어떤 절이 빠졌는지(더할 것)를 찾고, Claude Code의 `/doctor prompt-audit`(2.1.283 이상)는 내 규칙에서 낡았거나 틀렸거나 서로 부딪히는 문구(지울 것)를 찾습니다. 둘 다 스스로 고치지 않으니, 설정을 정리할 때는 둘 다 돌리세요.
+
+**`omitClaudeMd: true`인 서브에이전트도 규칙을 받나요?**
+규칙 파일이나 CLAUDE.md로는 받지 못합니다. Claude Code 2.1.284에서 재 보니 `omitClaudeMd: true`인 사용자 정의 서브에이전트는 `~/.claude/rules/*.md`, 프로젝트의 `.claude/rules/*.md`, CLAUDE.md를 하나도 보지 못했고, 같은 에이전트에서 이 설정만 뺀 쪽은 셋 다 봤습니다. 훅은 이런 에이전트를 구별할 수 없어서(SubagentStart 입력에는 에이전트 종류만 옴) 훅만 방식이면 다른 서브에이전트처럼 짧은 판을 받고, 다른 방식이면 이 플러그인에서 아무것도 받지 않습니다. 가벼운 문맥이라는 이 설정의 취지와 맞으니, 꼭 닿아야 하는 규칙은 그 에이전트의 프롬프트에 넣으세요.
 
 **API나 Agent SDK로 직접 붙이는 경우는?**
 `/fable-setup`은 질문 도구가 필요해 SDK에서는 `auto` 인자만 됩니다. 가장 간단한 방법은 `hooks/always-on.md` 내용을 시스템 프롬프트에 그대로 붙이는 것입니다. 3층의 API 항목(thinking.display 등)은 그쪽 설정입니다.
@@ -265,6 +275,7 @@ oh-my-fable/
 │   ├── always-on.md           블록 원문 (영어)
 │   ├── rules-file.md          /fable-setup이 ~/.claude/rules/oh-my-fable.md 로 복사하는 기본 규칙
 │   ├── rules-file-unattended.md 플러그인 없는 헤드리스 전용 환경용 정적 규칙(무인 문단 둘 포함)
+│   ├── effort-high.md         블록 N, 세션이 xhigh·max effort로 시작할 때만 추가
 │   └── autonomy-unattended.md 무인 모드에서만 추가되는 문단 둘
 ├── skills/
 │   ├── fable-setup/SKILL.md   충돌 점검·모드 전환·설정 점검 (2층·3층)
@@ -274,13 +285,14 @@ oh-my-fable/
 │   │   └── references/        가이드 절별 점검표와 모델별 주의점
 │   └── fable-prompt/
 │       ├── SKILL.md           매번 요청 개선 (1층)
-│       └── references/        블록 원문(A~M)과 전후 예시
+│       └── references/        블록 원문(A~N)과 전후 예시
+├── evals/                     `claude plugin eval` 평가 묶음: 사례 5개, 모델 판정 없이 규칙으로 채점
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## 기여와 라이선스
 
-이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `skills/fable-prompt/references/prompt-blocks.md`(전체 블록 목록)를 같이 고칩니다.
+이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable-prompt/references/prompt-blocks.md`(전체 블록 목록)를 같이 고칩니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
 
 MIT © Junhan2. 가이드 원문의 저작권은 Anthropic에 있습니다.

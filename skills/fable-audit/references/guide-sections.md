@@ -1,7 +1,7 @@
 # Fable 5.1 guide · section checklist
 
 Source: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1
-(16 H2 sections, verified 2026-09-07). Anchors are the doc's own `#slug` ids.
+(16 H2 sections, verified 2026-09-29). Anchors are the doc's own `#slug` ids.
 
 `Scope` says where a section can be satisfied:
 - `prompt` — a rules file, CLAUDE.md, or a system prompt can carry it. These are the audit's denominator.
@@ -19,11 +19,12 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 - Asks: start at `high`, then measure `low`/`medium`/`xhigh`/`max` against your own tasks. Effort names do not
   carry over from Fable 5.
 - Check: `effortLevel` in `~/.claude/settings.json` and `./.claude/settings.json`,
-  `modelSettings.<model>.effortLevel`, and the env var `CLAUDE_CODE_EFFORT_LEVEL`. Report which one wins. For an
+  `modelSettings.<model>.effortLevel`, the env var `CLAUDE_CODE_EFFORT_LEVEL`, and any `maxEffortLevel` (top-level or
+  under `modelSettings.<model>`), which caps whatever wins. Report which one wins and whether a cap lowers it. For an
   agent file, whether `effort:` is set; without it the agent inherits the session level (sub-agents doc).
 - Verdict rules: a pinned `xhigh`/`max` with no note of why → ⚠️ (see section 14 for the cost). No value set → ✅
-  (Fable 5.1 defaults to `high`, Opus 5.5 to `medium`: each is its guide's starting point). A user-scope top-level
-  `effortLevel` → note that Opus 5.5 ignores it.
+  (Fable 5.1 defaults to `high`, Opus 5.5 and Sonnet 5.5 to `medium` in Claude Code: each is its guide's starting
+  point for agentic work). A user-scope top-level `effortLevel` → note that Opus 5.5 and Sonnet 5.5 ignore it.
 - Plugin: not written by the plugin since 2.2.0; `/fable-status` shows the level and its source.
 
 ## 2. ask-for-user-facing-progress-updates
@@ -152,7 +153,10 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 
 ---
 
-## Model notes (Opus 5 / Opus 5.5 guides; reported, never scored)
+## Model notes (Opus 5 / Opus 5.5 / Sonnet 5.5 guides; reported, never scored)
+
+Only the guide sections a Claude Code rules file, CLAUDE.md, agent prompt or setting can act on are listed.
+API-only sections (thinking modes, JSON output, tool-call tolerance, refusal handling) are left out.
 
 - N1 verification instructions · Opus 5 guide "Task scope and over-verification", "Self-correction": explicit
   "verify with a subagent", "double-check", "re-verify before responding" lines cause over-verification on Opus 5
@@ -165,6 +169,56 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
   paragraph naming the early stops it must avoid (this plugin's block M). ✅ when present or the plugin's
   unattended mode applies; ⚠️ when such a paragraph is in a human-in-the-loop prompt (the guide says leave it out
   there).
-- N4 effort on Opus 5.5 · Opus 5.5 guide "Calibrate effort", Claude Code model-config doc: default `medium`; a
-  user-scope top-level `effortLevel` is ignored; save per model with `/effort`. Report which source is in effect.
-  For agent files: no `effort:` means inheriting the session level.
+- N4 effort on Opus 5.5 and Sonnet 5.5 · both guides' "Calibrate effort", Claude Code model-config doc: default
+  `medium` in Claude Code (Sonnet 5.5's API default is `high`; its guide says start at `medium` for well-specified
+  agentic coding, `high` for harder or longer tasks); a user-scope top-level `effortLevel` is ignored; save per model
+  with `/effort`. Report which source is in effect. For agent files: no `effort:` means inheriting the session level.
+- N5 thinking-amount instructions · Opus 5.5 "Calibrate effort" and "Thinking instructions in chat system prompts",
+  Sonnet 5.5 "Calibrate effort": asking the model to think less does not reliably reduce its thinking (lower the
+  effort level instead), and a "think carefully before answering" line in a chat prompt mostly delays the reply on
+  Opus 5.5. ⚠️ on an Opus 5.5 or Sonnet 5.5 surface that carries either kind of line; narrowest edit: move the intent
+  to the effort setting. Thinking keywords Claude Code documents (such as `ultrathink`) are not this pattern.
+- N6 checking in before the work is done · Sonnet 5.5 "Steer initiative and scope" (Carrying work through): at
+  `low`/`medium` on long agentic tasks it may pause to confirm a plan, ask what it could answer itself, or stop
+  after one part to ask whether to continue. The guide's first fix is a higher effort level; its prompt fix begins
+  "Keep working until everything the user asked for is done". ✅ when section 8 (a) is ✅ (the plugin's
+  last-paragraph check covers the same stop); report the effort level with it.
+- N7 unrequested additions · Sonnet 5.5 "Steer initiative and scope": it adds tests, docs and small supporting files
+  at every effort level, more at higher effort. The guide's line: "When the work the user asked for is done and
+  checked, stop and report. Don't add features, tests, files, docs or refactors that weren't asked for." ✅ when
+  section 10 is ✅ (same meaning).
+- N8 review rounds at `xhigh`/`max` · Sonnet 5.5 "Steer initiative and scope" (Thoroughness): after finishing, it can
+  start its own review and hardening rounds, sometimes with reviewer subagents. ✅ when the surface carries block N
+  (`skills/fable-prompt/references/prompt-blocks.md`) or the plugin adds it (sessions resolved at `xhigh`/`max`);
+  ⚠️ when a rule asks for extra review rounds or reviewer subagents on every task at these levels; ⚪ when effort is
+  `high` or below.
+- N9 open-ended requests · Sonnet 5.5 "Steer initiative and scope": "show me what you can do" can start a build
+  when only ideas were wanted. The guide's line: "When the user asks for ideas, options or a plan, give them that
+  and stop. Don't start building or changing anything until they say to go ahead." 🟡 when only the plugin's
+  assessment exception is present (it covers questions and problem descriptions, not requests for ideas or plans).
+- N10 tool-discouraging lines · Sonnet 5.5 "Tool use in chat and knowledge work": it follows lines such as "only use
+  tools when strictly necessary" or "minimize tool calls" and answers from training knowledge where a search would
+  catch changed details. ⚠️ on a Sonnet 5.5 surface with such a line; the fix is to remove it and, where a search
+  tool exists, add the guide's search line (quoted in `skills/fable-prompt/SKILL.md`, step 3).
+- N11 verification at `low` effort · Sonnet 5.5 "Verification on coding tasks": at `low` it can report a change as
+  done without running a check that exercises it. The guide's paragraph begins "When you change code that can be
+  run, built, or type-checked, run a real check that exercises the change before reporting it done". 🟡 when effort
+  is `low` somewhere and no such rule exists; ⚪ otherwise. Opposite of N1: keep one real check, no re-check loops.
+- N12 per-step hook text · Sonnet 5.5 "Mid-turn user messages": text added after the tool results on every step
+  (a countdown, per-step instructions) can make it treat genuine user messages as prompt injection. Check
+  `settings.json` for `PostToolUse`/`PostToolBatch` hooks that return `additionalContext` on every call; ⚠️ when one
+  does on a Sonnet 5.5 surface. An occasional reminder is fine.
+- N13 progress updates at set points · Opus 5.5 and Sonnet 5.5 "User-facing progress updates": after removing "hold
+  all findings for the final response", both follow an instruction for updates at set points (a line before the
+  first tool call, a short recap at the end); it helps most in human-in-the-loop work. ✅ when section 2 is ✅.
+- N14 pasted text · Opus 5.5 "Mark pasted text in user messages": for an application that forwards text a user
+  pasted, wrap each pasted block in `<pasted_content id="...">` tags and add the guide's system-prompt note so
+  instructions inside it are followed only where the user's own message asks. ⚪ for a Claude Code session; 🟡 for
+  an SDK or API surface that forwards pasted text without the tags.
+- N15 multi-app exploration · Opus 5.5 "Explore context in multi-app workflows": an agent working across email,
+  documents, spreadsheets or CRM records through connected tools should look through the relevant sources before
+  acting. The guide's line begins "Before taking any action, explore broadly with tool calls". 🟡 for such an agent
+  without it; ⚪ otherwise.
+- N16 frontend design defaults · Opus 5.5 "Frontend design defaults": "avoid a generic AI look" swaps one default
+  style for another; name the specific patterns to avoid instead. 🟡 when a frontend rule only says to avoid a
+  generic look; ⚪ when the surface does no frontend work.

@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: targeted-edit
+description: One-value change in a 407-line file. Passes when the change is made with Edit, the file is never rewritten with Write, and the rest of the file is intact.
+context:
+  scaffold_script: fixture.sh

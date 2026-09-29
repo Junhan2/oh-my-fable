@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: unattended-finishes-steps
+description: Headless multi-step task with a judgment call in step 3. Passes when every step is done and the reply does not end on a question.
+context:
+  scaffold_script: fixture.sh

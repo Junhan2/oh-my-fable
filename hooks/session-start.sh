@@ -21,9 +21,17 @@
 #      warns once per session when the plugin ships a newer version of that file
 #   3. any other rules/oh-my-fable.md (user-managed): hook stays silent
 #   4. nothing else: the hook carries everything (hook only)
+# Effort: when the level resolved at SessionStart is xhigh or max, the hook also adds effort-high.md (block N, from
+# the Sonnet 5.5 guide: stop after the checks pass, no self-started review rounds) in states 2 and 4.
 # Subagents: Explore and Plan never load CLAUDE.md or rules files, so they get the short rules from this hook
 # whenever the plugin is enabled. Other subagents get the short rules only in hook-only delivery (otherwise the
 # rules file or CLAUDE.md section already reaches them).
+# A custom subagent whose definition sets omitClaudeMd: true (Claude Code 2.1.271+) loads no rules files either:
+# measured 2026-09-29 on 2.1.284, such an agent saw neither ~/.claude/rules/*.md, the project's .claude/rules/*.md,
+# nor CLAUDE.md, while the same agent without the flag saw all three. SubagentStart input carries only agent_type,
+# not the agent's definition, so the hook cannot tell these agents apart: under hook-only delivery they get the short
+# rules like every subagent; under the other deliveries they get nothing from this plugin. That fits the flag's
+# purpose (a lean context); a rule that must reach such an agent belongs in its delegation prompt or its own prompt.
 #
 # Output: plain text when run by hand (no hook JSON on stdin); JSON with additionalContext / systemMessage when
 # Claude Code runs it. No python, jq, or other runtime is needed (macOS, Linux, Windows Git Bash).
@@ -76,28 +84,43 @@ fi
 [ "$STATE" = hook-only ] && [ "$DELIVERY" = claude-md ] && STATE=claude-md   # config says CLAUDE.md, section not found yet
 [ "$ENABLED" = true ] || STATE=disabled
 
-# effort shown in the status line. Claude Code sets CLAUDE_EFFORT (and the effort input field) only inside tool-use
-# contexts, never for SessionStart (hooks doc, common input fields; measured on 2.1.280), so a CLAUDE_EFFORT seen at
-# SessionStart was inherited from a parent session's Bash tool and describes that session: ignored. With --status (run
-# by the Bash tool inside the session) CLAUDE_EFFORT is the live level and wins. Otherwise: the env override, then the
-# user settings file, where modelSettings.<canonical model>.effortLevel beats the top-level effortLevel; Opus 5.5
-# ignores a user-scope top-level effortLevel and starts at its own default, medium (model-config doc).
-model_default() { case "$1" in claude-opus-5-5*) echo medium;; claude-opus-4-7*) echo xhigh;; "") ;; *) echo high;; esac; }
-effort_val() { grep -o '"effortLevel":"[a-z]*"' | head -1 | sed 's/.*://; s/"//g'; }
-EFFORT=""; SRC=""
-if [ "$STATUS" = true ] || [ -z "$EVENT" ] || { [ "$EVENT" = SessionStart ] && [ "$SOURCE" = startup ]; }; then   # only the startup status line and --status show it
+# effort, shown in the startup status line and used for the xhigh/max paragraph. Claude Code sets CLAUDE_EFFORT (and
+# the effort input field) only inside tool-use contexts, never for SessionStart (hooks doc, common input fields;
+# measured on 2.1.280), so a CLAUDE_EFFORT seen at SessionStart was inherited from a parent session's Bash tool and
+# describes that session: ignored. With --status (run by the Bash tool inside the session) CLAUDE_EFFORT is the live
+# level and wins. Otherwise: the env override, then the user settings file, where modelSettings.<canonical
+# model>.effortLevel beats the top-level effortLevel, then the model's default (model-config doc). A maxEffortLevel
+# (modelSettings.<model>.maxEffortLevel, else top-level) caps whatever was resolved, the default included (settings
+# reference). Only the user settings file is read; levels and caps from project or managed settings are not seen.
+# `claude -p` sends SessionStart no model field (measured 2026-09-29 on 2.1.284), so headless runs resolve effort
+# only from CLAUDE_CODE_EFFORT_LEVEL; without it the status line shows none and block N is not added.
+model_default() { case "$1" in claude-opus-5-5*|claude-sonnet-5-5*) echo medium;; claude-opus-4-7*) echo xhigh;; "") ;; *) echo high;; esac; }
+# Models that ignore a user-scope top-level effortLevel and start at their own default ("Opus 5.5 and models released
+# after it", model-config doc). This is the one list to extend when a new model ships.
+ignores_top_effort() { case "$1" in claude-opus-5-5*|claude-sonnet-5-5*) return 0;; *) return 1;; esac; }
+level_rank() { case "$1" in low) echo 1;; medium) echo 2;; high) echo 3;; xhigh) echo 4;; max) echo 5;; *) echo 0;; esac; }
+key_val() { grep -o "\"$1\":\"[a-z]*\"" | head -1 | sed 's/.*://; s/"//g'; }   # first "key":"value" on stdin
+top_val() { sed "s/\"[^\"]*\":{[^{}]*\"$1\":\"[a-z]*\"[^{}]*}//g" | key_val "$1"; }   # the same, outside per-model objects
+EFFORT=""; SRC=""; HIGH_EFFORT=false
+if [ "$STATUS" = true ] || [ -z "$EVENT" ] || [ "$EVENT" = SessionStart ]; then
   MODEL="$(jget model | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//')"   # canonical id: no [1m], no date suffix
+  SJ=""; [ -f "$CFG/settings.json" ] && SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
+  MOBJ=""; [ -n "$MODEL" ] && MOBJ="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}")"
   if [ "$STATUS" = true ] && [ -n "${CLAUDE_EFFORT:-}" ]; then EFFORT="$CLAUDE_EFFORT"; SRC=live
   elif [ -n "${CLAUDE_CODE_EFFORT_LEVEL:-}" ]; then EFFORT="$CLAUDE_CODE_EFFORT_LEVEL"; SRC=env
   elif [ -n "$MODEL" ]; then
-    SJ=""; [ -f "$CFG/settings.json" ] && SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
-    PER_MODEL="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}" | effort_val)"
-    TOP=""   # the user-scope top-level effortLevel, read only when needed; Opus 5.5 ignores it
-    case "$MODEL" in claude-opus-5-5*) ;; *) [ -n "$PER_MODEL" ] || TOP="$(printf '%s' "$SJ" | sed 's/"[^"]*":{[^{}]*"effortLevel":"[a-z]*"[^{}]*}//g' | effort_val)";; esac
+    PER_MODEL="$(printf '%s' "$MOBJ" | key_val effortLevel)"
+    TOP=""; IGNORED=""; [ -n "$PER_MODEL" ] || TOP="$(printf '%s' "$SJ" | top_val effortLevel)"
+    if [ -n "$TOP" ] && ignores_top_effort "$MODEL"; then IGNORED=", top-level effortLevel $TOP ignored"; TOP=""; fi
     if [ -n "$PER_MODEL" ]; then EFFORT="$PER_MODEL"; SRC=saved
     elif [ -n "$TOP" ]; then EFFORT="$TOP"; SRC=settings
-    else EFFORT="$(model_default "$MODEL")"; SRC="model default"; fi
+    else EFFORT="$(model_default "$MODEL")"; SRC="model default$IGNORED"; fi
   fi
+  CAP="$(printf '%s' "$MOBJ" | key_val maxEffortLevel)"; [ -n "$CAP" ] || CAP="$(printf '%s' "$SJ" | top_val maxEffortLevel)"
+  if [ -n "$EFFORT" ] && [ "$(level_rank "$CAP")" -gt 0 ] && [ "$(level_rank "$EFFORT")" -gt "$(level_rank "$CAP")" ]; then
+    SRC="$SRC, $EFFORT → $CAP by maxEffortLevel"; EFFORT="$CAP"
+  fi
+  case "$EFFORT" in xhigh|max) HIGH_EFFORT=true;; esac
 fi
 EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT ($SRC)}"; [ -n "$EFFORT" ] || EFFORT="(not known at session start; /effort shows it)"
 
@@ -138,19 +161,30 @@ if [ "$EVENT" = SubagentStart ]; then
 fi
 
 # ---------- SessionStart (or run by hand) ----------
+# Each injected part opens with a one-line factual lead-in: the hooks doc asks for additionalContext written as
+# factual statements, because text framed as out-of-band system commands can trigger prompt-injection defenses.
+# The rule paragraphs themselves are unchanged.
+P2=$'\n\n'
+if [ "$AUTO" = "" ]; then UNATTENDED_LEAD="The user set oh-my-fable to unattended mode for every session; the user's standing rules for such sessions follow."
+else UNATTENDED_LEAD="This session was started headless (entrypoint ${CLAUDE_CODE_ENTRYPOINT:-unknown}); the user's standing rules for such sessions follow."; fi
+UNATTENDED="$UNATTENDED_LEAD$P2$(cat "$HERE/autonomy-unattended.md")"
+HIGH="This session runs at $EFFORT effort ($SRC); the user's standing rule for that level follows.$P2$(cat "$HERE/effort-high.md")"
 CTX=""
 case "$STATE" in
   claude-md|user-rules) ;;
-  rules-file)
-    [ "$MODE" = unattended ] && CTX="$(printf '# Working rules (oh-my-fable), unattended session\n\n%s\n' "$(cat "$HERE/autonomy-unattended.md")")";;
+  rules-file)   # the base rules come from the rules file; add only what depends on this session
+    EXTRA=""
+    [ "$MODE" = unattended ] && EXTRA="$UNATTENDED"
+    [ "$HIGH_EFFORT" = true ] && EXTRA="${EXTRA:+$EXTRA$P2}$HIGH"
+    [ -n "$EXTRA" ] && CTX="# Working rules (oh-my-fable), this session$P2$EXTRA";;
   hook-only)
     BODY="$(cat "$HERE/always-on.md")"
-    if [ "$MODE" = unattended ]; then
-      HEAD="$(printf '%s\n' "$BODY" | sed -n '1p')"
-      REST="$(printf '%s\n' "$BODY" | sed '1d')"
-      BODY="$HEAD"$'\n\n'"$(cat "$HERE/autonomy-unattended.md")"$'\n'"$REST"
-    fi
-    CTX="$BODY";;
+    HEAD="$(printf '%s\n' "$BODY" | sed -n '1p')"
+    REST="$(printf '%s\n' "$BODY" | sed '1d')"
+    CTX="The user installed oh-my-fable; these are the user's standing working rules.$P2$HEAD"
+    [ "$MODE" = unattended ] && CTX="$CTX$P2$UNATTENDED"
+    CTX="$CTX"$'\n'"$REST"
+    [ "$HIGH_EFFORT" = true ] && CTX="$CTX$P2$HIGH";;
 esac
 
 if [ -z "$EVENT" ]; then

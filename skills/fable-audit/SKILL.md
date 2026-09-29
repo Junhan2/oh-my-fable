@@ -1,8 +1,14 @@
 ---
 name: fable-audit
-description: Read-only. Scores your CLAUDE.md, rules files, and agent system prompts against the 16 sections of Anthropic's Fable 5.1 prompting guide plus the Opus 5 / Opus 5.5 model notes - what is missing, what conflicts, what the plugin already covers. Changes nothing; it prints suggested wording and stops. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "프롬프트 점검", "규칙 점검", "audit my prompts", "check against the Fable guide", "which guide sections am I missing", "prompt compliance", "system prompt review".
+description: Read-only gap check. Finds which of the 16 sections of Anthropic's Fable 5.1 prompting guide your CLAUDE.md, rules files, and agent system prompts are missing, which of your rules push against a section, and what the plugin already covers; the Opus 5 / Opus 5.5 / Sonnet 5.5 model notes are listed unscored. Changes nothing; it prints suggested wording to add and stops. For dated, stale or contradictory text to remove, use Claude Code's /doctor prompt-audit instead. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "가이드에서 빠진 것", "check against the Fable guide", "which guide sections am I missing", "what does the prompting guide say that my rules lack".
 ---
-# fable-audit · score prompts against the Fable 5.1 guide
+# fable-audit · which guide sections your prompts are missing
+
+This skill answers "which sections of the prompting guides are missing from my rules": gaps to add, and rules that
+push against a section. Claude Code's own `/doctor prompt-audit` (2.1.283+) answers the other question, "what in my
+rules is dated, stale or contradictory": old-model workarounds, stale paths and commands, instruction files that
+disagree, to remove. The two are complementary; run both when tidying a setup, and don't duplicate the other's job
+here (a line that is merely old or verbose is not a finding for this audit unless it conflicts with a section).
 
 Checklist: `${CLAUDE_PLUGIN_ROOT}/skills/fable-audit/references/guide-sections.md` (16 sections, verdict rules,
 conflict signals, suggested wording). Read it before judging anything; do not audit from memory.
@@ -48,7 +54,7 @@ Sections 8 and 9 are scored in halves and by item; see the checklist.
 
 Then apply the model notes at the end of the checklist. A note gets a verdict only when the surface names its
 model (`model:` in agent frontmatter, or the user said which model it runs on); otherwise print it once as "if
-this surface runs on Opus 5 or 5.5" with no symbol. Notes are never part of the score.
+this surface runs on <the model the note names>" with no symbol. Notes are never part of the score.
 
 ## Step 3 · Report (one table, then three short lists)
 ```
@@ -72,11 +78,13 @@ Ask in the user's language; keep the section names in English so they match the 
 
 ## Step 4 · Close
 One line naming what to do next: `/fable-setup` for delivery, mode and effort; hand edits for a user's own
-CLAUDE.md; `/fable-status` to confirm what is live. Then one status line: DONE, DONE_WITH_CONCERNS (say which
+CLAUDE.md; `/fable-status` to confirm what is live. Then one more line: "For dated, stale or contradictory text to
+remove, run `/doctor prompt-audit` (Claude Code 2.1.283 or later); this audit only finds what is missing." Then one status line: DONE, DONE_WITH_CONCERNS (say which
 files could not be read), or NEEDS_CONTEXT (say which path you need).
 
 ## Notes
-- The checklist is a snapshot of the guide as of 2026-09-07; the model notes as of 2026-09-23. If the live guide has more or differently named
+- The checklist is a snapshot of the guide as of 2026-09-29; the model notes as of 2026-09-29 (Opus 5, Opus 5.5,
+  Sonnet 5.5 guides). If the live guide has more or differently named
   sections, say so in the header line rather than silently auditing an old list.
 - Auditing a Claude Code machine is the common case, so sections 4, 14 and 16 usually resolve to ⚪ or a setting
   finding. That is a correct result, not a thin one.

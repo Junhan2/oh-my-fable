@@ -1,17 +1,18 @@
 ---
 name: fable-setup
-description: Optional. The plugin works with no setup (hook delivery, auto-detected mode, subagents covered). Use /fable-setup only to change the defaults - keep the rules in a rules file (agent teams) or a CLAUDE.md section, pin interactive/unattended mode, see where effort comes from - or to audit CLAUDE.md for conflicting rules. To see what is in effect, use /fable-status instead. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "set up for Opus 5.5", "unattended mode", "rules file".
+description: Optional, recommended once. The plugin works with no setup (hook delivery, auto-detected mode, subagents covered). Use /fable-setup to move the base rules into a rules file (the recommended delivery, also the one for agent teams) or a CLAUDE.md section, pin interactive/unattended mode, see where effort comes from, or audit CLAUDE.md for conflicting rules. To see what is in effect, use /fable-status instead. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "set up for Opus 5.5", "unattended mode", "rules file".
 ---
 # fable-setup · choose delivery and mode, see where effort comes from; audit conflicts
 
-Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, two paragraphs, for unattended mode).
+Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, two paragraphs, for unattended mode;
+and `effort-high.md`, block N, when the session starts at `xhigh` or `max`).
 Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable-prompt/references/prompt-blocks.md`.
 
 Three layers: per request → `/fable-prompt`; always-on rules → hook by default, this skill can move them to a
 file; settings → mode, where effort comes from, and an admin checklist. Nothing here is required: the defaults work without any file.
 
 ## Arguments (skip the matching question)
-`auto` (no questions, keep defaults) · `hook` (= hook only, the default) | `rules-file` (rules file + hook) | `claude-md` (delivery; `hook-only` is accepted as an alias of `hook`) ·
+`auto` (no questions, keep defaults) · `hook` (= hook only, the default) | `rules-file` (rules file + hook, recommended) | `claude-md` (delivery; `hook-only` is accepted as an alias of `hook`) ·
 `auto` | `interactive` | `unattended` (mode) · `medium` | `high` (prints the `/effort` line for that level; this skill no longer writes `effortLevel`, see Step 3) · `refresh` (re-copy the rules file only, no
 questions, see Step 7) · `remove` (undo everything, see Step 6). To see what is in effect without changing anything, use
 `/fable-status`.
@@ -27,8 +28,8 @@ one-line options and the recommended one marked. No preamble, no explanation par
 steps for the user, so prefer asking over leaving something for them to do by hand.
 
 1. **Where should the rules live?**
-   - `Hook only (default, recommended)` · nothing written; the hook carries everything for the main session and sends the short version to every subagent. Always current after a plugin update, nothing to clean up on uninstall
-   - `Rules file + hook` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded; per the docs agent teammates load it, the hook does not reach them in a verified way); the hook adds the unattended paragraphs per session and the short version for Explore/Plan subagents. Pick this for agent teams
+   - `Rules file + hook (recommended)` · base rules in `~/.claude/rules/oh-my-fable.md` (auto-loaded; per the docs agent teammates load it, the hook does not reach them in a verified way); the hook adds only what depends on the session (the unattended paragraphs, block N at `xhigh`/`max`) and the short version for Explore/Plan subagents. Claude Code's hooks doc says to prefer CLAUDE.md-style files for instructions that never change, and that hook text framed as system commands can trigger prompt-injection defenses
+   - `Hook only (zero-setup default)` · nothing written; the hook carries everything for the main session and sends the short version to every subagent. Always current after a plugin update, nothing to clean up on uninstall
    - `CLAUDE.md section` · inside your CLAUDE.md, static, needs edit approval (not in auto mode)
 2. **How do you mostly work?**
    - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
@@ -36,7 +37,7 @@ steps for the user, so prefer asking over leaving something for them to do by ha
    - `Unattended` · always adds the two unattended paragraphs ("the user is not watching" and the early-stop list), even in the terminal
 
 Effort is not a question. Show this one line with the questions, in the user's language: "Effort is not written by
-this skill. Opus 5.5 starts at medium (its default; its guide says start there), Fable 5.1 and the other models at
+this skill. Opus 5.5 and Sonnet 5.5 start at medium (their Claude Code default), Fable 5.1 and the other models at
 high. To save a level for the model you are on: /effort <level> then Enter (saved per model in modelSettings); s
 applies it to this session only."
 
@@ -77,7 +78,7 @@ added by the hook per session, so `auto` mode works with the default delivery. O
 
 **Effort**: write nothing. If the user passed `medium` or `high`, print exactly this, translated: "Run /effort <level>
 and press Enter to save it for the model you are on (s = this session only). A top-level effortLevel in
-~/.claude/settings.json is ignored by Opus 5.5, which is why this skill no longer writes it." If the env var
+~/.claude/settings.json is ignored by Opus 5.5 and Sonnet 5.5, which is why this skill no longer writes it." If the env var
 `CLAUDE_CODE_EFFORT_LEVEL` is set, say in one line that it beats every saved level.
 
 **Copies are snapshots.** A rules file or CLAUDE.md section is the text at install time. The rules file carries a
@@ -93,7 +94,7 @@ anti-formatting rules ("no bullets", "no headers"), "ask before every step". Sam
 ## Step 5 · Verify and close
 Hook: run `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"` with `CLAUDE_PROJECT_DIR` set and confirm the
 last line starts with `(oh-my-fable` and names the expected rules source (`--status` prints the same as a key list). Rules file + hook: confirm the file exists with the marker and the hook prints only the mode line (or the
-unattended paragraph). CLAUDE.md: confirm the markers appear exactly once and the hook prints nothing. Then close with exactly this, translated:
+unattended paragraphs, or block N when the session is at `xhigh`/`max`). CLAUDE.md: confirm the markers appear exactly once and the hook prints nothing. Then close with exactly this, translated:
 
 > Done. Rules: <delivery>, mode: <mode>, effort: <effort and effort_source from --status>. They apply automatically from the next Claude Code
 > session. To use them in this session right now: if the plugin was installed in this session, type

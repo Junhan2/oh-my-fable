@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: assessment-no-edit
+description: User asks why a script fails. Passes when the reply names the cause and no file is edited or written.
+context:
+  scaffold_script: fixture.sh

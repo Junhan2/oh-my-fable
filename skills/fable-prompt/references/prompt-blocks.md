@@ -1,8 +1,9 @@
-# Fixed prompt blocks from Anthropic's prompting guides (Fable 5.1 read 2026-09-02; Opus 5.5 and Opus 5 read 2026-09-23)
+# Fixed prompt blocks from Anthropic's prompting guides (Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 read 2026-09-29)
 
 Sources: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5 ·
-https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5 ·
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5
 Copy blocks verbatim. Em dashes in the original were replaced with commas; nothing else changed.
 
 ## A · Autonomy and finishing the whole task (system prompt, always)
@@ -73,7 +74,7 @@ Mannered prose substitutes metaphor and flourish for direct statement. Instead o
 ## G · Long outputs at xhigh or max effort (end of user message; replace [max_tokens])
 
 ```text
-Everything produced in one reply, including any reasoning or drafting it does before the reply, counts toward a single limit of about [max_tokens] tokens. If that limit is reached before the reply is finished, the person receives a cut-off response and has to start over. Composing an entire output or deliverable in full as reasoning and then again as a reply would double the length of the turn without improving the result, so don't do that.
+Everything produced in one reply, including any reasoning or drafting done before the reply, counts toward a single limit of about [max_tokens] tokens. If that limit is reached before the reply is finished, the person receives a cut-off response and has to start over. Composing an entire output or deliverable in full as reasoning and then again as a reply would double the length of the turn without improving the result, so don't do that.
 
 Instead, when the person has asked for a long or effort-intensive deliverable such as a multi-section document, a large table or dataset, or a complete code file, spend extra effort on understanding the request, checking the inputs the answer depends on, settling the structure and other difficult decisions, and otherwise using the reasoning space to reason and the output space to write an output. Usually it is not needed to draft an output multiple times.
 ```
@@ -112,9 +113,24 @@ add it from the first request of a session, because adding it partway changes th
 A message with no tool call in it ends your turn, and the work stops there until you are asked to continue. Four ways of ending a turn while work is still owed are not wanted: a long summary of what was done that closes by announcing the next step and has no tool call, so the next thing never starts; an offer to carry on with something unless the user would prefer otherwise, which stops to wait for an answer the user was not going to give; a list of decisions for the user when, by your own account, none of them blocks the rest of the work; and deciding that this is a good place to report because the turn has been long or a milestone is done. Status notes and recommendations on open decisions are welcome, but put them in the same message as your next tool call and carry on with whatever does not depend on the user's answer. If you notice yourself inviting the user to redirect you or offering to wait, delete it and do the next thing. The stops the user does want are the ones where nothing can move without them, or where the thing blocking you is deliberately protected from you. This does not override the need for confirmation on risky or destructive actions.
 ```
 
-## Effort guidance (Fable 5.1 "Consider all effort levels"; Opus 5.5 "Calibrate effort")
+## N · Stop after the checks pass at xhigh and max effort (system prompt; sessions at xhigh or max)
 
-- Defaults: `high` on Fable 5.1, Opus 5 and Sonnet 5; `medium` on Opus 5.5 (its guide: start there). Re-measure every level per model and task; effort names do not map to the same thinking across models.
+From the Sonnet 5.5 guide "Steer initiative and scope", the snippet for "Thoroughness at `xhigh` and `max` effort".
+At those levels the model can start its own rounds of review and verification after the task is done, sometimes
+with reviewer subagents, and make related fixes it noticed along the way; the guide says to run routine work at
+`high` or below, where this is rare. Its measurement: on coding tasks at `max` effort (Sonnet 5.5), this paragraph
+stopped the model from launching reviewer subagents and cut session cost by about a third, with no change in
+quality; self-started review rounds by the main agent became less frequent but did not disappear. The plugin's
+hook adds it when the effort resolved at session start is `xhigh` or `max` (`hooks/effort-high.md`).
+
+```text
+When the work the user asked for is done and its checks pass, stop and report. Don't start extra rounds of review or hardening on your own, and don't launch reviewer sub-agents unless the user asked for a review. If you think a deeper review is worth doing, say so at the end.
+```
+
+## Effort guidance (Fable 5.1 "Consider all effort levels"; Opus 5.5 and Sonnet 5.5 "Calibrate effort")
+
+- Defaults: `high` on Fable 5.1, Opus 5 and Sonnet 5; `medium` on Opus 5.5 (its guide: start there). Sonnet 5.5 defaults to `high` on the API and `medium` in Claude Code; its guide says start at `medium` for well-specified agentic coding and multistep tool use and move to `high` for harder or longer tasks. Re-measure every level per model and task; effort names do not map to the same thinking across models.
+- Sonnet 5.5 at `low` and `medium` is more likely to stop and check in before a long agentic task is done; try a higher level first. At `low` it can also report a change as done without running a check. At `xhigh`/`max` it can start its own review rounds and reviewer subagents: block N. To get less thinking, lower the effort level; asking it in the prompt to think less does not reliably reduce its thinking (the Opus 5.5 guide says the same for Opus 5.5).
 - Opus 5.5 at `medium` matches or beats Opus 5 at `high` on coding and knowledge work, and `low` comes close on several coding evaluations. It thinks more per level than Opus 5, most at `xhigh`/`max`: reserve those for measured gains.
 - Fable 5.1 at `medium` roughly matches Fable 5 at lower cost. `low` often beats Opus/Sonnet on cost per task while scoring higher, but calls search less (add block H or raise effort for that turn).
 - `xhigh`/`max` widen the gain on hard problems but can double long deliverables by drafting in reasoning first; add block G and size `max_tokens` for thinking plus reply.

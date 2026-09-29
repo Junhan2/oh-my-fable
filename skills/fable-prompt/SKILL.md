@@ -4,7 +4,7 @@ description: Rewrite a rough, terse, or under-specified request into a prompt th
 ---
 # fable-prompt · guide-aligned request rewrite (per-request layer)
 
-Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
+Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), "Prompting Claude Sonnet 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
 Fixed guide blocks: `references/prompt-blocks.md`. Before/after samples: `references/examples.md`.
 
 This skill handles the **per-request layer** only: the four fields every request needs, plus the guide
@@ -40,16 +40,19 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
 1. **Goal** · one sentence, outcome-verifiable.
 2. **Context** · resolved paths, symbols, error text, related decisions.
 3. **Scope** · what is in, what is explicitly out.
-4. **Done criteria** · the exact check: a command, a count, a file that must exist, a reproduced workflow.
+4. **Done criteria** · the exact check: a command, a count, a file that must exist, a reproduced workflow. Write
+   criteria that can be checked without a human (e.g. a command, a count, a file), not "looks right".
 5. **Effort** · do not write an effort line into the request; a line in a prompt changes nothing in Claude Code.
    Effort is a setting (`/effort` saves it per model in `modelSettings`; `CLAUDE_CODE_EFFORT_LEVEL` overrides). Mention it only when it
    matters for this request: time-sensitive research at `low` → add block **H**; a long deliverable at `xhigh`
    → add block **G**.
 6. **Conditional blocks** · Assessment → the "report findings, don't fix" sentence. Research/summary →
-   block **J** (quoting example). Writing → block **F** (short form). Code task → phrase checks as
+   block **J** (quoting example). Research on Sonnet 5.5 (any effort) → instead of block **H**, its guide's own
+   search line, verbatim: `Use the search tool to check specifics that may have changed since your training, such as what is allowed, required or charged, even when you feel confident. For researched work such as a report or a comparison, gather current sources rather than writing from your training knowledge.` Writing → block **F** (short form). Code task → phrase checks as
    "Are there any bugs?" not "Does it compile?" (safeguard false positives).
 
-**Never attach blocks A, B, C, D, E, I, L, or M.** They are already active through the plugin hook. The improved
+**Never attach blocks A, B, C, D, E, I, L, M, or N.** They are already active through the plugin hook (N only at
+`xhigh`/`max`, where the hook adds it). The improved
 request stays short: four fields, effort, and only the conditional lines from item 6.
 
 ## Step 4 · Show, then run
