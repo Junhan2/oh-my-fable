@@ -32,6 +32,6 @@ inspect files or hook output by hand. Do not run `/fable-setup` from here; only 
 | Notice | the `notice` line when it is not `(none)` | |
 
 Then close with exactly one line, translated: "Nothing was changed. `/fable-setup` changes settings,
-`/fable-prompt <request>` improves a single request."
+`/fable <request>` improves a single request."
 
 One status line: DONE (or DONE_WITH_CONCERNS when a row needs action).

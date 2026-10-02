@@ -21,7 +21,7 @@
 
 👤 **你输入的**
 ```
-/fable-prompt 登录按钮点了没反应，帮我修一下
+/fable 登录按钮点了没反应，帮我修一下
 ```
 🤖 **Claude 实际收到的请求**（从对话上下文自动补全）
 ```
@@ -62,7 +62,7 @@
 | 组成 | 何时 | 做什么 |
 |---|---|---|
 | **常驻规则** | 安装后自动，不写文件 | 每次会话开始时钩子按英文原文注入官方指南的常驻规则（自主执行、范围限制、按要求交付、局部编辑、进度汇报、排版、批量工具调用）。无头和 SDK 会话自动追加"用户不在旁边"段落和"不要只汇报进度就停下"段落（来自 Opus 5.5 指南），`xhigh`/`max` effort 的会话追加"检查通过就停下"段落（模块 N，来自 Sonnet 5.5 指南），用 Agent 工具启动的子代理另收精简版。不创建规则文件，也不改 CLAUDE.md |
-| `/fable-prompt` | 请求简短或模糊时 | 展示补全了目标、上下文、范围、完成标准和 effort 的请求并直接执行。加 `只要提示词` 则只展示 |
+| `/fable` | 请求简短或模糊时 | 展示补全了目标、上下文、范围和完成标准的请求并直接执行。加 `只要提示词` 则只展示 |
 | `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort（值与来源）、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
 | `/fable-audit` | 想知道自己的规则缺了指南的哪些内容时 | 把 CLAUDE.md、规则文件、agent 提示词对照指南 16 节：缺什么、哪些规则与某节反着来、插件已覆盖什么；Opus 5/5.5、Sonnet 5.5 指南中按模型区分的注意事项会单独列出，不计分。只读，不做任何修改。相反方向的工作，即找出过时、失效或互相矛盾、应当删除的文字，由 Claude Code 的 `/doctor prompt-audit` 负责 |
 | `/fable-setup` | 可选，建议运行一次 | 把规则放进规则文件（推荐，代理团队也用这种方式）或 CLAUDE.md 段落、固定一种模式、说明 effort 的来源、检查 CLAUDE.md 中的冲突规则 |
@@ -108,10 +108,10 @@ claude plugin install oh-my-fable@oh-my-fable
 像平时一样提出请求即可，常驻规则已经生效。请求简短或模糊时在前面加：
 
 ```
-/fable-prompt 帮我修一下这个
+/fable 帮我修一下这个
 ```
 
-它会展示补全了目标、上下文、范围、完成标准和 effort 的请求并直接执行。只想预览，在后面加 `只要提示词`。
+它会展示补全了目标、上下文、范围和完成标准的请求并直接执行。只想预览，在后面加 `只要提示词`。
 
 ## 新手流程
 
@@ -119,7 +119,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **你** | `安装 https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | 注册市场、安装插件，提示"下次会话自动生效，现在就用请先 `/reload-plugins` 再 `/clear`" |
-| 3 | 你 | 之后照常工作。模糊的请求用 `/fable-prompt 帮我修一下这个`，想看状态用 `/fable-status` |
+| 3 | 你 | 之后照常工作。模糊的请求用 `/fable 帮我修一下这个`，想看状态用 `/fable-status` |
 
 <details>
 <summary>可选：把规则放到别处（`/fable-setup`）</summary>
@@ -151,7 +151,7 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 从 `~/.claude/plugins/installed_plugins.json` 读取 `oh-my-fable@oh-my-fable` 的 `installPath`
-4. 确认安装后只告诉用户："安装完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable-prompt <请求>` 发送。"
+4. 确认安装后只告诉用户："安装完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable <请求>` 发送。"
 5. 不做其他说明，也不运行 `/fable-setup`（它是可选的，默认值无需任何配置即可工作）。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入
 
 </details>
@@ -162,7 +162,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 | 层 | 内容 | 如何应用 |
 |---|---|---|
-| **1. 每次请求** | 目标、上下文、范围、完成标准、effort、"只诊断不修改"的例外、时效性问题的搜索提示、长输出提示 | 由 `/fable-prompt` 补全 |
+| **1. 每次请求** | 目标、上下文、范围、完成标准、"只诊断不修改"的例外、时效性问题的搜索提示、长输出提示 | 由 `/fable` 补全 |
 | **2. 常驻规则** | 自主执行、范围与测试限制、按要求交付、局部编辑、进度汇报、排版规则、批量工具调用、防止无人值守会话中途停下 | 由插件钩子在会话开始时注入 |
 | **3. 设置项** | 交互式/无人值守模式、effort（按模型保存）、thinking.display、对话历史规则、子代理、视觉裁剪 | 模式自动检测；只在想改时由 `/fable-setup` 写入模式，effort 则引导至 `/effort`，其余以清单提示 |
 
@@ -227,7 +227,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 总结中原文未标注引用 | 模块 J 示例 |
 | 普通代码请求被拒绝 | 改问"有没有 bug？"；冷门语言附文档链接 |
 
-模块原文：[`skills/fable-prompt/references/prompt-blocks.md`](skills/fable-prompt/references/prompt-blocks.md)
+模块原文：[`skills/fable/references/prompt-blocks.md`](skills/fable/references/prompt-blocks.md)
 
 ## 常见问题
 
@@ -283,9 +283,10 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           对照指南检查我的规则（只读）
 │   │   └── references/        按指南分节的检查清单与按模型注意事项
-│   └── fable-prompt/
-│       ├── SKILL.md           每次请求改写（第 1 层）
-│       └── references/        模块原文（A 到 N）与前后示例
+│   ├── fable/
+│   │   ├── SKILL.md           每次请求改写（第 1 层）
+│   │   └── references/        模块原文（A 到 N）与前后示例
+│   └── fable-prompt/SKILL.md  /fable 的旧名称，2.4.x 期间仍可使用
 ├── evals/                     `claude plugin eval` 评测集：5 个用例，按规则判分，不用模型评判
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
@@ -293,6 +294,6 @@ oh-my-fable/
 
 ## 贡献与许可
 
-欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable-prompt/references/prompt-blocks.md`（完整模块列表）。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
+欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表）。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
 
 MIT © Junhan2。指南原文版权归 Anthropic 所有。

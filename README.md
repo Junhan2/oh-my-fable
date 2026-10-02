@@ -21,7 +21,7 @@ Opus 5.5(지금 Claude Code의 기본 모델)와 Fable 5.1 기준이며, Sonnet 
 
 👤 **당신이 치는 것**
 ```
-/fable-prompt 로그인 버튼 눌러도 아무 반응 없어 고쳐줘
+/fable 로그인 버튼 눌러도 아무 반응 없어 고쳐줘
 ```
 🤖 **Claude가 실제로 받는 요청** (대화 맥락에서 자동으로 채워짐)
 ```
@@ -62,7 +62,7 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 | 구성 | 언제 | 하는 일 |
 |---|---|---|
 | **상시 규칙** | 설치하면 자동, 파일 없음 | 세션이 시작될 때마다 훅이 공식 가이드의 상시 규칙(자율 진행, 범위 제한, 시킨 범위 그대로 끝내기, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 넣습니다. 헤드리스·SDK 세션이면 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단(Opus 5.5 가이드)을 자동으로 더하고, `xhigh`/`max` effort 세션에는 "확인이 통과하면 멈춰라" 문단(블록 N, Sonnet 5.5 가이드)을 더하며, Agent 도구로 띄운 서브에이전트에는 짧은 판을 따로 넣습니다. 규칙 파일도 CLAUDE.md도 만들지 않습니다 |
-| `/fable-prompt` | 요청이 짧거나 막연할 때 | 목표·맥락·범위·완료 기준·effort를 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
+| `/fable` | 요청이 짧거나 막연할 때 | 목표·맥락·범위·완료 기준을 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
 | `/fable-status` | 지금 뭐가 켜져 있는지 궁금할 때 | 플러그인 버전, 규칙 위치, 감지된 모드, effort(값과 출처), 규칙 파일이 최신인지, CLAUDE.md 충돌 수를 표 하나로 보여 줍니다. 아무것도 쓰지 않습니다 |
 | `/fable-audit` | 내 규칙에 가이드의 무엇이 빠졌는지 볼 때 | CLAUDE.md·규칙 파일·에이전트 프롬프트를 가이드 16개 절과 대조해 빠진 것·가이드와 반대로 가는 것·플러그인이 이미 덮는 것을 표로 보여 주고, Opus 5/5.5·Sonnet 5.5 가이드의 모델별 주의점은 점수 없이 따로 알려 줍니다. 읽기만 하고 아무것도 고치지 않습니다. 반대 방향의 일, 즉 낡았거나 틀렸거나 서로 부딪혀 지울 문구를 찾는 일은 Claude Code의 `/doctor prompt-audit`가 맡습니다 |
 | `/fable-setup` | 선택 사항, 한 번은 권장 | 규칙을 규칙 파일로(권장, 에이전트 팀도 이 방식) 또는 CLAUDE.md 구간으로 옮기기, 모드를 한쪽으로 고정, effort가 어디서 오는지 안내, 기존 CLAUDE.md 규칙과의 충돌 점검 |
@@ -105,13 +105,13 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 사용법: 평소처럼
 
-그냥 평소처럼 요청하면 됩니다. 상시 규칙은 이미 켜져 있습니다. 요청이 짧거나 막연하면 앞에 `/fable-prompt`를 붙이세요.
+그냥 평소처럼 요청하면 됩니다. 상시 규칙은 이미 켜져 있습니다. 요청이 짧거나 막연하면 앞에 `/fable`을 붙이세요.
 
 ```
-/fable-prompt 이거 좀 고쳐줘
+/fable 이거 좀 고쳐줘
 ```
 
-목표·맥락·범위·완료 기준·effort를 채운 요청을 보여 주고 바로 실행합니다. 보기만 하려면 뒤에 `프롬프트만`.
+목표·맥락·범위·완료 기준을 채운 요청을 보여 주고 바로 실행합니다. 보기만 하려면 뒤에 `프롬프트만`.
 
 ## 초보자 흐름
 
@@ -119,7 +119,7 @@ claude plugin install oh-my-fable@oh-my-fable
 |---|---|---|
 | 1 | **사용자** | `https://github.com/Junhan2/oh-my-fable 설치해줘` |
 | 2 | Claude | 마켓플레이스 등록, 플러그인 설치, "다음 세션부터 자동 적용. 지금 쓰려면 `/reload-plugins` 다음 `/clear`" 안내 |
-| 3 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable-prompt 이거 좀 고쳐줘`, 궁금하면 `/fable-status` |
+| 3 | 사용자 | 이후 평소처럼. 막연한 요청은 `/fable 이거 좀 고쳐줘`, 궁금하면 `/fable-status` |
 
 <details>
 <summary>선택 사항: 규칙 위치 바꾸기 (`/fable-setup`)</summary>
@@ -151,7 +151,7 @@ claude plugin install oh-my-fable@oh-my-fable
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `~/.claude/plugins/installed_plugins.json` 에서 `oh-my-fable@oh-my-fable` 의 `installPath` 를 읽는다
-4. 설치가 확인되면 사용자에게 이렇게만 안내한다: "설치가 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/reload-plugins` 를 입력하고 Enter, 그다음 `/clear` 를 입력하고 Enter 하세요(한 줄에 하나씩). 막연한 요청은 `/fable-prompt <요청>` 으로 보내세요."
+4. 설치가 확인되면 사용자에게 이렇게만 안내한다: "설치가 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/reload-plugins` 를 입력하고 Enter, 그다음 `/clear` 를 입력하고 Enter 하세요(한 줄에 하나씩). 막연한 요청은 `/fable <요청>` 으로 보내세요."
 5. 그 밖의 설명은 하지 않고 `/fable-setup` 도 실행하지 않는다(선택 사항이며 기본값은 설정 없이 동작). 둘 다 필요한 이유: `/reload-plugins` 는 방금 설치한 플러그인(훅·스킬)을 이 세션에 로드하고, 규칙 주입은 세션 시작·`/clear`·압축 때만 일어난다
 
 </details>
@@ -162,7 +162,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 | 층 | 무엇 | 어떻게 적용 |
 |---|---|---|
-| **1. 매번 요청에** | 목표·맥락·범위·완료 기준, effort, 진단만 하라는 예외, 시사성 질문의 검색 요청, 장문 안내문 | `/fable-prompt`가 채움 |
+| **1. 매번 요청에** | 목표·맥락·범위·완료 기준, 진단만 하라는 예외, 시사성 질문의 검색 요청, 장문 안내문 | `/fable`이 채움 |
 | **2. 상시 규칙** | 자율 진행, 범위·테스트 제한, 시킨 범위 그대로 끝내기, 부분 편집, 진행 보고, 서식 규칙, 도구 일괄 호출, 무인 세션의 중간 멈춤 방지 | 플러그인 훅이 세션 시작 때 자동 주입 |
 | **3. 설정값** | 대화형/무인 모드, effort(모델별 저장), thinking.display, 대화 이력 규칙, 서브에이전트, 비전 crop | 모드는 자동 감지. 바꾸고 싶을 때만 `/fable-setup`이 모드를 쓰고, effort는 `/effort`로 안내하며, 나머지는 점검표로 알려 줌 |
 
@@ -227,7 +227,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 요약에 원문이 인용 표시 없이 섞임 | 블록 J 예시 |
 | 평범한 코드 요청이 거절됨 | "버그 있나요?"로 묻기, 생소한 언어는 문서 링크 |
 
-블록 원문 전체: [`skills/fable-prompt/references/prompt-blocks.md`](skills/fable-prompt/references/prompt-blocks.md)
+블록 원문 전체: [`skills/fable/references/prompt-blocks.md`](skills/fable/references/prompt-blocks.md)
 
 ## FAQ
 
@@ -283,9 +283,10 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           내 규칙을 가이드와 대조 (읽기 전용)
 │   │   └── references/        가이드 절별 점검표와 모델별 주의점
-│   └── fable-prompt/
-│       ├── SKILL.md           매번 요청 개선 (1층)
-│       └── references/        블록 원문(A~N)과 전후 예시
+│   ├── fable/
+│   │   ├── SKILL.md           매번 요청 개선 (1층)
+│   │   └── references/        블록 원문(A~N)과 전후 예시
+│   └── fable-prompt/SKILL.md  /fable 의 옛 이름. 2.4.x 동안 그대로 동작
 ├── evals/                     `claude plugin eval` 평가 묶음: 사례 5개, 모델 판정 없이 규칙으로 채점
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
@@ -293,6 +294,6 @@ oh-my-fable/
 
 ## 기여와 라이선스
 
-이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable-prompt/references/prompt-blocks.md`(전체 블록 목록)를 같이 고칩니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
+이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md`(전체 블록 목록)를 같이 고칩니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
 
 MIT © Junhan2. 가이드 원문의 저작권은 Anthropic에 있습니다.

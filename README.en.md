@@ -21,7 +21,7 @@ Based on Opus 5.5 (Claude Code's current default model) and Fable 5.1, and it wo
 
 👤 **What you type**
 ```
-/fable-prompt the login button does nothing, fix it
+/fable the login button does nothing, fix it
 ```
 🤖 **What Claude actually receives** (filled in from the conversation)
 ```
@@ -62,7 +62,7 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 | Part | When | What |
 |---|---|---|
 | **Always-on rules** | automatically once installed, no files | At every session start the hook injects the official guides' always-on rules (autonomy, scope limits, deliver what was asked, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Headless and SDK sessions automatically get the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph (from the Opus 5.5 guide), sessions at `xhigh`/`max` effort get the "stop once the checks pass" paragraph (block N, from the Sonnet 5.5 guide), and subagents started with the Agent tool get a short version. No rules file, no CLAUDE.md edit |
-| `/fable-prompt` | when a request is short or vague | shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to only see the rewrite |
+| `/fable` | when a request is short or vague | shows a request with goal, context, scope, and done criteria filled in, then runs it. Add `just the prompt` to only see the rewrite |
 | `/fable-status` | when you wonder what is in effect | one table: plugin version, where the rules live, detected mode, effort (value and source), whether the rules file is current, CLAUDE.md conflicts. Writes nothing |
 | `/fable-audit` | when you want to know what your rules are missing | checks your CLAUDE.md, rules files, and agent prompts against the guide's 16 sections: what is missing, what pushes against a section, what the plugin already covers, and lists the Opus 5/5.5 and Sonnet 5.5 guides' model-specific notes separately, unscored. Read-only; it changes nothing. For the opposite job, finding dated, stale or contradictory text to remove, use Claude Code's `/doctor prompt-audit` |
 | `/fable-setup` | optional, recommended once | keep the rules in a rules file (recommended; also the one for agent teams) or a CLAUDE.md section, pin one mode, show where effort comes from, audit your CLAUDE.md for conflicting rules |
@@ -108,10 +108,10 @@ Open a new session, or `/reload-plugins` then `/clear`. Nothing to configure. `/
 Just ask as you normally do; the always-on rules are already active. When a request is short or vague, prefix it:
 
 ```
-/fable-prompt fix this
+/fable fix this
 ```
 
-It shows a request with goal, context, scope, done criteria, and effort filled in, then runs it. Add `just the prompt` to preview only.
+It shows a request with goal, context, scope, and done criteria filled in, then runs it. Add `just the prompt` to preview only.
 
 ## Beginner flow
 
@@ -119,7 +119,7 @@ It shows a request with goal, context, scope, done criteria, and effort filled i
 |---|---|---|
 | 1 | **You** | `install https://github.com/Junhan2/oh-my-fable` |
 | 2 | Claude | registers the marketplace, installs the plugin, says "applies from the next session; for now type `/reload-plugins` then `/clear`" |
-| 3 | You | work as usual. `/fable-prompt fix this` for vague requests, `/fable-status` when curious |
+| 3 | You | work as usual. `/fable fix this` for vague requests, `/fable-status` when curious |
 
 <details>
 <summary>Optional: move the rules somewhere else (`/fable-setup`)</summary>
@@ -151,7 +151,7 @@ Only one is active at a time. If a CLAUDE.md section or a hand-made rules file e
 1. `claude plugin marketplace add Junhan2/oh-my-fable`
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Read `installPath` for `oh-my-fable@oh-my-fable` from `~/.claude/plugins/installed_plugins.json`
-4. Once the install is verified, tell the user only this: "Installed. The rules apply from the next session. To use them right now, type `/reload-plugins` and press Enter, then `/clear` and press Enter (one per line). Send vague requests as `/fable-prompt <request>`."
+4. Once the install is verified, tell the user only this: "Installed. The rules apply from the next session. To use them right now, type `/reload-plugins` and press Enter, then `/clear` and press Enter (one per line). Send vague requests as `/fable <request>`."
 5. Say nothing else and do not run `/fable-setup` (it is optional; the defaults work without any configuration). Both commands are needed because `/reload-plugins` loads the just-installed plugin (hook and skills) into this session, and the rules are injected only on session start, `/clear`, and compaction
 
 </details>
@@ -162,7 +162,7 @@ The guide's fixes fall into three layers, each applied differently.
 
 | Layer | What | How it is applied |
 |---|---|---|
-| **1. Every request** | goal, context, scope, done criteria, effort, the "assess only" exception, search nudge for time-sensitive questions, long-output note | filled in by `/fable-prompt` |
+| **1. Every request** | goal, context, scope, done criteria, the "assess only" exception, search nudge for time-sensitive questions, long-output note | filled in by `/fable` |
 | **2. Always-on** | autonomy, scope and test limits, deliver what was asked, targeted edits, progress updates, formatting rule, batched tool calls, blocking mid-task stops in unattended sessions | injected by the plugin hook at session start |
 | **3. Settings** | interactive/unattended mode, effort (saved per model), thinking.display, conversation-history rules, subagents, vision crop | mode is auto-detected; only when you want to change it, `/fable-setup` writes the mode, points you to `/effort` for effort, and reports the rest as a checklist |
 
@@ -227,7 +227,7 @@ The plugin's SessionStart hook loads the blocks below verbatim in English at eve
 | Source text copied into summaries unmarked | block J example |
 | Benign code request refused | ask "Are there any bugs?"; link docs for obscure languages |
 
-Full block texts: [`skills/fable-prompt/references/prompt-blocks.md`](skills/fable-prompt/references/prompt-blocks.md)
+Full block texts: [`skills/fable/references/prompt-blocks.md`](skills/fable/references/prompt-blocks.md)
 
 ## FAQ
 
@@ -283,9 +283,10 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           scores your rules against the guides (read-only)
 │   │   └── references/        per-section checklist and model-specific notes
-│   └── fable-prompt/
-│       ├── SKILL.md           per-request rewrite (layer 1)
-│       └── references/        block texts (A to N) and before/after examples
+│   ├── fable/
+│   │   ├── SKILL.md           per-request rewrite (layer 1)
+│   │   └── references/        block texts (A to N) and before/after examples
+│   └── fable-prompt/SKILL.md  old name of /fable, still works through 2.4.x
 ├── evals/                     `claude plugin eval` suite: 5 cases, deterministic graders
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
@@ -293,6 +294,6 @@ oh-my-fable/
 
 ## Contributing and license
 
-Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, and `skills/fable-prompt/references/prompt-blocks.md` (the full block list) together. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
+Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, and `skills/fable/references/prompt-blocks.md` (the full block list) together. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
 
 MIT © Junhan2. The guide text itself is copyright Anthropic.

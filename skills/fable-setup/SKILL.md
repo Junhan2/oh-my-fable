@@ -6,9 +6,9 @@ description: Optional, recommended once. The plugin works with no setup (hook de
 
 Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, two paragraphs, for unattended mode;
 and `effort-high.md`, block N, when the session starts at `xhigh` or `max`).
-Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable-prompt/references/prompt-blocks.md`.
+Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable/references/prompt-blocks.md`.
 
-Three layers: per request → `/fable-prompt`; always-on rules → hook by default, this skill can move them to a
+Three layers: per request → `/fable`; always-on rules → hook by default, this skill can move them to a
 file; settings → mode, where effort comes from, and an admin checklist. Nothing here is required: the defaults work without any file.
 
 ## Arguments (skip the matching question)
@@ -99,7 +99,7 @@ unattended paragraphs, or block N when the session is at `xhigh`/`max`). CLAUDE.
 > Done. Rules: <delivery>, mode: <mode>, effort: <effort and effort_source from --status>. They apply automatically from the next Claude Code
 > session. To use them in this session right now: if the plugin was installed in this session, type
 > `/reload-plugins` first, then `/clear` (one per line; the rules are injected on session start, /clear, and
-> compaction). Ask as usual; for short or vague requests use `/fable-prompt <request>`. Add "just the prompt"
+> compaction). Ask as usual; for short or vague requests use `/fable <request>`. Add "just the prompt"
 > to preview only.
 
 One status line: DONE, DONE_WITH_CONCERNS, or NEEDS_CONTEXT.

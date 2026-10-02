@@ -8,7 +8,7 @@
     {
       "name": "oh-my-fable",
       "source": ".",
-      "description": "Always-on working rules from Anthropic's Fable 5.1 and Opus 5.5 prompting guides via SessionStart and SubagentStart hooks, unattended sessions detected automatically; /fable-prompt rewrites rough requests; /fable-status shows what is in effect; /fable-audit finds guide sections your rules are missing, read-only; /fable-setup is optional."
+      "description": "Always-on working rules from Anthropic's Fable 5.1 and Opus 5.5 prompting guides via SessionStart and SubagentStart hooks, unattended sessions detected automatically; /fable rewrites rough requests; /fable-status shows what is in effect; /fable-audit finds guide sections your rules are missing, read-only; /fable-setup is optional."
     }
   ]
 }

@@ -1,4 +1,4 @@
-# fable-prompt · before/after samples
+# fable · before/after samples
 
 Only the four fields plus conditional lines. Never repeat the always-on blocks; the plugin hook (or the user's
 rules file) already carries them. No effort line.

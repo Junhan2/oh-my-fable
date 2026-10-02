@@ -189,7 +189,7 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
   section 10 is ✅ (same meaning).
 - N8 review rounds at `xhigh`/`max` · Sonnet 5.5 "Steer initiative and scope" (Thoroughness): after finishing, it can
   start its own review and hardening rounds, sometimes with reviewer subagents. ✅ when the surface carries block N
-  (`skills/fable-prompt/references/prompt-blocks.md`) or the plugin adds it (sessions resolved at `xhigh`/`max`);
+  (`skills/fable/references/prompt-blocks.md`) or the plugin adds it (sessions resolved at `xhigh`/`max`);
   ⚠️ when a rule asks for extra review rounds or reviewer subagents on every task at these levels; ⚪ when effort is
   `high` or below.
 - N9 open-ended requests · Sonnet 5.5 "Steer initiative and scope": "show me what you can do" can start a build
@@ -199,7 +199,7 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
 - N10 tool-discouraging lines · Sonnet 5.5 "Tool use in chat and knowledge work": it follows lines such as "only use
   tools when strictly necessary" or "minimize tool calls" and answers from training knowledge where a search would
   catch changed details. ⚠️ on a Sonnet 5.5 surface with such a line; the fix is to remove it and, where a search
-  tool exists, add the guide's search line (quoted in `skills/fable-prompt/SKILL.md`, step 3).
+  tool exists, add the guide's search line (quoted in `skills/fable/SKILL.md`, step 3).
 - N11 verification at `low` effort · Sonnet 5.5 "Verification on coding tasks": at `low` it can report a change as
   done without running a check that exercises it. The guide's paragraph begins "When you change code that can be
   run, built, or type-checked, run a real check that exercises the change before reporting it done". 🟡 when effort
