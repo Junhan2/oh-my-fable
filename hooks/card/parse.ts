@@ -15,7 +15,7 @@ export type ImprovedRequest = {
 // The two titles are also written in register.tsx, in the matcher that decides which replies reach the hook.
 const TITLE = /^(?:#+\s*|\*\*|__)?(개선된 요청|Improved request)(?:\*\*|__)?\s*[:：]?$/i
 const FENCE = /^(`{3,}|~{3,})([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/gm
-const FIELD = /^(목표|맥락|범위|완료 기준|완료기준|Goal|Context|Scope|Done criteria|Done)\s*(?:[:：]\s*(.*))?$/i
+const FIELD = /^(목표|맥락|배경|범위|완료 기준|완료기준|Goal|Context|Background|Scope|Done criteria|Done)\s*(?:[:：]\s*(.*))?$/i
 const EXTRA = /^(\+)\s*(.+)$/
 
 const titleOf = (line = ''): string | undefined => TITLE.exec(line.trim())?.[1]

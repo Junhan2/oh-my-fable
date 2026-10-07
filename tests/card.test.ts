@@ -33,15 +33,25 @@ test('draws the improved request as a card on every surface', async ($, on) => {
     })
 
     const title = await ui.find({ type: 'Text', text: '개선된 요청' })
-    expect(title?.props).toMatchObject({ bold: true, backgroundColor: 'suggestion' })
     const boxes = await ui.findAll({ type: 'Box' })
-    // A side border would end up in every line a drag copies from the card.
-    expect(boxes.every(box => box.props.borderStyle === undefined)).toBe(true)
-    // Indented under the reply bullet on the terminal; flush with the reply text and set apart by blank rows elsewhere.
-    expect(boxes.some(box => box.props.flexDirection === 'column' && box.props.marginLeft === 2)).toBe(onTerminal)
-    expect(boxes.find(box => box.props.backgroundColor === 'suggestion')?.props.marginTop).toBe(onTerminal ? 0 : 1)
-    expect(boxes.some(box => box.props.marginBottom === 1)).toBe(!onTerminal)
-    expect(await ui.find({ type: 'Box', text: GOAL })).toBeDefined()
+
+    if (onTerminal) {
+      // A bar in the theme's accent and a rule, indented under the reply bullet, each value as typed.
+      // No border: its side strokes would end up in every line a drag copies from the card.
+      expect(title?.props).toMatchObject({ bold: true, backgroundColor: 'suggestion' })
+      expect(boxes.every(box => box.props.borderStyle === undefined)).toBe(true)
+      expect(boxes.some(box => box.props.flexDirection === 'column' && box.props.marginLeft === 2)).toBe(true)
+      expect(await ui.find({ type: 'Text', text: GOAL })).toBeDefined()
+    } else {
+      // One drawn border closes the card off from the reply text, a blank row above and below it; inside,
+      // a lemon-lime band with Claude Code's character, then each value as Markdown.
+      expect(boxes.filter(box => box.props.borderStyle !== undefined).length).toBe(1)
+      expect(boxes.find(box => box.props.borderStyle === 'round')?.props).toMatchObject({ marginTop: 1, marginBottom: 1 })
+      expect(title?.props).toMatchObject({ bold: true, backgroundColor: '#DCF368' })
+      expect((await ui.findAll({ type: 'Svg' })).map(svg => svg.props.alt).join()).toBe('Claude')
+      expect(await ui.find({ type: 'Markdown', text: GOAL })).toBeDefined()
+    }
+
     expect((await ui.findAll({ type: 'Text', text: /^(목표|맥락|범위|완료 기준)$/ })).length).toBe(4)
     expect(await ui.find({ type: 'Text', text: '+ block H' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: '이제 실행합니다.' })).toBeDefined()
@@ -63,6 +73,45 @@ test('draws the improved request as a card on every surface', async ($, on) => {
   await alone.unmount()
 
   expect(engineTexts.every(text => text === '요청을 다듬어 보여드린 뒤 바로 진행합니다.')).toBe(true)
+})
+
+test('off the terminal, draws a value as written', async $ => {
+  const text = [
+    '```',
+    '개선된 요청',
+    '목표: src/**/*.ts 의 __init__ 호출을 `run_all(*args)` 로 바꾼다.',
+    '범위:',
+    '- 첫째 항목',
+    '```',
+  ].join('\n')
+  const ui = await $.ui.mount({
+    plugin: PLUGIN,
+    surface: 'desktop',
+    component: 'AssistantMessage',
+    props: { text, isFirstOfReply: true },
+  })
+
+  // Outside a code span each mark gets a backslash, so Markdown shows it and does not read it as emphasis.
+  const shown = 'src/\\*\\*/\\*.ts 의 \\_\\_init\\_\\_ 호출을 `run_all(*args)` 로 바꾼다.'
+  expect(await ui.find({ type: 'Markdown', text: shown })).toBeDefined()
+  expect(await ui.find({ type: 'Markdown', text: '- 첫째 항목' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('reads 배경 as a field name, as a real /fable run wrote it in place of 맥락', async $ => {
+  const text = ['```', '개선된 요청', '목표: 한 줄', '배경:', '- 첫째 이유', '```'].join('\n')
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({
+      plugin: PLUGIN,
+      surface,
+      component: 'AssistantMessage',
+      props: { text, isFirstOfReply: true },
+    })
+
+    expect(await ui.find({ type: 'Text', text: '배경' })).toBeDefined()
+    await ui.unmount()
+  }
 })
 
 test('leaves an ordinary reply, another code block and a summary row to the engine', async ($, on) => {
