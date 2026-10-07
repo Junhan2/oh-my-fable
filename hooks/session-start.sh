@@ -125,9 +125,9 @@ fi
 EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT ($SRC)}"; [ -n "$EFFORT" ] || EFFORT="(not known at session start; /effort shows it)"
 
 case "$STATE" in
-  claude-md)  HOW="CLAUDE.md section${BASE:+ ($BASE)}; hook silent";;
-  rules-file) HOW="rules file + hook ($BASE, v$RULES_V)";;
-  user-rules) HOW="user-managed rules file ($BASE); hook silent";;
+  claude-md)  HOW="CLAUDE.md section; hook silent";;
+  rules-file) HOW="rules file v$RULES_V + hook";;
+  user-rules) HOW="user-managed rules file; hook silent";;
   hook-only)  HOW="hook only";;
   disabled)   HOW="disabled by config";;
 esac

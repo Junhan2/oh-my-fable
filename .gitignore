@@ -1,1 +1,4 @@
 evals/results/
+# Written by Claude Code when it loads the request card mod from this folder (claude --plugin-dir .)
+.claude-plugin/types/
+/tsconfig.json

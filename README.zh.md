@@ -63,6 +63,7 @@
 |---|---|---|
 | **常驻规则** | 安装后自动，不写文件 | 每次会话开始时钩子按英文原文注入官方指南的常驻规则（自主执行、范围限制、按要求交付、局部编辑、进度汇报、排版、批量工具调用）。无头和 SDK 会话自动追加"用户不在旁边"段落和"不要只汇报进度就停下"段落（来自 Opus 5.5 指南），`xhigh`/`max` effort 的会话追加"检查通过就停下"段落（模块 N，来自 Sonnet 5.5 指南），用 Agent 工具启动的子代理另收精简版。不创建规则文件，也不改 CLAUDE.md |
 | `/fable` | 请求简短或模糊时 | 展示补全了目标、上下文、范围和完成标准的请求并直接执行。加 `只要提示词` 则只展示 |
+| **请求卡片** | 终端（Claude Code 2.1.287 或更新）中自动 | 把 `/fable` 展示的改写后请求在对话中画成卡片（彩色标题条，逐项排列）。只负责绘制，Claude 读到的内容不变。关闭方法：`/config` 里的 `Improved request card`（[FAQ](#faq)） |
 | `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort（值与来源）、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
 | `/fable-audit` | 想知道自己的规则缺了指南的哪些内容时 | 把 CLAUDE.md、规则文件、agent 提示词对照指南 16 节：缺什么、哪些规则与某节反着来、插件已覆盖什么；Opus 5/5.5、Sonnet 5.5 指南中按模型区分的注意事项会单独列出，不计分。只读，不做任何修改。相反方向的工作，即找出过时、失效或互相矛盾、应当删除的文字，由 Claude Code 的 `/doctor prompt-audit` 负责 |
 | `/fable-setup` | 可选，建议运行一次 | 把规则放进规则文件（推荐，代理团队也用这种方式）或 CLAUDE.md 段落、固定一种模式、说明 effort 的来源、检查 CLAUDE.md 中的冲突规则 |
@@ -88,7 +89,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ```
 新开会话，或 `/reload-plugins` 后 `/clear`。无需配置。只在想改默认值时运行 `/fable-setup`。
 
-> **要求** Claude Code 2.1.258 或更新。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。
+> **要求** Claude Code 2.1.258 或更新（2.5.0 已在 2.1.258、2.1.286 和 2.1.292 上安装并确认规则正常注入）。不支持更低的版本：较旧的 Claude Code（已在 2.1.69 上确认）无法安装也无法加载本插件，请运行 `claude update` 升级。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。请求卡片在 2.1.287 或更新版本中绘制（建议 2.1.290 或更新）；在 mod 未开启的较低版本（已在 2.1.258 上确认）中仍显示普通代码块。
 >
 > **自动更新** Claude Code 对第三方市场默认关闭自动更新。要自动收到新版本，只需一次：`/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update。或者不定期运行 `claude plugin update oh-my-fable@oh-my-fable`。
 
@@ -152,7 +153,7 @@ claude plugin install oh-my-fable@oh-my-fable
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. 从 `~/.claude/plugins/installed_plugins.json` 读取 `oh-my-fable@oh-my-fable` 的 `installPath`
 4. 确认安装后只告诉用户："安装完成。下次会话自动生效。现在就用请输入 `/reload-plugins` 并回车，再输入 `/clear` 并回车（每行一个）。模糊的请求用 `/fable <请求>` 发送。"
-5. 不做其他说明，也不运行 `/fable-setup`（它是可选的，默认值无需任何配置即可工作）。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入
+5. 不做其他说明，也不运行 `/fable-setup`（它是可选的，默认值无需任何配置即可工作）。两者都需要：`/reload-plugins` 把刚安装的插件（钩子和技能）加载到本会话，而规则只在会话开始、`/clear` 和压缩时注入。安装输出里出现 `userConfig option not yet set` 一行时不必另行设置（请求卡片默认开启，关闭方法见 FAQ）
 
 </details>
 
@@ -246,6 +247,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **现在生效的是什么？**
 `/fable-status`。一张表列出插件版本、规则位置、本会话模式（含自动检测依据）、effort、规则文件版本、CLAUDE.md 冲突，不做任何改动。新开会话时同样的信息会以一行提示显示在屏幕上（不进入 Claude 的上下文）。
 
+**请求卡片是什么？怎么关闭？**
+它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。按 Claude Code 文档，桌面应用也会绘制 mod，但这里没有实际确认；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，因此建议使用 2.1.290 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
+
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
 
@@ -269,7 +273,8 @@ oh-my-fable/
 │   ├── plugin.json            插件清单
 │   └── marketplace.json       把本仓库注册为市场
 ├── hooks/
-│   ├── hooks.json             注册 SessionStart、SubagentStart 钩子
+│   ├── hooks.json             注册 SessionStart、SubagentStart 钩子，并接入请求卡片 mod
+│   ├── card/                  请求卡片 mod（register.tsx：绘制卡片 · parse.ts：读取改写后请求的代码块）
 │   ├── session-start.sh       钩子本体（会话开始：有规则文件时只追加无人值守段落，否则全部 · 子代理：精简版 · --status）
 │   ├── always-on.md           模块原文（英文）
 │   ├── rules-file.md          /fable-setup 复制到 ~/.claude/rules/oh-my-fable.md 的基础规则
@@ -286,7 +291,8 @@ oh-my-fable/
 │   ├── fable/
 │   │   ├── SKILL.md           每次请求改写（第 1 层）
 │   │   └── references/        模块原文（A 到 N）与前后示例
-│   └── fable-prompt/SKILL.md  /fable 的旧名称，2.4.x 期间仍可使用
+│   └── fable-prompt/SKILL.md  /fable 的旧名称，2.5.x 期间仍可使用
+├── tests/card.test.ts         请求卡片测试（`claude plugin test .`）
 ├── evals/                     `claude plugin eval` 评测集：5 个用例，按规则判分，不用模型评判
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE

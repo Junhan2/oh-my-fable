@@ -63,6 +63,7 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 |---|---|---|
 | **Always-on rules** | automatically once installed, no files | At every session start the hook injects the official guides' always-on rules (autonomy, scope limits, deliver what was asked, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Headless and SDK sessions automatically get the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph (from the Opus 5.5 guide), sessions at `xhigh`/`max` effort get the "stop once the checks pass" paragraph (block N, from the Sonnet 5.5 guide), and subagents started with the Agent tool get a short version. No rules file, no CLAUDE.md edit |
 | `/fable` | when a request is short or vague | shows a request with goal, context, scope, and done criteria filled in, then runs it. Add `just the prompt` to only see the rewrite |
+| **Request card** | automatic in the terminal (Claude Code 2.1.287 or newer) | draws the improved request that `/fable` shows as a card in the transcript (a colored title bar, one block per field). It only draws: what Claude reads stays the same. Turn it off with `Improved request card` in `/config` ([FAQ](#faq)) |
 | `/fable-status` | when you wonder what is in effect | one table: plugin version, where the rules live, detected mode, effort (value and source), whether the rules file is current, CLAUDE.md conflicts. Writes nothing |
 | `/fable-audit` | when you want to know what your rules are missing | checks your CLAUDE.md, rules files, and agent prompts against the guide's 16 sections: what is missing, what pushes against a section, what the plugin already covers, and lists the Opus 5/5.5 and Sonnet 5.5 guides' model-specific notes separately, unscored. Read-only; it changes nothing. For the opposite job, finding dated, stale or contradictory text to remove, use Claude Code's `/doctor prompt-audit` |
 | `/fable-setup` | optional, recommended once | keep the rules in a rules file (recommended; also the one for agent teams) or a CLAUDE.md section, pin one mode, show where effort comes from, audit your CLAUDE.md for conflicting rules |
@@ -88,7 +89,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ```
 Open a new session, or `/reload-plugins` then `/clear`. Nothing to configure. `/fable-setup` only when you want to change the defaults.
 
-> **Requirements** Claude Code 2.1.258 or newer. **Windows needs Git for Windows (Git Bash)**: the hook runs through bash. A hook error right after install means this.
+> **Requirements** Claude Code 2.1.258 or newer (2.5.0 was installed on 2.1.258, 2.1.286 and 2.1.292, and the rules loaded on each). Older versions are not supported: an old Claude Code (checked on 2.1.69) can neither install nor load this plugin, so run `claude update`. **Windows needs Git for Windows (Git Bash)**: the hook runs through bash. A hook error right after install means this. The request card draws on 2.1.287 or newer (2.1.290 or newer recommended); a lower version where mods are off (checked on 2.1.258) keeps showing the plain code block.
 >
 > **Auto-update** Claude Code keeps auto-update off for third-party marketplaces. To receive new versions automatically, once: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. Or run `claude plugin update oh-my-fable@oh-my-fable` now and then.
 
@@ -152,7 +153,7 @@ Only one is active at a time. If a CLAUDE.md section or a hand-made rules file e
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. Read `installPath` for `oh-my-fable@oh-my-fable` from `~/.claude/plugins/installed_plugins.json`
 4. Once the install is verified, tell the user only this: "Installed. The rules apply from the next session. To use them right now, type `/reload-plugins` and press Enter, then `/clear` and press Enter (one per line). Send vague requests as `/fable <request>`."
-5. Say nothing else and do not run `/fable-setup` (it is optional; the defaults work without any configuration). Both commands are needed because `/reload-plugins` loads the just-installed plugin (hook and skills) into this session, and the rules are injected only on session start, `/clear`, and compaction
+5. Say nothing else and do not run `/fable-setup` (it is optional; the defaults work without any configuration). Both commands are needed because `/reload-plugins` loads the just-installed plugin (hook and skills) into this session, and the rules are injected only on session start, `/clear`, and compaction. If the install output shows a `userConfig option not yet set` line, leave it alone (the request card is on by default; the FAQ says how to turn it off)
 
 </details>
 
@@ -246,6 +247,9 @@ The two commands do different things per the official docs. `/reload-plugins` "r
 **What is in effect right now?**
 `/fable-status`. One table with the plugin version, where the rules live, this session's mode (with the auto-detection basis), effort, the rules file version, and CLAUDE.md conflicts; it changes nothing. The same information appears as a one-line notice when a new session opens (it does not enter Claude's context).
 
+**What is the request card, and how do I turn it off?**
+It draws the improved request that `/fable` shows as a card in the transcript. It is a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview) (plugin code that runs inside Claude Code), and redrawing that one block is all it does (`claude plugin validate` lists a single call, `$.ui.resolve`). What Claude reads and what the transcript stores stay the same; while the reply streams you see the code block, and it turns into the card when that block of the reply is complete. In the terminal it draws on Claude Code 2.1.287 or newer and was checked on 2.1.292. Per the Claude Code docs the desktop app draws mods too, but that was not checked here; the VS Code extension panel, `claude -p`, and versions before 2.1.287 keep showing the code block. Claude Code 2.1.290 fixed a stall when a mod draws multi-line text in a non-Latin script, so 2.1.290 or newer is recommended. To turn it off, switch off `Improved request card` in `/config` (it applies at once, no restart needed), or go to `/plugin` → oh-my-fable → Configure options. To install with it off: `claude plugin install oh-my-fable@oh-my-fable --config card=false`.
+
 **How do I remove it?**
 `/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
 
@@ -269,7 +273,8 @@ oh-my-fable/
 │   ├── plugin.json            plugin manifest
 │   └── marketplace.json       registers this repo as a marketplace
 ├── hooks/
-│   ├── hooks.json             registers the SessionStart and SubagentStart hooks
+│   ├── hooks.json             registers the SessionStart and SubagentStart hooks and the request card mod
+│   ├── card/                  the request card mod (register.tsx draws the card · parse.ts reads the improved request block)
 │   ├── session-start.sh       the hook (session start: unattended paragraph only when a rules file exists, else everything · subagents: short version · --status)
 │   ├── always-on.md           block text (English)
 │   ├── rules-file.md          base rules that /fable-setup copies to ~/.claude/rules/oh-my-fable.md
@@ -286,7 +291,8 @@ oh-my-fable/
 │   ├── fable/
 │   │   ├── SKILL.md           per-request rewrite (layer 1)
 │   │   └── references/        block texts (A to N) and before/after examples
-│   └── fable-prompt/SKILL.md  old name of /fable, still works through 2.4.x
+│   └── fable-prompt/SKILL.md  old name of /fable, still works through 2.5.x
+├── tests/card.test.ts         request card tests (`claude plugin test .`)
 ├── evals/                     `claude plugin eval` suite: 5 cases, deterministic graders
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE

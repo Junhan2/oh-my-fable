@@ -63,6 +63,7 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.1](https://platform.claude.com
 |---|---|---|
 | **상시 규칙** | 설치하면 자동, 파일 없음 | 세션이 시작될 때마다 훅이 공식 가이드의 상시 규칙(자율 진행, 범위 제한, 시킨 범위 그대로 끝내기, 부분 편집, 진행 보고, 서식, 도구 일괄 호출)을 영어 원문 그대로 넣습니다. 헤드리스·SDK 세션이면 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단(Opus 5.5 가이드)을 자동으로 더하고, `xhigh`/`max` effort 세션에는 "확인이 통과하면 멈춰라" 문단(블록 N, Sonnet 5.5 가이드)을 더하며, Agent 도구로 띄운 서브에이전트에는 짧은 판을 따로 넣습니다. 규칙 파일도 CLAUDE.md도 만들지 않습니다 |
 | `/fable` | 요청이 짧거나 막연할 때 | 목표·맥락·범위·완료 기준을 채운 요청을 보여 주고 바로 실행합니다. `프롬프트만`을 붙이면 보여 주기만 합니다 |
+| **요청 카드** | 터미널(Claude Code 2.1.287 이상)에서 자동 | `/fable`이 보여 주는 개선된 요청을 대화 속 카드(색 띠 제목, 항목별 정리)로 그립니다. 화면에 그리는 일만 하며 Claude가 읽는 내용은 그대로입니다. 끄려면 `/config`의 `Improved request card` ([FAQ](#faq)) |
 | `/fable-status` | 지금 뭐가 켜져 있는지 궁금할 때 | 플러그인 버전, 규칙 위치, 감지된 모드, effort(값과 출처), 규칙 파일이 최신인지, CLAUDE.md 충돌 수를 표 하나로 보여 줍니다. 아무것도 쓰지 않습니다 |
 | `/fable-audit` | 내 규칙에 가이드의 무엇이 빠졌는지 볼 때 | CLAUDE.md·규칙 파일·에이전트 프롬프트를 가이드 16개 절과 대조해 빠진 것·가이드와 반대로 가는 것·플러그인이 이미 덮는 것을 표로 보여 주고, Opus 5/5.5·Sonnet 5.5 가이드의 모델별 주의점은 점수 없이 따로 알려 줍니다. 읽기만 하고 아무것도 고치지 않습니다. 반대 방향의 일, 즉 낡았거나 틀렸거나 서로 부딪혀 지울 문구를 찾는 일은 Claude Code의 `/doctor prompt-audit`가 맡습니다 |
 | `/fable-setup` | 선택 사항, 한 번은 권장 | 규칙을 규칙 파일로(권장, 에이전트 팀도 이 방식) 또는 CLAUDE.md 구간으로 옮기기, 모드를 한쪽으로 고정, effort가 어디서 오는지 안내, 기존 CLAUDE.md 규칙과의 충돌 점검 |
@@ -88,7 +89,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ```
 새 세션을 열거나 `/reload-plugins` 후 `/clear`. 설정할 것은 없습니다. 기본값을 바꾸고 싶을 때만 `/fable-setup`.
 
-> **요구 사항** Claude Code 2.1.258 이상. **Windows는 Git for Windows(Git Bash) 필수**: 훅이 bash로 실행됩니다. 설치 뒤 훅 오류가 뜨면 이 문제입니다.
+> **요구 사항** Claude Code 2.1.258 이상(2.5.0은 2.1.258·2.1.286·2.1.292에서 설치와 규칙 주입을 확인). 더 낮은 버전은 지원하지 않습니다: 오래된 Claude Code(2.1.69에서 확인)는 이 플러그인을 설치하거나 읽지 못하니 `claude update`로 올리세요. **Windows는 Git for Windows(Git Bash) 필수**: 훅이 bash로 실행됩니다. 설치 뒤 훅 오류가 뜨면 이 문제입니다. 요청 카드는 2.1.287 이상에서 그려지고(2.1.290 이상 권장), mod가 꺼져 있는 낮은 버전(2.1.258에서 확인)에서는 지금처럼 코드 블록으로 보입니다.
 >
 > **자동 갱신** 서드파티 마켓플레이스는 Claude Code가 자동 갱신을 기본으로 꺼 둡니다. 새 버전을 자동으로 받으려면 한 번만: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. 아니면 가끔 `claude plugin update oh-my-fable@oh-my-fable`.
 
@@ -152,7 +153,7 @@ claude plugin install oh-my-fable@oh-my-fable
 2. `claude plugin install oh-my-fable@oh-my-fable`
 3. `~/.claude/plugins/installed_plugins.json` 에서 `oh-my-fable@oh-my-fable` 의 `installPath` 를 읽는다
 4. 설치가 확인되면 사용자에게 이렇게만 안내한다: "설치가 끝났습니다. 다음 세션부터 자동 적용됩니다. 지금 바로 쓰려면 `/reload-plugins` 를 입력하고 Enter, 그다음 `/clear` 를 입력하고 Enter 하세요(한 줄에 하나씩). 막연한 요청은 `/fable <요청>` 으로 보내세요."
-5. 그 밖의 설명은 하지 않고 `/fable-setup` 도 실행하지 않는다(선택 사항이며 기본값은 설정 없이 동작). 둘 다 필요한 이유: `/reload-plugins` 는 방금 설치한 플러그인(훅·스킬)을 이 세션에 로드하고, 규칙 주입은 세션 시작·`/clear`·압축 때만 일어난다
+5. 그 밖의 설명은 하지 않고 `/fable-setup` 도 실행하지 않는다(선택 사항이며 기본값은 설정 없이 동작). 둘 다 필요한 이유: `/reload-plugins` 는 방금 설치한 플러그인(훅·스킬)을 이 세션에 로드하고, 규칙 주입은 세션 시작·`/clear`·압축 때만 일어난다. 설치 출력에 `userConfig option not yet set` 줄이 보여도 따로 설정하지 않는다(요청 카드는 기본으로 켜져 있고, 끄는 방법은 FAQ에 있다)
 
 </details>
 
@@ -246,6 +247,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **지금 뭐가 켜져 있는지 보려면?**
 `/fable-status`. 플러그인 버전, 규칙 위치, 이 세션의 모드(자동 감지 근거 포함), effort, 규칙 파일 버전, CLAUDE.md 충돌을 표 하나로 보여 주고 아무것도 바꾸지 않습니다. 새 세션을 열 때도 같은 내용이 한 줄로 화면에 뜹니다(Claude의 문맥에는 들어가지 않음).
 
+**요청 카드가 뭔가요? 끄려면?**
+`/fable`이 보여 주는 개선된 요청을 대화 속 카드로 그려 주는 기능입니다. Claude Code의 [mod](https://code.claude.com/docs/en/plugins/mods/overview)(Claude Code 안에서 실행되는 플러그인 코드)로 만들었고, 하는 일은 그 블록을 화면에 다시 그리는 것 하나입니다(`claude plugin validate`가 보여 주는 호출은 `$.ui.resolve`뿐). Claude가 읽는 내용과 저장되는 대화는 그대로이며, 글자가 나오는 동안에는 코드 블록으로 보이다가 그 답변 덩어리가 끝나면 카드로 바뀝니다. 터미널에서는 Claude Code 2.1.287 이상에서 그려지며 2.1.292에서 확인했습니다. Claude Code 문서상 데스크톱 앱도 mod를 그리지만 직접 확인하지는 못했고, VS Code 확장 창·`claude -p`·2.1.287보다 낮은 버전에서는 지금처럼 코드 블록으로 보입니다. Claude Code 2.1.290에 mod가 라틴 문자가 아닌 여러 줄 글을 그릴 때 화면이 멈칫하던 문제의 수정이 들어갔으니 2.1.290 이상을 권합니다. 끄려면 `/config`에서 `Improved request card`를 끄거나(세션을 다시 시작하지 않아도 바로 적용됩니다) `/plugin` → oh-my-fable → Configure options. 설치할 때부터 끄려면 `claude plugin install oh-my-fable@oh-my-fable --config card=false`.
+
 **되돌리려면?**
 `/fable-setup remove` 가 설정 파일, 규칙 파일, CLAUDE.md 구간을 지웁니다. 그다음 `claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
 
@@ -269,7 +273,8 @@ oh-my-fable/
 │   ├── plugin.json            플러그인 매니페스트
 │   └── marketplace.json       이 저장소를 마켓플레이스로 등록
 ├── hooks/
-│   ├── hooks.json             SessionStart · SubagentStart 훅 등록
+│   ├── hooks.json             SessionStart · SubagentStart 훅 등록, 요청 카드 mod 연결
+│   ├── card/                  요청 카드 mod (register.tsx: 카드 그리기 · parse.ts: 개선된 요청 블록 읽기)
 │   ├── session-start.sh       훅 본체 (세션 시작: 규칙 파일이 있으면 무인 문단만, 없으면 전체 · 서브에이전트: 짧은 판 · --status)
 │   ├── subagent.md            서브에이전트에 넣는 짧은 판
 │   ├── always-on.md           블록 원문 (영어)
@@ -286,7 +291,8 @@ oh-my-fable/
 │   ├── fable/
 │   │   ├── SKILL.md           매번 요청 개선 (1층)
 │   │   └── references/        블록 원문(A~N)과 전후 예시
-│   └── fable-prompt/SKILL.md  /fable 의 옛 이름. 2.4.x 동안 그대로 동작
+│   └── fable-prompt/SKILL.md  /fable 의 옛 이름. 2.5.x 동안 그대로 동작
+├── tests/card.test.ts         요청 카드 시험 (`claude plugin test .`)
 ├── evals/                     `claude plugin eval` 평가 묶음: 사례 5개, 모델 판정 없이 규칙으로 채점
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
