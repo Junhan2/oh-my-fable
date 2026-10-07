@@ -33,13 +33,24 @@ export const register: Register = (on, options) => {
         found.before === ''
           ? null
           : await next({ ...e, props: { ...e.props, text: found.before } })
+      const tail = found.after === '' ? null : <Markdown text={found.after} />
+
+      // The terminal indents the card under the reply bullet and closes it with a rule.
+      // Elsewhere it sits flush with the reply text, and a blank row on each side sets it apart.
+      const onTerminal = e.surface === 'terminal'
+      const gap = onTerminal ? 0 : 1
 
       // No side borders: a drag over the rows copies the request's own text only.
       return (
         <Box flexDirection="column">
           {lead}
-          <Box flexDirection="column" marginLeft={REPLY_INDENT}>
-            <Box backgroundColor={ACCENT} paddingX={1} justifyContent="space-between">
+          <Box flexDirection="column" marginLeft={onTerminal ? REPLY_INDENT : 0}>
+            <Box
+              backgroundColor={ACCENT}
+              paddingX={1}
+              justifyContent="space-between"
+              marginTop={lead === null ? 0 : gap}
+            >
               <Text bold color={ON_ACCENT} backgroundColor={ACCENT}>
                 {found.title}
               </Text>
@@ -47,7 +58,7 @@ export const register: Register = (on, options) => {
                 /fable
               </Text>
             </Box>
-            <Box flexDirection="column" paddingX={1}>
+            <Box flexDirection="column" paddingX={1} marginBottom={tail === null ? 0 : gap}>
               {found.fields.map(field =>
                 field.label === CONDITIONAL ? (
                   <Text dimColor>+ {field.value}</Text>
@@ -63,12 +74,12 @@ export const register: Register = (on, options) => {
                 ),
               )}
             </Box>
-            {e.surface === 'terminal' && (
+            {onTerminal && (
               <Box height={1} overflow="hidden">
                 <Text color={ACCENT}>{RULE}</Text>
               </Box>
             )}
-            {found.after !== '' && <Markdown text={found.after} />}
+            {tail}
           </Box>
         </Box>
       )

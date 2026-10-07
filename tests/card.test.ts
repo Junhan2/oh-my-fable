@@ -24,6 +24,7 @@ test('draws the improved request as a card on every surface', async ($, on) => {
   })
 
   for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
+    const onTerminal = surface === 'terminal'
     const ui = await $.ui.mount({
       plugin: PLUGIN,
       surface,
@@ -33,17 +34,33 @@ test('draws the improved request as a card on every surface', async ($, on) => {
 
     const title = await ui.find({ type: 'Text', text: '개선된 요청' })
     expect(title?.props).toMatchObject({ bold: true, backgroundColor: 'suggestion' })
+    const boxes = await ui.findAll({ type: 'Box' })
     // A side border would end up in every line a drag copies from the card.
-    expect((await ui.findAll({ type: 'Box' })).every(box => box.props.borderStyle === undefined)).toBe(true)
+    expect(boxes.every(box => box.props.borderStyle === undefined)).toBe(true)
+    // Indented under the reply bullet on the terminal; flush with the reply text and set apart by blank rows elsewhere.
+    expect(boxes.some(box => box.props.flexDirection === 'column' && box.props.marginLeft === 2)).toBe(onTerminal)
+    expect(boxes.find(box => box.props.backgroundColor === 'suggestion')?.props.marginTop).toBe(onTerminal ? 0 : 1)
+    expect(boxes.some(box => box.props.marginBottom === 1)).toBe(!onTerminal)
     expect(await ui.find({ type: 'Box', text: GOAL })).toBeDefined()
     expect((await ui.findAll({ type: 'Text', text: /^(목표|맥락|범위|완료 기준)$/ })).length).toBe(4)
     expect(await ui.find({ type: 'Text', text: '+ block H' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: '이제 실행합니다.' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /^ENGINE 요청을 다듬어/ })).toBeDefined()
     expect(await ui.find({ text: '```' })).toBeUndefined()
-    expect((await ui.find({ type: 'Text', text: /^─+$/ })) !== undefined).toBe(surface === 'terminal')
+    expect((await ui.find({ type: 'Text', text: /^─+$/ })) !== undefined).toBe(onTerminal)
     await ui.unmount()
   }
+
+  // With no text around the block there is nothing to set the card apart from.
+  const alone = await $.ui.mount({
+    plugin: PLUGIN,
+    surface: 'desktop',
+    component: 'AssistantMessage',
+    props: { text: BLOCK, isFirstOfReply: true },
+  })
+  const aloneBoxes = await alone.findAll({ type: 'Box' })
+  expect(aloneBoxes.some(box => box.props.marginTop === 1 || box.props.marginBottom === 1)).toBe(false)
+  await alone.unmount()
 
   expect(engineTexts.every(text => text === '요청을 다듬어 보여드린 뒤 바로 진행합니다.')).toBe(true)
 })

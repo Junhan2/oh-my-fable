@@ -63,7 +63,7 @@
 |---|---|---|
 | **常驻规则** | 安装后自动，不写文件 | 每次会话开始时钩子按英文原文注入官方指南的常驻规则（自主执行、范围限制、按要求交付、局部编辑、进度汇报、排版、批量工具调用）。无头和 SDK 会话自动追加"用户不在旁边"段落和"不要只汇报进度就停下"段落（来自 Opus 5.5 指南），`xhigh`/`max` effort 的会话追加"检查通过就停下"段落（模块 N，来自 Sonnet 5.5 指南），用 Agent 工具启动的子代理另收精简版。不创建规则文件，也不改 CLAUDE.md |
 | `/fable` | 请求简短或模糊时 | 展示补全了目标、上下文、范围和完成标准的请求并直接执行。加 `只要提示词` 则只展示 |
-| **请求卡片** | 终端（Claude Code 2.1.287 或更新）中自动 | 把 `/fable` 展示的改写后请求在对话中画成卡片（彩色标题条，逐项排列）。只负责绘制，Claude 读到的内容不变。关闭方法：`/config` 里的 `Improved request card`（[FAQ](#faq)） |
+| **请求卡片** | 终端（Claude Code 2.1.287 或更新）和桌面应用中自动 | 把 `/fable` 展示的改写后请求在对话中画成卡片（彩色标题条，逐项排列）。只负责绘制，Claude 读到的内容不变。关闭方法：`/config` 里的 `Improved request card`（[FAQ](#faq)） |
 | `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort（值与来源）、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
 | `/fable-audit` | 想知道自己的规则缺了指南的哪些内容时 | 把 CLAUDE.md、规则文件、agent 提示词对照指南 16 节：缺什么、哪些规则与某节反着来、插件已覆盖什么；Opus 5/5.5、Sonnet 5.5 指南中按模型区分的注意事项会单独列出，不计分。只读，不做任何修改。相反方向的工作，即找出过时、失效或互相矛盾、应当删除的文字，由 Claude Code 的 `/doctor prompt-audit` 负责 |
 | `/fable-setup` | 可选，建议运行一次 | 把规则放进规则文件（推荐，代理团队也用这种方式）或 CLAUDE.md 段落、固定一种模式、说明 effort 的来源、检查 CLAUDE.md 中的冲突规则 |
@@ -248,7 +248,7 @@ claude plugin install oh-my-fable@oh-my-fable
 `/fable-status`。一张表列出插件版本、规则位置、本会话模式（含自动检测依据）、effort、规则文件版本、CLAUDE.md 冲突，不做任何改动。新开会话时同样的信息会以一行提示显示在屏幕上（不进入 Claude 的上下文）。
 
 **请求卡片是什么？怎么关闭？**
-它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。按 Claude Code 文档，桌面应用也会绘制 mod，但这里没有实际确认；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，因此建议使用 2.1.290 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
+它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。桌面应用中也会绘制（已在内置 Claude Code 2.1.289 的应用上确认）；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，因此建议使用 2.1.290 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
 
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
