@@ -34,20 +34,24 @@ test('draws the improved request as a card on every surface', async ($, on) => {
 
     const title = await ui.find({ type: 'Text', text: '개선된 요청' })
     const boxes = await ui.findAll({ type: 'Box' })
+    // The same lemon-lime band opens the card on every surface, and a blank row sets each field apart.
+    expect(title?.props).toMatchObject({ bold: true, backgroundColor: '#DCF368' })
+    expect(boxes.some(box => box.props.gap === 1 && box.props.paddingY === 1)).toBe(true)
 
     if (onTerminal) {
-      // A bar in the theme's accent and a rule, indented under the reply bullet, each value as typed.
-      // No border: its side strokes would end up in every line a drag copies from the card.
-      expect(title?.props).toMatchObject({ bold: true, backgroundColor: 'suggestion' })
+      // The character in the start screen's block glyphs and a rule, indented under the reply bullet, each value
+      // as typed. No border: its side strokes would end up in every line a drag copies from the card.
+      for (const row of [' ▐▛███▜▌ ', '▝▜█████▛▘', '  ▘▘ ▝▝  ']) {
+        expect(await ui.find({ type: 'Text', text: row })).toBeDefined()
+      }
       expect(boxes.every(box => box.props.borderStyle === undefined)).toBe(true)
       expect(boxes.some(box => box.props.flexDirection === 'column' && box.props.marginLeft === 2)).toBe(true)
       expect(await ui.find({ type: 'Text', text: GOAL })).toBeDefined()
     } else {
-      // One drawn border closes the card off from the reply text, a blank row above and below it; inside,
-      // a lemon-lime band with Claude Code's character, then each value as Markdown.
+      // One drawn border closes the card off from the reply text, a blank row above and below it;
+      // the character as a picture, each value as Markdown.
       expect(boxes.filter(box => box.props.borderStyle !== undefined).length).toBe(1)
       expect(boxes.find(box => box.props.borderStyle === 'round')?.props).toMatchObject({ marginTop: 1, marginBottom: 1 })
-      expect(title?.props).toMatchObject({ bold: true, backgroundColor: '#DCF368' })
       expect((await ui.findAll({ type: 'Svg' })).map(svg => svg.props.alt).join()).toBe('Claude')
       expect(await ui.find({ type: 'Markdown', text: GOAL })).toBeDefined()
     }
@@ -112,6 +116,47 @@ test('reads 배경 as a field name, as a real /fable run wrote it in place of �
     expect(await ui.find({ type: 'Text', text: '배경' })).toBeDefined()
     await ui.unmount()
   }
+})
+
+test('reads fields written as list items and sets the guide line apart, as a real /fable run wrote them', async $ => {
+  const guide = "Report your findings and stop. Don't apply a fix until they ask for one."
+  const text = [
+    '```개선된 요청',
+    '- 목표: 출시 전에 할 검증 항목과 마지막 개선안을 제안한다.',
+    '- 맥락: 지금 상태는 PR #77, 체험은 금요일 오전까지.',
+    '- 범위: 제안만 하고 코드는 고치지 않는다.',
+    '- 완료 기준: 항목마다 맡을 사람과 통과 기준이 있다.',
+    guide,
+    '```',
+  ].join('\n')
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({
+      plugin: PLUGIN,
+      surface,
+      component: 'AssistantMessage',
+      props: { text, isFirstOfReply: true },
+    })
+
+    expect((await ui.findAll({ type: 'Text', text: /^(목표|맥락|범위|완료 기준)$/ })).length).toBe(4)
+    expect((await ui.find({ type: 'Text', text: guide }))?.props).toMatchObject({ dimColor: true })
+    await ui.unmount()
+  }
+})
+
+test('reads a field name however a run decorates it: indented, as a list item, bold or as a heading', async $ => {
+  const text = ['```', '개선된 요청', '  - 목표: 한 줄', '* **맥락**: 두 줄', '## 범위', '세 줄', '1. 완료 기준: 네 줄', '```'].join(
+    '\n',
+  )
+  const ui = await $.ui.mount({
+    plugin: PLUGIN,
+    surface: 'terminal',
+    component: 'AssistantMessage',
+    props: { text, isFirstOfReply: true },
+  })
+
+  expect((await ui.findAll({ type: 'Text', text: /^(목표|맥락|범위|완료 기준)$/ })).length).toBe(4)
+  await ui.unmount()
 })
 
 test('leaves an ordinary reply, another code block and a summary row to the engine', async ($, on) => {

@@ -1,4 +1,4 @@
-/** The label a conditional line (`+ block H`) is filed under. */
+/** The label a conditional line is filed under: a guide line /fable appends after the four fields, or a `+` line. */
 export const CONDITIONAL = '+'
 
 /** One row of the improved request: a field name, CONDITIONAL, or '' for text under no label. */
@@ -13,24 +13,38 @@ export type ImprovedRequest = {
 }
 
 // The two titles are also written in register.tsx, in the matcher that decides which replies reach the hook.
-const TITLE = /^(?:#+\s*|\*\*|__)?(개선된 요청|Improved request)(?:\*\*|__)?\s*[:：]?$/i
+const TITLE = /^(개선된 요청|Improved request)\s*[:：]?$/i
 const FENCE = /^(`{3,}|~{3,})([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/gm
+// A field name opens its row, alone or before a colon.
 const FIELD = /^(목표|맥락|배경|범위|완료 기준|완료기준|Goal|Context|Background|Scope|Done criteria|Done)\s*(?:[:：]\s*(.*))?$/i
-const EXTRA = /^(\+)\s*(.+)$/
+// A conditional line: one opened with `+`, or one of the English guide lines /fable appends after the fields,
+// known by how it opens (skills/fable/SKILL.md and references/prompt-blocks.md). The lines under it stay with it.
+const EXTRA =
+  /^(?:\+\s*\S|Report your findings and stop|Exception: when the user is describing|Please remove all mannered prose|Mannered prose substitutes|Everything produced in one reply|When a query centers on a name|Use the search tool to check specifics|<example>)/
 
-const titleOf = (line = ''): string | undefined => TITLE.exec(line.trim())?.[1]
+/** A line's words without the marks that vary between runs: indentation, a list marker, a heading's #, bold around its start. */
+const plain = (line: string): string =>
+  line
+    .trim()
+    .replace(/^(?:[-*•]\s+|\d+[.)]\s+|#+\s*)/, '')
+    .replace(/^(\*\*|__)(.+?)\1/, '$2')
 
-/** Splits the block's lines into rows: a label or a `+` opens a row, any other line continues the row above. */
+const titleOf = (line = ''): string | undefined => TITLE.exec(plain(line))?.[1]
+
+/** Splits the block's lines into rows: a field name or a conditional line opens a row, any other line continues the row above. */
 function parseBody(lines: readonly string[]): RequestField[] {
   const rows = [{ label: '', lines: [] as string[] }]
 
   for (const line of lines) {
-    const opened = FIELD.exec(line) ?? EXTRA.exec(line)
+    const words = plain(line)
+    const field = FIELD.exec(words)
 
-    if (opened === null) {
-      rows.at(-1)?.lines.push(line.trimEnd())
+    if (field !== null) {
+      rows.push({ label: field[1] ?? '', lines: [field[2] ?? ''] })
+    } else if (EXTRA.test(words)) {
+      rows.push({ label: CONDITIONAL, lines: [words] })
     } else {
-      rows.push({ label: opened[1] ?? '', lines: [opened[2] ?? ''] })
+      rows.at(-1)?.lines.push(line.trimEnd())
     }
   }
 
