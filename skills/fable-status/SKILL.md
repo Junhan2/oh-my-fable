@@ -1,6 +1,6 @@
 ---
 name: fable-status
-description: Show what oh-my-fable is doing right now, in one table, without changing anything. Plugin version, where the rules live, this session's mode and why, effort and where it comes from, whether the rules file is current, and CLAUDE.md conflicts. Triggers: "/fable-status", "fable 상태", "규칙 적용됐어?", "지금 뭐가 켜져 있어", "is oh-my-fable active", "fable status", "which rules are loaded", "check the fable setup".
+description: 'Show what oh-my-fable is doing right now, in one table, without changing anything. Plugin version, where the rules live, this session''s mode and why, effort and where it comes from, whether the rules file is current, and CLAUDE.md conflicts. Triggers: "/fable-status", "fable 상태", "규칙 적용됐어?", "지금 뭐가 켜져 있어", "is oh-my-fable active", "fable status", "which rules are loaded", "check the fable setup".'
 ---
 # fable-status · what is in effect (read-only)
 

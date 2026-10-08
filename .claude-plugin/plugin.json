@@ -1,6 +1,6 @@
 {
   "name": "oh-my-fable",
-  "version": "2.5.3",
+  "version": "2.6.0",
   "description": "Anthropic's prompting-guide rules for Claude Code, always on (Opus 5.5, Fable 5.1; Sonnet 5.5, Opus 5 and Sonnet 5 too): install and forget: the working rules load at every session start and reach subagents, unattended sessions are detected automatically and get the early-stop rules, sessions at xhigh or max effort get the stop-after-checks rule, /fable turns a rough request into a guide-aligned prompt, /fable-status shows what is in effect, /fable-audit finds which guide sections your own rules are missing, /fable-setup moves the rules into a rules file (recommended once).",
   "author": {
     "name": "Junhan2",

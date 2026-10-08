@@ -288,10 +288,9 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           내 규칙을 가이드와 대조 (읽기 전용)
 │   │   └── references/        가이드 절별 점검표와 모델별 주의점
-│   ├── fable/
-│   │   ├── SKILL.md           매번 요청 개선 (1층)
-│   │   └── references/        블록 원문(A~N)과 전후 예시
-│   └── fable-prompt/SKILL.md  /fable 의 옛 이름. 2.5.x 동안 그대로 동작
+│   └── fable/
+│       ├── SKILL.md           매번 요청 개선 (1층)
+│       └── references/        블록 원문(A~N)과 전후 예시
 ├── tests/card.test.ts         요청 카드 시험 (`claude plugin test .`)
 ├── evals/                     `claude plugin eval` 평가 묶음: 사례 5개, 모델 판정 없이 규칙으로 채점
 ├── README.md · README.en.md · README.zh.md

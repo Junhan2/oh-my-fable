@@ -288,10 +288,9 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           scores your rules against the guides (read-only)
 │   │   └── references/        per-section checklist and model-specific notes
-│   ├── fable/
-│   │   ├── SKILL.md           per-request rewrite (layer 1)
-│   │   └── references/        block texts (A to N) and before/after examples
-│   └── fable-prompt/SKILL.md  old name of /fable, still works through 2.5.x
+│   └── fable/
+│       ├── SKILL.md           per-request rewrite (layer 1)
+│       └── references/        block texts (A to N) and before/after examples
 ├── tests/card.test.ts         request card tests (`claude plugin test .`)
 ├── evals/                     `claude plugin eval` suite: 5 cases, deterministic graders
 ├── README.md · README.en.md · README.zh.md

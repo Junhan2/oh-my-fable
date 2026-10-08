@@ -1,6 +1,6 @@
 ---
 name: fable-audit
-description: Read-only gap check. Finds which of the 16 sections of Anthropic's Fable 5.1 prompting guide your CLAUDE.md, rules files, and agent system prompts are missing, which of your rules push against a section, and what the plugin already covers; the Opus 5 / Opus 5.5 / Sonnet 5.5 model notes are listed unscored. Changes nothing; it prints suggested wording to add and stops. For dated, stale or contradictory text to remove, use Claude Code's /doctor prompt-audit instead. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "가이드에서 빠진 것", "check against the Fable guide", "which guide sections am I missing", "what does the prompting guide say that my rules lack".
+description: 'Read-only gap check. Finds which of the 16 sections of Anthropic''s Fable 5.1 prompting guide your CLAUDE.md, rules files, and agent system prompts are missing, which of your rules push against a section, and what the plugin already covers; the Opus 5 / Opus 5.5 / Sonnet 5.5 model notes are listed unscored. Changes nothing; it prints suggested wording to add and stops. For dated, stale or contradictory text to remove, use Claude Code''s /doctor prompt-audit instead. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "가이드에서 빠진 것", "check against the Fable guide", "which guide sections am I missing", "what does the prompting guide say that my rules lack".'
 ---
 # fable-audit · which guide sections your prompts are missing
 

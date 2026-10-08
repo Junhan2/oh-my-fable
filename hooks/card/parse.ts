@@ -15,8 +15,9 @@ export type ImprovedRequest = {
 // The two titles are also written in register.tsx, in the matcher that decides which replies reach the hook.
 const TITLE = /^(개선된 요청|Improved request)\s*[:：]?$/i
 const FENCE = /^(`{3,}|~{3,})([^\n]*)\n([\s\S]*?)\n\1[ \t]*$/gm
-// A field name opens its row, alone or before a colon.
-const FIELD = /^(목표|맥락|배경|범위|완료 기준|완료기준|Goal|Context|Background|Scope|Done criteria|Done)\s*(?:[:：]\s*(.*))?$/i
+// A field name opens its row, alone or before a colon. /fable writes the names in the user's language.
+const FIELD =
+  /^(목표|맥락|배경|범위|완료 기준|완료기준|Goal|Context|Background|Scope|Done criteria|Done|目标|上下文|背景|范围|完成标准)\s*(?:[:：]\s*(.*))?$/i
 // A conditional line: one opened with `+`, or one of the English guide lines /fable appends after the fields,
 // known by how it opens (skills/fable/SKILL.md and references/prompt-blocks.md). The lines under it stay with it.
 const EXTRA =
@@ -48,7 +49,12 @@ function parseBody(lines: readonly string[]): RequestField[] {
     }
   }
 
-  return rows
+  // A name another language happens to share (背景 in Japanese, 上下文 in Traditional Chinese) would file the lines
+  // after it under the wrong field, so a block with fewer than two of the names this card knows shows as written.
+  const isNamed = rows.filter(row => row.label !== '' && row.label !== CONDITIONAL).length >= 2
+  const shown = isNamed ? rows : [{ label: '', lines: lines.map(line => line.trimEnd()) }]
+
+  return shown
     .map(row => ({ label: row.label, value: row.lines.join('\n').replace(/^\n+|\n+$/g, '') }))
     .filter(row => row.label !== '' || row.value !== '')
 }

@@ -288,10 +288,9 @@ oh-my-fable/
 │   ├── fable-audit/
 │   │   ├── SKILL.md           对照指南检查我的规则（只读）
 │   │   └── references/        按指南分节的检查清单与按模型注意事项
-│   ├── fable/
-│   │   ├── SKILL.md           每次请求改写（第 1 层）
-│   │   └── references/        模块原文（A 到 N）与前后示例
-│   └── fable-prompt/SKILL.md  /fable 的旧名称，2.5.x 期间仍可使用
+│   └── fable/
+│       ├── SKILL.md           每次请求改写（第 1 层）
+│       └── references/        模块原文（A 到 N）与前后示例
 ├── tests/card.test.ts         请求卡片测试（`claude plugin test .`）
 ├── evals/                     `claude plugin eval` 评测集：5 个用例，按规则判分，不用模型评判
 ├── README.md · README.en.md · README.zh.md

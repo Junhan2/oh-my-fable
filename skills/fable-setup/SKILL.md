@@ -1,6 +1,6 @@
 ---
 name: fable-setup
-description: Optional, recommended once. The plugin works with no setup (hook delivery, auto-detected mode, subagents covered). Use /fable-setup to move the base rules into a rules file (the recommended delivery, also the one for agent teams) or a CLAUDE.md section, pin interactive/unattended mode, see where effort comes from, or audit CLAUDE.md for conflicting rules. To see what is in effect, use /fable-status instead. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "set up for Opus 5.5", "unattended mode", "rules file".
+description: 'Optional, recommended once. The plugin works with no setup (hook delivery, auto-detected mode, subagents covered). Use /fable-setup to move the base rules into a rules file (the recommended delivery, also the one for agent teams) or a CLAUDE.md section, pin interactive/unattended mode, see where effort comes from, or audit CLAUDE.md for conflicting rules. To see what is in effect, use /fable-status instead. Triggers: "/fable-setup", "fable 세팅", "환경 점검", "무인 모드로", "apply the Fable guide", "set up for Fable 5.1", "set up for Opus 5.5", "unattended mode", "rules file".'
 ---
 # fable-setup · choose delivery and mode, see where effort comes from; audit conflicts
 

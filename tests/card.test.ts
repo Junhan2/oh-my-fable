@@ -113,7 +113,7 @@ test('reads 배경 as a field name, as a real /fable run wrote it in place of �
       props: { text, isFirstOfReply: true },
     })
 
-    expect(await ui.find({ type: 'Text', text: '배경' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^배경$/ })).toBeDefined()
     await ui.unmount()
   }
 })
@@ -156,6 +156,21 @@ test('reads a field name however a run decorates it: indented, as a list item, b
   })
 
   expect((await ui.findAll({ type: 'Text', text: /^(목표|맥락|범위|완료 기준)$/ })).length).toBe(4)
+  await ui.unmount()
+})
+
+test('shows a block as written when it holds fewer than two of the field names the card knows', async $ => {
+  // Japanese: only 背景 is a name the card knows, shared with Chinese.
+  const body = '目的：ログイン後に移動する。\n背景：コンソールのエラー。\n範囲：このボタンだけ。'
+  const ui = await $.ui.mount({
+    plugin: PLUGIN,
+    surface: 'terminal',
+    component: 'AssistantMessage',
+    props: { text: '```\nImproved request\n' + body + '\n```', isFirstOfReply: true },
+  })
+
+  expect(await ui.find({ type: 'Text', text: /^背景$/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: body })).toBeDefined()
   await ui.unmount()
 })
 
@@ -231,7 +246,7 @@ test('reads labels written as headings, as a real /fable run printed them', asyn
   await ui.unmount()
 })
 
-test('reads a title written on the fence or above it, in Korean and English', async ($, on) => {
+test('reads a title written on the fence, inside or above it, with field names in Korean, English and Chinese', async ($, on) => {
   on('ui.render', { component: 'AssistantMessage' }, ($, e) => {
     const { Text } = $.ui.resolve(e)
 
@@ -240,10 +255,13 @@ test('reads a title written on the fence or above it, in Korean and English', as
 
   const onFence = '```개선된 요청\n개선된 요청\n목표: 파일을 읽는다.\n맥락: 없음\n범위: 읽기만\n완료 기준: 원문 인용\n```'
   const above = '**Improved request**\n```text\nImproved request\nGoal: ship it\nContext: none\nScope: one file\nDone criteria: tests pass\n```'
+  // /fable writes the field names in the user's language.
+  const inside = '```\nImproved request\n目标：调用 /api/login。\n上下文：控制台错误。\n范围：只改这个按钮。\n完成标准：控制台错误为 0。\n```'
 
   for (const [text, title, labels] of [
     [onFence, '개선된 요청', /^(목표|맥락|범위|완료 기준)$/],
     [above, 'Improved request', /^(Goal|Context|Scope|Done criteria)$/],
+    [inside, 'Improved request', /^(目标|上下文|范围|完成标准)$/],
   ] as const) {
     const ui = await $.ui.mount({
       plugin: PLUGIN,
