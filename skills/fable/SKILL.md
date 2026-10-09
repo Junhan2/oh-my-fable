@@ -21,7 +21,8 @@ targeted edits, progress updates, formatting, batching, and early stops in unatt
 ## Step 1 · Resolve referents
 Fill "이거", "그거", "this", "that file", "the error" from context in this order: last path mentioned, last
 error text, last artifact produced, current git diff, open thread. Write the resolved value as a concrete
-path, symbol, or quote.
+path, symbol, or quote. Resolve from what the conversation already holds; a referent that needs a lookup
+(a file, the git diff) goes in as a stated assumption, checked once you are carrying out the request.
 
 Ask exactly one question (with options and a recommended pick) only when different readings would lead
 to **materially different work**. Routine ambiguity: pick the reading the wording and surrounding code
@@ -59,8 +60,10 @@ request stays short: four fields and only the conditional lines from item 6.
 
 ## Step 4 · Show, then run
 Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), four fields only plus any conditional lines, then execute it as if
-the user had sent it. Open with one line on what you are doing, give brief updates, and close with a
-recap that stands on its own. End with exactly one status: DONE, DONE_WITH_CONCERNS, BLOCKED, or NEEDS_CONTEXT.
+the user had sent it. The block opens your reply: print it in your first message, before any tool call, in
+place of an opening line (only step 1's question may come first). Words written after a tool call often
+reach the user only as a one-line summary, so a block printed later can be lost. Give brief updates while
+you work, and close with a recap that stands on its own. End with exactly one status: DONE, DONE_WITH_CONCERNS, BLOCKED, or NEEDS_CONTEXT.
 
 ## Do not
 - Do not widen the task while improving it. The rewrite clarifies; it does not add features.
