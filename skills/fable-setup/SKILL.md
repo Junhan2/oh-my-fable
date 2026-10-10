@@ -83,7 +83,10 @@ and press Enter to save it for the model you are on (s = this session only). A t
 
 **Copies are snapshots.** A rules file or CLAUDE.md section is the text at install time. The rules file carries a
 version marker (`oh-my-fable:rules vN`); when the plugin ships a newer one, the hook shows a one-line notice at
-session start and `/fable-setup refresh` updates the copy. The hook delivery always uses the current text.
+session start and `/fable-setup refresh` updates the copy. The hook delivery always uses the current text. Never
+replace a copy with an older one: if its marker carries a higher version than the one this skill would write, this
+session runs an older copy of the plugin, so leave the copy, say so, and tell the user to start a new session (after
+updating the plugin, if it is not updated yet).
 
 ## Step 4 · Audit (one table, then question 5)
 Rule found → verdict → one-line suggestion. Edit CLAUDE.md only if the user chose "Yes" in question 5; if
