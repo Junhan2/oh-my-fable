@@ -1,5 +1,5 @@
 {
-  "description": "oh-my-fable: injects the always-on working rules (Anthropic's Fable 5.1 and Opus 5.5 prompting guides) at session start and a short version into every subagent (no CLAUDE.md edit needed)",
+  "description": "oh-my-fable: injects the always-on working rules (Anthropic's Fable 5.1 and Opus 5.5 prompting guides) at session start and a short version into every subagent, and re-checks the effort rule after a model switch (no CLAUDE.md edit needed)",
   "hooks": {
     "SessionStart": [
       {
@@ -14,6 +14,17 @@
       }
     ],
     "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostModelSwitch": [
       {
         "hooks": [
           {

@@ -1,6 +1,7 @@
 ---
 name: fable-audit
-description: 'Read-only gap check. Finds which of the 16 sections of Anthropic''s Fable 5.1 prompting guide your CLAUDE.md, rules files, and agent system prompts are missing, which of your rules push against a section, and what the plugin already covers; the Opus 5 / Opus 5.5 / Sonnet 5.5 model notes are listed unscored. Changes nothing; it prints suggested wording to add and stops. For dated, stale or contradictory text to remove, use Claude Code''s /doctor prompt-audit instead. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "가이드에서 빠진 것", "check against the Fable guide", "which guide sections am I missing", "what does the prompting guide say that my rules lack".'
+description: 'Read-only gap check. Finds which of the 16 sections of Anthropic''s Fable 5.1 prompting guide your CLAUDE.md, rules files, and agent system prompts are missing, which of your rules push against a section, and what the plugin already covers; the Opus 5 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 model notes are listed unscored. Changes nothing; it prints suggested wording to add and stops. For dated, stale or contradictory text to remove, use Claude Code''s /doctor prompt-audit instead. Use /fable-setup to apply changes, /fable-status to see what is in effect. Triggers: "/fable-audit", "가이드 대조", "가이드에서 빠진 것", "check against the Fable guide", "which guide sections am I missing", "what does the prompting guide say that my rules lack".'
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 # fable-audit · which guide sections your prompts are missing
 
@@ -84,7 +85,7 @@ files could not be read), or NEEDS_CONTEXT (say which path you need).
 
 ## Notes
 - The checklist is a snapshot of the guide as of 2026-09-29; the model notes as of 2026-09-29 (Opus 5, Opus 5.5,
-  Sonnet 5.5 guides). If the live guide has more or differently named
+  Sonnet 5.5 guides) and 2026-10-11 (Haiku 5.5 guide). If the live guide has more or differently named
   sections, say so in the header line rather than silently auditing an old list.
 - Auditing a Claude Code machine is the common case, so sections 4, 14 and 16 usually resolve to ⚪ or a setting
   finding. That is a correct result, not a thin one.

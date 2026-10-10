@@ -3,8 +3,9 @@
 Sources: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5 ·
-https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5
-Copy blocks verbatim. Em dashes in the original were replaced with commas; nothing else changed.
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5 ·
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5 (read 2026-10-11; its search text is quoted in SKILL.md)
+Copy blocks verbatim. Em dashes in the original were replaced with commas, or with a semicolon or colon where a comma would change the reading; nothing else changed.
 
 ## A · Autonomy and finishing the whole task (system prompt, always)
 
@@ -81,6 +82,8 @@ Instead, when the person has asked for a long or effort-intensive deliverable su
 
 ## H · Search triggering at low effort (system prompt; research tasks or anything time-sensitive)
 
+On Sonnet 5.5 and Haiku 5.5, `SKILL.md` uses each guide's own search text instead of this block.
+
 ```text
 When a query centers on a name you do not confidently recognize, or recognize from a fast-moving area like AI models and developer tools where the landscape shifts within months, the name itself is the thing to verify: search before answering, and include the name as the user wrote it in at least one query alongside any reformulations. This holds even when you have some background on it; partial background is exactly what makes an out-of-date answer sound authoritative, so familiarity is not a reason to skip the search.
 ```
@@ -110,7 +113,7 @@ confirmation step for risky or irreversible actions; expect somewhat more tool c
 add it from the first request of a session, because adding it partway changes the system prompt.
 
 ```text
-A message with no tool call in it ends your turn, and the work stops there until you are asked to continue. Four ways of ending a turn while work is still owed are not wanted: a long summary of what was done that closes by announcing the next step and has no tool call, so the next thing never starts; an offer to carry on with something unless the user would prefer otherwise, which stops to wait for an answer the user was not going to give; a list of decisions for the user when, by your own account, none of them blocks the rest of the work; and deciding that this is a good place to report because the turn has been long or a milestone is done. Status notes and recommendations on open decisions are welcome, but put them in the same message as your next tool call and carry on with whatever does not depend on the user's answer. If you notice yourself inviting the user to redirect you or offering to wait, delete it and do the next thing. The stops the user does want are the ones where nothing can move without them, or where the thing blocking you is deliberately protected from you. This does not override the need for confirmation on risky or destructive actions.
+A message with no tool call in it ends your turn, and the work stops there until you are asked to continue. Four ways of ending a turn while work is still owed are not wanted: a long summary of what was done that closes by announcing the next step and has no tool call, so the next thing never starts; an offer to carry on with something unless the user would prefer otherwise, which stops to wait for an answer the user was not going to give; a list of decisions for the user when, by your own account, none of them blocks the rest of the work; and deciding that this is a good place to report because the turn has been long or a milestone is done. Status notes are welcome, and so are your recommendations on open decisions, but put them in the same message as your next tool call and carry on with whatever does not depend on the user's answer. If you notice yourself inviting the user to redirect you or offering to wait, delete it and do the next thing. The stops the user does want are the ones where nothing can move without them, or where the thing blocking you is deliberately protected from you. This does not override the need for confirmation on risky or destructive actions.
 ```
 
 ## N · Stop after the checks pass at xhigh and max effort (system prompt; sessions at xhigh or max)
@@ -132,7 +135,7 @@ When the work the user asked for is done and its checks pass, stop and report. D
 - Defaults: `high` on Fable 5.1, Opus 5 and Sonnet 5; `medium` on Opus 5.5 (its guide: start there). Sonnet 5.5 defaults to `high` on the API and `medium` in Claude Code; its guide says start at `medium` for well-specified agentic coding and multistep tool use and move to `high` for harder or longer tasks. Re-measure every level per model and task; effort names do not map to the same thinking across models.
 - Sonnet 5.5 at `low` and `medium` is more likely to stop and check in before a long agentic task is done; try a higher level first. At `low` it can also report a change as done without running a check. At `xhigh`/`max` it can start its own review rounds and reviewer subagents: block N. To get less thinking, lower the effort level; asking it in the prompt to think less does not reliably reduce its thinking (the Opus 5.5 guide says the same for Opus 5.5).
 - Opus 5.5 at `medium` matches or beats Opus 5 at `high` on coding and knowledge work, and `low` comes close on several coding evaluations. It thinks more per level than Opus 5, most at `xhigh`/`max`: reserve those for measured gains.
-- Fable 5.1 at `medium` roughly matches Fable 5 at lower cost. `low` often beats Opus/Sonnet on cost per task while scoring higher, but calls search less (add block H or raise effort for that turn).
+- Fable 5.1 at `medium` roughly matches Fable 5 at lower cost. `low` often beats Opus/Sonnet on cost per task while scoring higher, but calls search less (add block H, or raise effort; a change holds for every later turn until another one replaces it).
 - `xhigh`/`max` widen the gain on hard problems but can double long deliverables by drafting in reasoning first; add block G and size `max_tokens` for thinking plus reply.
 
 ## Safeguard false positives (phrase the prompt to avoid them)

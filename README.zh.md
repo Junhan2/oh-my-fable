@@ -4,7 +4,7 @@
 
 **让 Anthropic 提示指南（Opus 5.5、Fable 5.1）的工作规则在 Claude Code 中常驻生效。装上就行：终端、无头还是子代理，每个会话都自动拿到合适的规则。**
 
-以 Opus 5.5（Claude Code 目前的默认模型）和 Fable 5.1 为基准，在 Sonnet 5.5（在 Claude Code 中默认 effort 与 Opus 5.5 一样是 `medium`）、Opus 5、Sonnet 5 上同样适用。
+以 Opus 5.5（Claude Code 目前的默认模型）和 Fable 5.1 为基准，在 Sonnet 5.5、Haiku 5.5（在 Claude Code 中默认 effort 与 Opus 5.5 一样是 `medium`）、Opus 5、Sonnet 5 上同样适用。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-2e7d32.svg)](https://github.com/Junhan2/oh-my-fable)
@@ -40,7 +40,7 @@
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)、[Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5)，以及 Opus 5.5 指南指定为起点的 [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5) 的处方，装进一个钩子和四个技能。提示词模块原文基本照用。
 
-> **适用于哪个模型？** 两个都适用：**Opus 5.5**（Claude Code 现在的默认模型）和 **Fable 5.1**。做到底、范围限制、进度汇报规则上两个模型的官方指南说法一致，只在无人值守会话追加的"不要只汇报进度就停下"段落来自 Opus 5.5 指南。局部编辑、批量工具调用、排版规则是 Fable 5.1 指南独有的处方，放在其他模型上也无害。四字段请求结构（目标、上下文、范围、完成标准）无论模型如何都能减少反复追问和跑偏的结果。在 Sonnet 5.5（Claude Code 中默认 effort `medium`，与 Opus 5.5 相同）、Opus 5、Sonnet 5 上同样适用；会话以 `xhigh` 或 `max` effort 开始时，钩子还会加入 Sonnet 5.5 指南的模块 N。
+> **适用于哪个模型？** 两个都适用：**Opus 5.5**（Claude Code 现在的默认模型）和 **Fable 5.1**。做到底、范围限制、进度汇报规则上两个模型的官方指南说法一致，只在无人值守会话追加的"不要只汇报进度就停下"段落来自 Opus 5.5 指南。局部编辑、批量工具调用、排版规则是 Fable 5.1 指南独有的处方，放在其他模型上也无害。四字段请求结构（目标、上下文、范围、完成标准）无论模型如何都能减少反复追问和跑偏的结果。在 Sonnet 5.5、Haiku 5.5（Claude Code 中默认 effort `medium`，与 Opus 5.5 相同）、Opus 5、Sonnet 5 上同样适用；会话以 `xhigh` 或 `max` effort 开始时，钩子还会加入 Sonnet 5.5 指南的模块 N。
 
 ## 目录
 
@@ -65,7 +65,7 @@
 | `/fable` | 请求简短或模糊时 | 展示补全了目标、上下文、范围和完成标准的请求并直接执行。加 `只要提示词` 则只展示 |
 | **请求卡片** | 终端（Claude Code 2.1.287 或更新）和桌面应用中自动 | 把 `/fable` 展示的改写后请求在对话中画成卡片（彩色标题条，逐项排列）。只负责绘制，Claude 读到的内容不变。关闭方法：`/config` 里的 `Improved request card`（[FAQ](#faq)） |
 | `/fable-status` | 想知道当前生效了什么时 | 一张表：插件版本、规则位置、检测到的模式、effort（值与来源）、规则文件是否最新、CLAUDE.md 冲突数。不写任何文件 |
-| `/fable-audit` | 想知道自己的规则缺了指南的哪些内容时 | 把 CLAUDE.md、规则文件、agent 提示词对照指南 16 节：缺什么、哪些规则与某节反着来、插件已覆盖什么；Opus 5/5.5、Sonnet 5.5 指南中按模型区分的注意事项会单独列出，不计分。只读，不做任何修改。相反方向的工作，即找出过时、失效或互相矛盾、应当删除的文字，由 Claude Code 的 `/doctor prompt-audit` 负责 |
+| `/fable-audit` | 想知道自己的规则缺了指南的哪些内容时 | 把 CLAUDE.md、规则文件、agent 提示词对照指南 16 节：缺什么、哪些规则与某节反着来、插件已覆盖什么；Opus 5/5.5、Sonnet 5.5、Haiku 5.5 指南中按模型区分的注意事项会单独列出，不计分。只读，不做任何修改。相反方向的工作，即找出过时、失效或互相矛盾、应当删除的文字，由 Claude Code 的 `/doctor prompt-audit` 负责 |
 | `/fable-setup` | 可选，建议运行一次 | 把规则放进规则文件（推荐，代理团队也用这种方式）或 CLAUDE.md 段落、固定一种模式、说明 effort 的来源、检查 CLAUDE.md 中的冲突规则 |
 
 Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：工作中话更少，可能每轮只调用一个工具，小改动也倾向重写整个文件，low effort 下凭记忆作答而不搜索。Opus 5.5 则习惯在长时间无人值守任务中途只汇报进度就结束这一轮，任务因此卡在那里（官方指南 "Unattended agentic runs"）。官方指南是针对这些变化的"症状对处方"清单，本插件替你自动应用。
@@ -89,7 +89,7 @@ claude plugin install oh-my-fable@oh-my-fable
 ```
 新开会话，或 `/reload-plugins` 后 `/clear`。无需配置。只在想改默认值时运行 `/fable-setup`。
 
-> **要求** Claude Code 2.1.258 或更新（2.5.0 已在 2.1.258、2.1.286 和 2.1.292 上安装并确认规则正常注入）。不支持更低的版本：较旧的 Claude Code（已在 2.1.69 上确认）无法安装也无法加载本插件，请运行 `claude update` 升级。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。请求卡片在 2.1.287 或更新版本中绘制（建议 2.1.290 或更新）；在 mod 未开启的较低版本（已在 2.1.258 上确认）中仍显示普通代码块。
+> **要求** Claude Code 2.1.258 或更新（2.5.0 已在 2.1.258、2.1.286 和 2.1.292 上安装并确认规则正常注入）。不支持更低的版本：较旧的 Claude Code（已在 2.1.69 上确认）无法安装也无法加载本插件，请运行 `claude update` 升级。**Windows 必须安装 Git for Windows（Git Bash）**：钩子通过 bash 运行。安装后立刻出现钩子错误就是这个原因。请求卡片在 2.1.287 或更新版本中绘制（建议 2.1.295 或更新，其中包含已知问题的全部修复：升级后第一个会话不加载、非拉丁文字多行文本卡顿、被另一个大型插件挤掉）；在 mod 未开启的较低版本（已在 2.1.258 上确认）中仍显示普通代码块。无头会话建议 2.1.296 或更新（修复了插件的 SessionStart 钩子在无头会话中被跳过的一种情况）。
 >
 > **自动更新** Claude Code 对第三方市场默认关闭自动更新。要自动收到新版本，只需一次：`/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update。或者不定期运行 `claude plugin update oh-my-fable@oh-my-fable`。
 
@@ -100,9 +100,10 @@ claude plugin install oh-my-fable@oh-my-fable
 | 环境 | 要做的事 |
 |---|---|
 | 终端 · 桌面应用 · IDE 扩展 | 只需安装。识别为交互式 |
-| `claude -p` · Agent SDK · 代理框架（Buzz 等） | 只需安装。识别为无人值守并追加两个无人值守段落（"用户不在旁边"、"不要只汇报进度就停下"）。例外：`claude -p --bare` 会跳过钩子、插件和 CLAUDE.md，请把 `hooks/always-on.md` 直接贴进系统提示 |
+| `claude -p` · Agent SDK · 代理框架（Buzz 等） | 只需安装。识别为无人值守并追加两个无人值守段落（"用户不在旁边"、"不要只汇报进度就停下"）。例外：`claude -p --bare` 会跳过钩子、插件和 CLAUDE.md，按无头模式文档它将在今后的版本中成为 `-p` 的默认值；这时请用 `--append-system-prompt-file hooks/rules-file-unattended.md` 直接传入规则（含基础规则和两个无人值守段落） |
 | 无法安装插件的纯无头环境（独立 `CLAUDE_CONFIG_DIR`、CI） | 把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（[常见问题](#常见问题)） |
-| Cowork · claude.ai/code | 不使用终端安装的插件。请在 claude.ai 账户设置中启用 |
+| Cowork | 不使用终端安装的插件。请在 claude.ai 账户设置中启用 |
+| 云端会话（claude.ai/code）· 定时任务（routine） | 在本机启用的插件在那里不会运行（[常见问题](#常见问题)）。把 `hooks/rules-file-unattended.md` 作为 `.claude/rules/oh-my-fable.md` 提交到仓库 |
 
 ## 用法：照常
 
@@ -129,20 +130,20 @@ claude plugin install oh-my-fable@oh-my-fable
 
 | | 规则文件 + 钩子（推荐） | 仅钩子（未设置时的默认） | CLAUDE.md 段落 |
 |---|---|---|---|
-| 在哪里 | 基础规则在 `~/.claude/rules/oh-my-fable.md`（自动加载），无人值守段落和模块 N 由钩子每次会话追加 | 插件内部（`hooks/always-on.md`） | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v2 -->` 段落 |
+| 在哪里 | 基础规则在 `~/.claude/rules/oh-my-fable.md`（自动加载），无人值守段落和模块 N 由钩子每次会话追加 | 插件内部（`hooks/always-on.md`） | 你的 CLAUDE.md 中的 `<!-- oh-my-fable:start v3 -->` 段落 |
 | 文件改动 | 一个规则文件，不碰 CLAUDE.md | 无 | 编辑 CLAUDE.md，需批准（auto 模式不可） |
 | 交互式/无人值守自动检测 | 是 | 是 | 否（固定） |
 | 对子代理生效 | 是（普通子代理读文件，Explore、Plan 收钩子的精简版） | 是（SubagentStart 钩子向所有子代理发送精简版） | 是（Explore、Plan 收钩子的精简版） |
-| 对代理团队生效 | 是（按文档，团队成员会加载规则文件） | 未验证 | 是 |
+| 对代理团队生效 | 是（按文档，团队成员会加载规则文件） | 同一窗口内的成员（in-process）是（按钩子文档，成员每处理一条消息都会运行 SubagentStart）；分窗格的成员未验证 | 是 |
 | 插件更新后 | 规则文件过旧时会话开始会提示，`/fable-setup refresh` 更新 | 始终最新 | 重新粘贴段落 |
 | 移除 | 删除文件 + 卸载 | 卸载或 `{"enabled": false}` | 删除段落 |
 
 **为什么推荐规则文件。** Claude Code 的[钩子文档](https://code.claude.com/docs/en/hooks)写道"不会变的指令请放在 CLAUDE.md（for instructions that never change, prefer CLAUDE.md）"（规则文件以同样方式加载），并提醒写成系统命令口吻的钩子文本可能触发 Claude 的提示注入防御。默认仍是钩子，是因为插件在安装时无法写文件；也正因如此，钩子文本以一句陈述事实的引导语开头（"The user installed oh-my-fable; these are the user's standing working rules."）。规则文件的代价是它是一份副本：过旧时会话开始会提示，`/fable-setup refresh` 可更新。
 
-同一时间只有一种生效。CLAUDE.md 中已有段落或存在手工创建的规则文件时，钩子会自动静默（不会重复注入）。从 1.7 起钩子自己负责子代理：在 Claude Code 的 `SubagentStart` 事件注入精简版（`hooks/subagent.md`：范围限制、局部编辑、批量调用、做到最后、"不要提问，汇报阻碍"）。Explore、Plan 子代理既不读 CLAUDE.md 也不读规则文件，所以无论哪种方式都会收到这份精简版。
+同一时间只有一种生效。CLAUDE.md 中已有段落或存在手工创建的规则文件时，钩子会自动静默（不会重复注入）。从 1.7 起钩子自己负责子代理：在 Claude Code 的 `SubagentStart` 事件注入精简版（`hooks/subagent.md`：范围限制、局部编辑、批量调用、做到最后、"不要提问，汇报阻碍"）。Explore、Plan 子代理既不读 CLAUDE.md 也不读规则文件，所以无论哪种方式都会收到这份精简版。继承整个对话的 fork 类型子代理已经带着规则，因此跳过。
 
 - **使用方式默认自动检测。** 在终端或 IDE 打开的会话为交互式；以无头方式（`claude -p`）、Agent SDK 或代理框架启动的会话为无人值守，按 Claude Code 设置的 `CLAUDE_CODE_ENTRYPOINT` 值逐会话判断。混用交互式和无头也无需切换。想固定为一种，在问题 2 选"交互式"或"无人值守"。无人值守会加上"用户没有在看"段落和"不要只汇报进度就停下"段落，且只能在全局配置中开启，仓库内的配置文件无法开启，以防克隆的仓库把你的代理切换为无人值守。自动检测在两种含钩子的方式下都有效；只有 CLAUDE.md 段落是静态文本，需选定一种模式。
-- **effort**：本插件不再设置它。Opus 5.5 和 Sonnet 5.5 在 Claude Code 中默认 `medium`（两份指南为代理式工作建议的起点），Fable 5.1 默认 `high`。想按模型保存，在用该模型打开的会话里输入 `/effort <级别>` 后回车；只想本次会话生效则按 `s`。`/fable-status` 会显示当前值和来源。
+- **effort**：本插件不再设置它。Opus 5.5、Sonnet 5.5 和 Haiku 5.5 在 Claude Code 中默认 `medium`（各自指南为代理式工作建议的起点），Fable 5.1 默认 `high`。想按模型保存，在用该模型打开的会话里输入 `/effort <级别>` 后回车；只想本次会话生效则按 `s`。`/fable-status` 会显示当前值和来源。
 
 </details>
 
@@ -181,14 +182,14 @@ claude plugin install oh-my-fable@oh-my-fable
 按情况追加：
 
 - **只是描述问题时** · "只诊断，不修改"。指南的明确例外。
-- **需要最新信息时** · effort 保持 high 以上，或加上"按我写的名称至少搜索一次"（模块 H）。
-- **effort** · Opus 5.5 和 Sonnet 5.5 默认 `medium`，也是指南本身建议的起点；Fable 5.1 默认 `high`。仅困难任务才在该会话临时调高（`/effort high` 后按 `s`）。`low` 可能跳过搜索。`xhigh`/`max` 会思考更久（Opus 5.5 在同一档位比 Opus 5 想得更久），长文档还会打两遍草稿而变慢，请附上长输出提示（模块 G）并给 `max_tokens` 留足空间。
+- **需要最新信息时** · effort 保持 high 以上，或加上"按我写的名称至少搜索一次"（模块 H；在 Sonnet 5.5 和 Haiku 5.5 上，`/fable` 改用各自指南自己的搜索文字）。
+- **effort** · Opus 5.5、Sonnet 5.5 和 Haiku 5.5 默认 `medium`，也是指南本身建议的起点；Fable 5.1 默认 `high`。仅困难任务才在该会话临时调高（`/effort high` 后按 `s`）。`low` 可能跳过搜索。`xhigh`/`max` 会思考更久（Opus 5.5 在同一档位比 Opus 5 想得更久），长文档还会打两遍草稿而变慢，请附上长输出提示（模块 G）并给 `max_tokens` 留足空间。
 - **文字过密** · `Please remove all mannered prose.`
 - **总结资料** · 附上一个正确示例（模块 J）。
 
 ## 第 2 层 · 常驻规则
 
-插件的 SessionStart 钩子在每次会话开始时按英文原文加载以下模块（文件 `hooks/always-on.md`）。不修改 CLAUDE.md，且无论用户语言如何都是英文。模块 A 的第一段（"用户没有在看"）和模块 M（"不要只汇报进度就停下"）只在无头和 SDK 会话中自动加入，终端和 IDE 中省略；`/fable-setup unattended` 可固定开启。模块 N 只在会话以 `xhigh` 或 `max` effort 开始时加入（在 `claude -p` 下钩子拿不到模型信息，只看 `CLAUDE_CODE_EFFORT_LEVEL`）。钩子注入的每一部分都以一句陈述事实的引导语开头（例如 "This session was started headless (entrypoint sdk-cli); the user's standing rules for such sessions follow."），因为 Claude Code 的钩子文档要求钩子文本写成事实陈述，而不是系统命令。
+插件的 SessionStart 钩子在每次会话开始时按英文原文加载以下模块（文件 `hooks/always-on.md`）。不修改 CLAUDE.md，且无论用户语言如何都是英文。模块 A 的第一段（"用户没有在看"）和模块 M（"不要只汇报进度就停下"）只在无头和 SDK 会话中自动加入，终端和 IDE 中省略；`/fable-setup unattended` 可固定开启。模块 N 只在会话处于 `xhigh` 或 `max` effort 时加入：会话开始时、`/clear` 之后（这时拿不到模型信息，改从用户设置读取模型），以及切换模型后达到该档位时（已经加入的段落会保留）。在 `claude -p` 下钩子拿不到模型信息，只看 `CLAUDE_CODE_EFFORT_LEVEL`。钩子注入的每一部分都以一句陈述事实的引导语开头（例如 "This session was started headless (entrypoint sdk-cli); the user's standing rules for such sessions follow."），因为 Claude Code 的钩子文档要求钩子文本写成事实陈述，而不是系统命令。
 
 | 模块 | 一句话要点 | 注意 |
 |---|---|---|
@@ -198,6 +199,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | **L** 按要求交付 | 按吩咐的范围交付，日常判断自己拿主意，请求看起来有误就用一句话说明后照做，只跳过卡住的部分、其余全部做完并说明跳过了什么 | 出自 Opus 5 指南原文，Fable 的 "Delivering work" 节里也有一句相同的话。交互式、无人值守均适用 |
 | **C** 局部编辑 | 结果相同时只改需要的部分，不重写整个文件 | |
 | **E** 进度汇报 | 开头一句，中间简短更新，结尾一段只看最后一条也能懂的总结 | 先删除旧的"最后统一汇报"类指令 |
+| **+** 需原样阅读的内容写进正文 | 改写后的请求、表格、要问用户的问题，写在第一次工具调用之前或最后一条消息的回复正文里 | 插件自己的一句话，不是指南引文。原因：在当前模型上，工具调用之间写的备注可能只以一行摘要显示给用户（thinking 文档 "Progress updates between tool calls"） |
 | **I** 排版规则 | 内容多面时用列表，被要求时最少排版，对话式用散文 | 删除旧的"不要排版"规则；5.1 已经很少排版 |
 | **B** 批量工具调用 | 先列出需要的内容，再一次性请求所有互不依赖的项 | |
 | **N** 检查通过就停下 | 要求的工作完成且检查通过后就停下并汇报；不自行追加多轮审查或加固，没被要求审查时不启动审查用子代理；觉得值得更深入审查，就在结尾说明 | 来自 Sonnet 5.5 指南。仅限 `xhigh`/`max` effort 的会话。指南的测试（Sonnet 5.5，`max`）中，它让审查用子代理不再启动，会话成本降低约三分之一，质量没有变化 |
@@ -205,9 +207,9 @@ claude plugin install oh-my-fable@oh-my-fable
 ## 第 3 层 · 设置项
 
 - 模式 · `~/.claude/oh-my-fable.json` 内容为 `{"enabled": true, "mode": "interactive" | "unattended"}`。项目的 `.claude/oh-my-fable.json` 优先于全局文件。`/fable-setup` 会替你写入。
-- effort · 输入 `/effort <级别>` 后回车，会按模型保存到 settings.json 的 `modelSettings.<模型>.effortLevel`。旧的全局 `effortLevel` 对 Opus 5.5 和 Sonnet 5.5 不生效。环境变量 `CLAUDE_CODE_EFFORT_LEVEL` 优先于两者，要用按模型值请清除它。设置了 `maxEffortLevel`（全局或按模型）时，无论哪个值都会被压到这个上限，`/fable-status` 显示压低后的值。默认值为 Opus 5.5、Sonnet 5.5 `medium`，其他模型 `high`（Opus 4.7 为 `xhigh`）。不同模型同名级别的实际思考量不同，不要把一个模型的值照搬到另一个模型。
+- effort · 输入 `/effort <级别>` 后回车，会按模型保存到 settings.json 的 `modelSettings.<模型>.effortLevel`。旧的全局 `effortLevel` 对 Opus 5.5、Sonnet 5.5 和 Haiku 5.5 不生效。环境变量 `CLAUDE_CODE_EFFORT_LEVEL` 优先于两者，要用按模型值请清除它。设置了 `maxEffortLevel`（全局或按模型）时，无论哪个值都会被压到这个上限，`/fable-status` 显示压低后的值。默认值为 Opus 5.5、Sonnet 5.5、Haiku 5.5 `medium`，其他模型 `high`（Opus 4.7 为 `xhigh`）。不同模型同名级别的实际思考量不同，不要把一个模型的值照搬到另一个模型。
 - 直接对接 API · 需开启 `thinking.display: "updates"`，否则进度备注不会到达界面。对话历史只追加（含 thinking 块），每轮提醒用 turn-scoped system message，压缩用服务端压缩或模块 K。
-- 子代理 · 启动工具立即返回，结果以后续消息送回。Claude Code 子代理会直接继承会话的 effort，想固定的话在 agent 文件的头部信息（frontmatter）写 `effort:`。
+- 子代理 · 启动工具立即返回，结果以后续消息送回。Claude Code 子代理会继承会话的 effort，但 Claude 可以只为那一次调用指定级别（Agent 工具，2.1.292 或更新）；想固定的话在 agent 文件的头部信息（frontmatter）写 `effort:`。钩子拿不到子代理的 effort，所以以 `xhigh` 或 `max` 启动的子代理不会收到模块 N。
 - 视觉 · 图表和表格配上裁剪放大工具即可获得大部分收益。
 - 拒绝 · 处理 `stop_reason: "refusal"`。用"有没有 bug？"代替"能编译吗？"。
 
@@ -239,7 +241,7 @@ claude plugin install oh-my-fable@oh-my-fable
 默认情况下，规则只存在于插件内部，由钩子每次会话注入，所以既不创建规则文件也不改 CLAUDE.md。推荐的设置是规则文件（`/fable-setup rules-file`）：Claude Code 的钩子文档建议不会变的规则放在文件而不是钩子文本里，代理团队也会读取它。CLAUDE.md 段落是第三种选择。比较表见[新手流程](#新手流程)中的"可选"。
 
 **Opus 5.5 上能用吗？**
-能。Opus 5.5 现在是 Claude Code 的默认模型，所以从 2.2.0 起本插件以两份指南为共同基准。做到底、范围限制、进度汇报这几条，两份指南说法一致；只在无人值守会话追加的"不要只汇报进度就停下"段落（模块 M）来自 Opus 5.5 指南。排版规则、局部编辑、批量工具调用来自 Fable 5.1 指南，在 Opus 5.5 上效果可能较小，但无害。Sonnet 5.5、Opus 5、Sonnet 5 同样如此。Sonnet 5.5 在 Claude Code 中同样从 `medium` effort 开始，并忽略用户设置里的全局 `effortLevel`，状态行会显示这一点。
+能。Opus 5.5 现在是 Claude Code 的默认模型，所以从 2.2.0 起本插件以两份指南为共同基准。做到底、范围限制、进度汇报这几条，两份指南说法一致；只在无人值守会话追加的"不要只汇报进度就停下"段落（模块 M）来自 Opus 5.5 指南。排版规则、局部编辑、批量工具调用来自 Fable 5.1 指南，在 Opus 5.5 上效果可能较小，但无害。Sonnet 5.5、Haiku 5.5、Opus 5、Sonnet 5 同样如此。Sonnet 5.5 和 Haiku 5.5 在 Claude Code 中同样从 `medium` effort 开始，并忽略用户设置里的全局 `effortLevel`，状态行会显示这一点。在 Haiku 5.5 上，`/fable` 用该指南自己的搜索文字代替模块 H。
 
 **为什么想立即使用要先 `/reload-plugins` 再 `/clear`？**
 按官方文档，两者作用不同。`/reload-plugins` 会"无需重启地重新加载插件、技能、代理、钩子、MCP 服务器"（[Plugins](https://code.claude.com/docs/en/plugins)）。注入规则的 SessionStart 钩子只在 `startup`、`resume`、`/clear`、`compact`、`fork` 时运行（[Hooks](https://code.claude.com/docs/en/hooks#sessionstart)）。所以 reload 只注册钩子而不运行它，在安装的那个会话里需要 `/clear` 让它运行一次。新开会话则两者都不需要。
@@ -248,13 +250,19 @@ claude plugin install oh-my-fable@oh-my-fable
 `/fable-status`。一张表列出插件版本、规则位置、本会话模式（含自动检测依据）、effort、规则文件版本、CLAUDE.md 冲突，不做任何改动。新开会话时同样的信息会以一行提示显示在屏幕上（不进入 Claude 的上下文）。
 
 **请求卡片是什么？怎么关闭？**
-它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。桌面应用中也会绘制（已在内置 Claude Code 2.1.289 的应用上确认）；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，因此建议使用 2.1.290 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
+它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。桌面应用中也会绘制（已在内置 Claude Code 2.1.289 的应用上确认）；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，2.1.295 修复了最后一个已知的卡片问题，因此建议使用 2.1.295 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
 
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
 
 **无法安装插件的纯无头环境（独立 CLAUDE_CONFIG_DIR、CI）怎么办？**
-把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（或软链接到本仓库的检出目录）。无需插件即可加载完整的无人值守规则；钩子把该文件视为用户管理文件并保持静默。
+把 `hooks/rules-file-unattended.md` 复制到该环境的 `rules/oh-my-fable.md`（或软链接到本仓库的检出目录；链接请放在该环境用户级的 `rules/` 文件夹里，因为项目 `.claude/rules/` 中指向项目外的链接需要批准后才会加载，见 memory 文档）。无需插件即可加载完整的无人值守规则；钩子把该文件视为用户管理文件并保持静默。
+
+**云端会话和定时任务（routine）呢？**
+在本机启用的插件不会在云端会话（claude.ai/code）和定时任务中运行；只有提交到仓库的内容会随克隆一起带过去，其中包括 `.claude/rules/`（cloud environments 文档）。请把 `hooks/rules-file-unattended.md` 作为 `.claude/rules/oh-my-fable.md` 提交：定时任务运行时不会请求批准，所以适合无人值守版本。那里用不了 `/fable` 和请求卡片。
+
+**`/plugin` 把 oh-my-fable 列在 "Not used recently" 下。**
+连续 14 天且 10 个会话没有被记录的使用时就会出现这个标题，而官方文档列出的"算作使用"的项目里没有钩子（plugins measure 文档），所以一段时间没输入 `/fable` 或其他命令时可能出现。注入规则的钩子在每个会话里照常运行，可以用 `/fable-status` 确认。
 
 **`/fable-audit` 和 `/doctor prompt-audit` 有什么区别？**
 两者方向相反。`/fable-audit` 找出你的规则缺少提示指南的哪些节（要补的）；Claude Code 的 `/doctor prompt-audit`（2.1.283 或更新）找出你的规则里过时、失效或互相矛盾的文字（要删的）。两者都不会自行修改，整理设置时两个都运行。
@@ -273,9 +281,9 @@ oh-my-fable/
 │   ├── plugin.json            插件清单
 │   └── marketplace.json       把本仓库注册为市场
 ├── hooks/
-│   ├── hooks.json             注册 SessionStart、SubagentStart 钩子，并接入请求卡片 mod
+│   ├── hooks.json             注册 SessionStart、SubagentStart、PostModelSwitch 钩子，并接入请求卡片 mod
 │   ├── card/                  请求卡片 mod（register.tsx：绘制卡片 · parse.ts：读取改写后请求的代码块）
-│   ├── session-start.sh       钩子本体（会话开始：有规则文件时只追加无人值守段落，否则全部 · 子代理：精简版 · --status）
+│   ├── session-start.sh       钩子本体（会话开始：有规则文件时只追加无人值守段落，否则全部 · 子代理：精简版 · 切换模型：模块 N · --status）
 │   ├── always-on.md           模块原文（英文）
 │   ├── rules-file.md          /fable-setup 复制到 ~/.claude/rules/oh-my-fable.md 的基础规则
 │   ├── rules-file-unattended.md 无插件的纯无头环境用静态规则（含两个无人值守段落）
@@ -292,13 +300,14 @@ oh-my-fable/
 │       ├── SKILL.md           每次请求改写（第 1 层）
 │       └── references/        模块原文（A 到 N）与前后示例
 ├── tests/card.test.ts         请求卡片测试（`claude plugin test .`）
-├── evals/                     `claude plugin eval` 评测集：5 个用例，按规则判分，不用模型评判
+├── tests/context-size.sh      检查钩子注入的文字不超过 1 万字符上限（`bash tests/context-size.sh`）
+├── evals/                     `claude plugin eval` 评测集：6 个用例，按规则判分，不用模型评判
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## 贡献与许可
 
-欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表）。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
+欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表），然后运行 `bash tests/context-size.sh`。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
 
 MIT © Junhan2。指南原文版权归 Anthropic 所有。

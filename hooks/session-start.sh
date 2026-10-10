@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# oh-my-fable hook. Two events, one script:
-#   SessionStart  · the always-on working rules for the main session (plus a one-line status for the user)
-#   SubagentStart · a short version of the rules for subagents spawned with the Agent tool
+# oh-my-fable hook. Three events, one script:
+#   SessionStart    · the always-on working rules for the main session (plus a one-line status for the user)
+#   SubagentStart   · a short version of the rules for subagents spawned with the Agent tool (forks skipped)
+#   PostModelSwitch · block N when a mid-session model switch moves the session to xhigh or max effort
 #   --status      · print what is in effect (used by /fable-status); writes nothing
 #
 # Config (optional). Global: $CLAUDE_CONFIG_DIR/oh-my-fable.json (default ~/.claude)  Project: $CLAUDE_PROJECT_DIR/.claude/oh-my-fable.json
@@ -49,6 +50,8 @@ IN=""
 if [ "$STATUS" = false ] && [ ! -t 0 ]; then IN="$(cat 2>/dev/null || true)"; fi
 jget() { printf '%s' "$IN" | tr -d '[:space:]' | grep -o "\"$1\":\"[^\"]*\"" | head -1 | sed 's/^[^:]*://; s/"//g'; }
 EVENT="$(jget hook_event_name)"; SOURCE="$(jget source)"; AGENT="$(jget agent_type)"
+# a fork inherits the whole conversation, these rules included (sub-agents doc): nothing to add, so stop before any work
+[ "$EVENT" = SubagentStart ] && [ "$AGENT" = fork ] && exit 0
 
 # read a JSON string/bool value for key $2 from file $1, ignoring whitespace; empty if absent
 val() { [ -f "$1" ] || return 0; tr -d '[:space:]' < "$1" | grep -o "\"$2\":\"\{0,1\}[A-Za-z-]*" | head -1 | sed 's/.*://; s/"//g'; }
@@ -93,34 +96,77 @@ fi
 # (modelSettings.<model>.maxEffortLevel, else top-level) caps whatever was resolved, the default included (settings
 # reference). Only the user settings file is read; levels and caps from project or managed settings are not seen.
 # `claude -p` sends SessionStart no model field (measured 2026-09-29 on 2.1.284), so headless runs resolve effort
-# only from CLAUDE_CODE_EFFORT_LEVEL; without it the status line shows none and block N is not added.
-model_default() { case "$1" in claude-opus-5-5*|claude-sonnet-5-5*) echo medium;; claude-opus-4-7*) echo xhigh;; "") ;; *) echo high;; esac; }
-# Models that ignore a user-scope top-level effortLevel and start at their own default ("Opus 5.5 and models released
-# after it", model-config doc). This is the one list to extend when a new model ships.
-ignores_top_effort() { case "$1" in claude-opus-5-5*|claude-sonnet-5-5*) return 0;; *) return 1;; esac; }
+# only from CLAUDE_CODE_EFFORT_LEVEL; without it the status line shows none and block N is not added. After /clear or
+# a compaction the model can be omitted too (hooks doc); the session keeps the model it ran, normally the one /model
+# saved to the user settings' `model` field (model-config doc), so there it is read from that field.
+# Per model: the default effort and whether a user-scope top-level effortLevel is ignored ("Opus 5.5 and models
+# released after it", model-config doc). When a model ships, extend this table, and the alias map in
+# model_from_settings when an alias moves to it.
+model_traits() {   # sets DEFAULT_EFFORT and IGNORES_TOP for model $1
+  IGNORES_TOP=false
+  case "$1" in
+    claude-opus-5-5*|claude-sonnet-5-5*|claude-haiku-5-5*) DEFAULT_EFFORT=medium; IGNORES_TOP=true;;
+    claude-opus-4-7*) DEFAULT_EFFORT=xhigh;;
+    *) DEFAULT_EFFORT=high;;
+  esac
+}
+canon() { printf '%s' "$1" | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//'; }   # canonical id: no [1m], no date suffix
+# The settings' model in Claude Code's order (ANTHROPIC_MODEL, settings, ANTHROPIC_DEFAULT_MODEL). An alias maps to
+# what it means on the Anthropic API today (model-config alias table); with a third-party provider aliases mean older
+# models, so only the ANTHROPIC_DEFAULT_<FAMILY>_MODEL overrides count. best, opusplan and default stay unknown.
+model_from_settings() {
+  local m over def
+  m="${ANTHROPIC_MODEL:-}"
+  [ -n "$m" ] || m="$(printf '%s' "$SJ" | top_val model)"
+  [ -n "$m" ] || m="${ANTHROPIC_DEFAULT_MODEL:-}"
+  m="$(canon "$m")"
+  case "$m" in
+    opus)   over="${ANTHROPIC_DEFAULT_OPUS_MODEL:-}";   def=claude-opus-5-5;;
+    sonnet) over="${ANTHROPIC_DEFAULT_SONNET_MODEL:-}"; def=claude-sonnet-5-5;;
+    haiku)  over="${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}";  def=claude-haiku-5-5;;
+    fable)  over="${ANTHROPIC_DEFAULT_FABLE_MODEL:-}";  def=claude-fable-5-1;;
+    claude-*) printf '%s' "$m"; return 0;;
+    *) return 0;;
+  esac
+  if [ -n "$over" ]; then canon "$over"; return 0; fi
+  [ -n "${CLAUDE_CODE_USE_BEDROCK:-}${CLAUDE_CODE_USE_VERTEX:-}${CLAUDE_CODE_USE_FOUNDRY:-}${CLAUDE_CODE_USE_ANTHROPIC_AWS:-}${CLAUDE_CODE_USE_MANTLE:-}" ] || echo "$def"
+}
 level_rank() { case "$1" in low) echo 1;; medium) echo 2;; high) echo 3;; xhigh) echo 4;; max) echo 5;; *) echo 0;; esac; }
-key_val() { grep -o "\"$1\":\"[a-z]*\"" | head -1 | sed 's/.*://; s/"//g'; }   # first "key":"value" on stdin
-top_val() { sed "s/\"[^\"]*\":{[^{}]*\"$1\":\"[a-z]*\"[^{}]*}//g" | key_val "$1"; }   # the same, outside per-model objects
-EFFORT=""; SRC=""; HIGH_EFFORT=false
-if [ "$STATUS" = true ] || [ -z "$EVENT" ] || [ "$EVENT" = SessionStart ]; then
-  MODEL="$(jget model | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//')"   # canonical id: no [1m], no date suffix
-  SJ=""; [ -f "$CFG/settings.json" ] && SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
+key_val() { grep -o "\"$1\":\"[^\"]*\"" | head -1 | sed 's/^[^:]*://; s/"//g'; }   # first "key":"value" on stdin
+top_val() { sed "s/\"[^\"]*\":{[^{}]*\"$1\":\"[^\"]*\"[^{}]*}//g" | key_val "$1"; }   # the same, outside per-model objects
+EFFORT=""; SRC=""; HIGH_EFFORT=false; MODEL_NOTE=""
+SJ=""; [ "$EVENT" != SubagentStart ] && [ -f "$CFG/settings.json" ] && SJ="$(tr -d '[:space:]' < "$CFG/settings.json")"
+# resolve_effort: sets EFFORT, SRC and HIGH_EFFORT for $MODEL (may be empty); MODEL_NOTE follows a source read for it
+resolve_effort() {
+  EFFORT=""; SRC=""; HIGH_EFFORT=false
   MOBJ=""; [ -n "$MODEL" ] && MOBJ="$(printf '%s' "$SJ" | grep -o "\"$MODEL\":{[^}]*}")"
   if [ "$STATUS" = true ] && [ -n "${CLAUDE_EFFORT:-}" ]; then EFFORT="$CLAUDE_EFFORT"; SRC=live
   elif [ -n "${CLAUDE_CODE_EFFORT_LEVEL:-}" ]; then EFFORT="$CLAUDE_CODE_EFFORT_LEVEL"; SRC=env
   elif [ -n "$MODEL" ]; then
+    model_traits "$MODEL"
     PER_MODEL="$(printf '%s' "$MOBJ" | key_val effortLevel)"
     TOP=""; IGNORED=""; [ -n "$PER_MODEL" ] || TOP="$(printf '%s' "$SJ" | top_val effortLevel)"
-    if [ -n "$TOP" ] && ignores_top_effort "$MODEL"; then IGNORED=", top-level effortLevel $TOP ignored"; TOP=""; fi
+    if [ -n "$TOP" ] && [ "$IGNORES_TOP" = true ]; then IGNORED=", top-level effortLevel $TOP ignored"; TOP=""; fi
     if [ -n "$PER_MODEL" ]; then EFFORT="$PER_MODEL"; SRC=saved
     elif [ -n "$TOP" ]; then EFFORT="$TOP"; SRC=settings
-    else EFFORT="$(model_default "$MODEL")"; SRC="model default$IGNORED"; fi
+    else EFFORT="$DEFAULT_EFFORT"; SRC="model default$IGNORED"; fi
+    SRC="$SRC$MODEL_NOTE"
   fi
   CAP="$(printf '%s' "$MOBJ" | key_val maxEffortLevel)"; [ -n "$CAP" ] || CAP="$(printf '%s' "$SJ" | top_val maxEffortLevel)"
   if [ -n "$EFFORT" ] && [ "$(level_rank "$CAP")" -gt 0 ] && [ "$(level_rank "$EFFORT")" -gt "$(level_rank "$CAP")" ]; then
     SRC="$SRC, $EFFORT → $CAP by maxEffortLevel"; EFFORT="$CAP"
   fi
   case "$EFFORT" in xhigh|max) HIGH_EFFORT=true;; esac
+}
+P2=$'\n\n'
+# block N with its one-line lead-in, for the effort resolved last
+high_paragraph() { printf '%s' "This session runs at $EFFORT effort ($SRC); the user's standing rule for that level follows.$P2$(cat "$HERE/effort-high.md")"; }
+if [ "$STATUS" = true ] || [ -z "$EVENT" ] || [ "$EVENT" = SessionStart ]; then
+  MODEL="$(canon "$(jget model)")"
+  if [ -z "$MODEL" ] && [ "$EVENT" = SessionStart ] && [ "$SOURCE" != startup ]; then
+    MODEL="$(model_from_settings)"; [ -n "$MODEL" ] && MODEL_NOTE=", model $MODEL from settings"
+  fi
+  resolve_effort
 fi
 EFFORT_SHOWN="${EFFORT:+ · effort $EFFORT ($SRC)}"; [ -n "$EFFORT" ] || EFFORT="(not known at session start; /effort shows it)"
 
@@ -160,15 +206,27 @@ if [ "$EVENT" = SubagentStart ]; then
   exit 0
 fi
 
+# ---------- PostModelSwitch ----------
+# The session's model changed (2.1.251+; hooks doc). Add block N when the new model runs at xhigh or max. A paragraph
+# injected earlier cannot be taken back, and a switch between two such models repeats it, which is harmless. A resume
+# restores the model and replays the earlier context, so it adds nothing.
+if [ "$EVENT" = PostModelSwitch ]; then
+  case "$STATE" in rules-file|hook-only) ;; *) exit 0;; esac
+  [ "$SOURCE" = resume ] && exit 0
+  MODEL="$(canon "$(jget to_model)")"; resolve_effort
+  [ "$HIGH_EFFORT" = true ] || exit 0
+  printf '{"hookSpecificOutput":{"hookEventName":"PostModelSwitch","additionalContext":"%s"}}\n' "$(high_paragraph | jesc)"
+  exit 0
+fi
+
 # ---------- SessionStart (or run by hand) ----------
 # Each injected part opens with a one-line factual lead-in: the hooks doc asks for additionalContext written as
 # factual statements, because text framed as out-of-band system commands can trigger prompt-injection defenses.
 # The rule paragraphs themselves are unchanged.
-P2=$'\n\n'
 if [ "$AUTO" = "" ]; then UNATTENDED_LEAD="The user set oh-my-fable to unattended mode for every session; the user's standing rules for such sessions follow."
 else UNATTENDED_LEAD="This session was started headless (entrypoint ${CLAUDE_CODE_ENTRYPOINT:-unknown}); the user's standing rules for such sessions follow."; fi
 UNATTENDED="$UNATTENDED_LEAD$P2$(cat "$HERE/autonomy-unattended.md")"
-HIGH="This session runs at $EFFORT effort ($SRC); the user's standing rule for that level follows.$P2$(cat "$HERE/effort-high.md")"
+HIGH="$(high_paragraph)"
 CTX=""
 case "$STATE" in
   claude-md|user-rules) ;;

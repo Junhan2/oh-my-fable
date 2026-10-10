@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: fable-block-first
+description: /fable on a request that needs a look at a file first. Passes when the improved-request block is printed as reply text before the first tool call; a block written after a tool call can reach the user only as a one-line summary.
+context:
+  scaffold_script: fixture.sh

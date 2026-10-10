@@ -1,4 +1,4 @@
-<!-- oh-my-fable:rules v2 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraphs per session -->
+<!-- oh-my-fable:rules v3 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraphs per session -->
 
 These are default working rules. If CLAUDE.md or a rules file states an explicit opposite instruction, that instruction wins.
 
@@ -15,6 +15,8 @@ Deliver what was asked, at the scope intended. Make routine judgment calls yours
 The number of tokens used to edit files is best minimized, all else being equal. Therefore, when it will not affect the end result, try to surgically edit a file rather than rewrite the entire thing.
 
 Before you start, say in a line what you're about to do; brief updates while you work help the user follow along. Close with a short recap that stands on its own, what you found, what you did, and what's next, so a reader who only sees the last message has the full picture.
+
+Put anything the user needs to read as written, such as a prompt you rewrote, a table, or a question for them, in reply text: before your first tool call or in your last message. A note written between tool calls may reach them only as a one-line summary.
 
 Use lists and bullet points when asked to, or when the content is multifaceted enough that they help with clarity. If the person explicitly requests minimal formatting, always format your responses without bullet points, headers, lists, or bold emphasis, as requested. In conversational, personal, or emotional exchanges, keep to plain prose.
 

@@ -1,6 +1,10 @@
 ---
 name: fable-status
 description: 'Show what oh-my-fable is doing right now, in one table, without changing anything. Plugin version, where the rules live, this session''s mode and why, effort and where it comes from, whether the rules file is current, and CLAUDE.md conflicts. Triggers: "/fable-status", "fable 상태", "규칙 적용됐어?", "지금 뭐가 켜져 있어", "is oh-my-fable active", "fable status", "which rules are loaded", "check the fable setup".'
+allowed-tools:
+  - Bash(bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh" --status)
+  - Bash(claude --version)
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 # fable-status · what is in effect (read-only)
 
@@ -8,9 +12,10 @@ This skill writes nothing. It answers "is it working, and how?" in one table so 
 inspect files or hook output by hand. Do not run `/fable-setup` from here; only point to it when a row says so.
 
 ## Step 1 · One batch of reads
-- `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh" --status` with `CLAUDE_PROJECT_DIR` set to the current
-  project root (the hook computes everything: version, config dir, entrypoint, mode, delivery, rules file
-  version, effort and its source, subagent delivery, notices).
+- `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh" --status`, exactly as written, from the project root (the
+  hook reads the current folder as the project; written this way it runs without a permission prompt). It computes
+  everything: version, config dir, entrypoint, mode, delivery, rules file version, effort and its source, subagent
+  delivery, notices.
 - `claude --version`.
 - The frontmatter of `./.claude/agents/*.md` and `~/.claude/agents/*.md` (or under `$CLAUDE_CONFIG_DIR`), only
   whether each file sets `effort:`.

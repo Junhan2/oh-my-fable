@@ -67,12 +67,12 @@ added by the hook per session, so `auto` mode works with the default delivery. O
   get the rules from the hook.
 - `rules-file` (rules file + hook): copy `${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim to
   `~/.claude/rules/oh-my-fable.md` (project scope: `./.claude/rules/oh-my-fable.md`). It starts with the marker
-  `<!-- oh-my-fable:rules v2` which tells the hook to add only the unattended paragraphs per session. Claude Code
+  `<!-- oh-my-fable:rules v3` which tells the hook to add only the unattended paragraphs per session. Claude Code
   loads `rules/*.md` for the main session and for subagents and teams, so CLAUDE.md is not edited. Keep
   `"delivery": "hook"` in the config. If the write is refused (auto permission mode may block instruction files),
   say so in one line: the hook then carries everything for the main session, and the user can create the file by
   hand from the shown path. When the plugin ships a newer file, the hook says so at session start; `/fable-setup refresh` updates the copy.
-- `claude-md`: insert the section between `<!-- oh-my-fable:start v2 -->` and `<!-- oh-my-fable:end -->`, or replace
+- `claude-md`: insert the section between `<!-- oh-my-fable:start v3 -->` and `<!-- oh-my-fable:end -->`, or replace
   an existing one that starts with `<!-- oh-my-fable:start v` (any version), in the chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
   with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.
 

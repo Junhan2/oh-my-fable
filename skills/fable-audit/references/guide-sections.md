@@ -93,10 +93,12 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 
 ## 9. tell-the-model-what-to-preserve-in-compaction-summaries
 - Scope: prompt
-- Asks: name what a compaction summary must retain. The guide's list: (1) the task and its acceptance criteria,
-  (2) approaches already tried and rejected, (3) decisions made and why, (4) where the work currently stands,
-  (5) open questions and promised next steps, (6) exact error text and identifiers. Plus a weighting rule:
-  keep the user's own words close to verbatim, compress your own explanations.
+- Asks: name what a compaction summary must retain. The guide's list (block K): (1) difficulties that came up and
+  how they were handled, (2) options and approaches raised, tried or set aside, and why, (3) what was asked for,
+  decided, agreed, ruled out or set as a preference, constraint or boundary, stated exactly, (4) exactly where things
+  stand now, (5) what is still open, promised or expected next, (6) details that would be hard to reconstruct
+  (names, numbers, dates, exact wording, links), kept exactly. Plus a weighting rule: keep the user's own words
+  close to verbatim, condense your own explanations.
 - 🟡 when a preservation list exists but misses items. Name the missing numbers.
 - Plugin: not covered.
 
@@ -153,7 +155,7 @@ can tell "you wrote it yourself" from "the plugin gives it to you".
 
 ---
 
-## Model notes (Opus 5 / Opus 5.5 / Sonnet 5.5 guides; reported, never scored)
+## Model notes (Opus 5 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 guides; reported, never scored)
 
 Only the guide sections a Claude Code rules file, CLAUDE.md, agent prompt or setting can act on are listed.
 API-only sections (thinking modes, JSON output, tool-call tolerance, refusal handling) are left out.
@@ -169,10 +171,11 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
   paragraph naming the early stops it must avoid (this plugin's block M). ✅ when present or the plugin's
   unattended mode applies; ⚠️ when such a paragraph is in a human-in-the-loop prompt (the guide says leave it out
   there).
-- N4 effort on Opus 5.5 and Sonnet 5.5 · both guides' "Calibrate effort", Claude Code model-config doc: default
-  `medium` in Claude Code (Sonnet 5.5's API default is `high`; its guide says start at `medium` for well-specified
-  agentic coding, `high` for harder or longer tasks); a user-scope top-level `effortLevel` is ignored; save per model
-  with `/effort`. Report which source is in effect. For agent files: no `effort:` means inheriting the session level.
+- N4 effort on Opus 5.5, Sonnet 5.5 and Haiku 5.5 · the guides' "Calibrate effort" and Haiku 5.5's "Use effort to
+  control thinking", Claude Code model-config doc: default `medium` in Claude Code (Sonnet 5.5's API default is
+  `high`; its guide says start at `medium` for well-specified agentic coding, `high` for harder or longer tasks;
+  Haiku 5.5 is the first Haiku with effort levels and keeps `xhigh`/`max` for measured gains); a user-scope
+  top-level `effortLevel` is ignored; save per model with `/effort`. Report which source is in effect. For agent files: no `effort:` means inheriting the session level.
 - N5 thinking-amount instructions · Opus 5.5 "Calibrate effort" and "Thinking instructions in chat system prompts",
   Sonnet 5.5 "Calibrate effort": asking the model to think less does not reliably reduce its thinking (lower the
   effort level instead), and a "think carefully before answering" line in a chat prompt mostly delays the reply on
@@ -181,8 +184,9 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
 - N6 checking in before the work is done · Sonnet 5.5 "Steer initiative and scope" (Carrying work through): at
   `low`/`medium` on long agentic tasks it may pause to confirm a plan, ask what it could answer itself, or stop
   after one part to ask whether to continue. The guide's first fix is a higher effort level; its prompt fix begins
-  "Keep working until everything the user asked for is done". ✅ when section 8 (a) is ✅ (the plugin's
-  last-paragraph check covers the same stop); report the effort level with it.
+  "Keep working until everything the user asked for is done". Haiku 5.5 "Prevent early stopping in long agent
+  prompts" names the same stop at `low` with a long coding-agent prompt and the same opening line. ✅ when section
+  8 (a) is ✅ (the plugin's last-paragraph check covers the same stop); report the effort level with it.
 - N7 unrequested additions · Sonnet 5.5 "Steer initiative and scope": it adds tests, docs and small supporting files
   at every effort level, more at higher effort. The guide's line: "When the work the user asked for is done and
   checked, stop and report. Don't add features, tests, files, docs or refactors that weren't asked for." ✅ when
@@ -201,13 +205,15 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
   catch changed details. ⚠️ on a Sonnet 5.5 surface with such a line; the fix is to remove it and, where a search
   tool exists, add the guide's search line (quoted in `skills/fable/SKILL.md`, step 3).
 - N11 verification at `low` effort · Sonnet 5.5 "Verification on coding tasks": at `low` it can report a change as
-  done without running a check that exercises it. The guide's paragraph begins "When you change code that can be
+  done without running a check that exercises it (Haiku 5.5 "Tell coding agents to verify their changes": at `low`
+  and `medium`, same paragraph). The guide's paragraph begins "When you change code that can be
   run, built, or type-checked, run a real check that exercises the change before reporting it done". 🟡 when effort
   is `low` somewhere and no such rule exists; ⚪ otherwise. Opposite of N1: keep one real check, no re-check loops.
 - N12 per-step hook text · Sonnet 5.5 "Mid-turn user messages": text added after the tool results on every step
   (a countdown, per-step instructions) can make it treat genuine user messages as prompt injection. Check
   `settings.json` for `PostToolUse`/`PostToolBatch` hooks that return `additionalContext` on every call; ⚠️ when one
-  does on a Sonnet 5.5 surface. An occasional reminder is fine.
+  does on a Sonnet 5.5 or Haiku 5.5 surface (Haiku 5.5 "Mid-turn user messages" says the same). An occasional
+  reminder is fine.
 - N13 progress updates at set points · Opus 5.5 and Sonnet 5.5 "User-facing progress updates": after removing "hold
   all findings for the final response", both follow an instruction for updates at set points (a line before the
   first tool call, a short recap at the end); it helps most in human-in-the-loop work. ✅ when section 2 is ✅.
@@ -222,3 +228,8 @@ API-only sections (thinking modes, JSON output, tool-call tolerance, refusal han
 - N16 frontend design defaults · Opus 5.5 "Frontend design defaults": "avoid a generic AI look" swaps one default
   style for another; name the specific patterns to avoid instead. 🟡 when a frontend rule only says to avoid a
   generic look; ⚪ when the surface does no frontend work.
+- N17 search lines on Haiku 5.5 · Haiku 5.5 "Accurate search results": give the date, and where it skips searches
+  add the guide's text beginning "Your training data ends well before today's date" (quoted in
+  `skills/fable/SKILL.md`, step 3). Blanket lines such as "search for any present-day factual question, regardless
+  of how confident you are" made it search on half the prompts that needed none, with no gain in correct answers.
+  ⚠️ on a Haiku 5.5 surface with such a blanket line; ⚪ elsewhere.
