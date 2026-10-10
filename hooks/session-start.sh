@@ -19,7 +19,8 @@
 #   1. a CLAUDE.md section between oh-my-fable:start / oh-my-fable:end (static, user-managed): hook stays silent
 #   2. rules/oh-my-fable.md written by /fable-setup (marker oh-my-fable:rules vN): Claude Code auto-loads it for the
 #      main session, regular subagents and teams; the hook adds only the unattended paragraphs per session and
-#      warns once per session when the plugin ships a newer version of that file
+#      warns once per session when the plugin ships a newer version of that file (or, when the file is newer than
+#      this plugin copy, says to start a new session instead of refreshing)
 #   3. any other rules/oh-my-fable.md (user-managed): hook stays silent
 #   4. nothing else: the hook carries everything (hook only)
 # Effort: when the level resolved at SessionStart is xhigh or max, the hook also adds effort-high.md (block N, from
@@ -178,9 +179,15 @@ case "$STATE" in
   disabled)   HOW="disabled by config";;
 esac
 STATUS_LINE="oh-my-fable ${VERSION:-?} · mode $MODE$AUTO · rules: $HOW$EFFORT_SHOWN"
-UPGRADE=""
-[ "$STATE" = rules-file ] && [ -n "$PLUGIN_V" ] && [ "$RULES_V" != "$PLUGIN_V" ] && \
-  UPGRADE="oh-my-fable: your rules file is v$RULES_V, the plugin ships v$PLUGIN_V. Run /fable-setup refresh to update it."
+# a rules file newer than this plugin copy: the session started before an update, or this folder's plugin is older
+NOTICE=""
+if [ "$STATE" = rules-file ] && [ -n "$PLUGIN_V" ]; then
+  if [ "$RULES_V" -lt "$PLUGIN_V" ]; then
+    NOTICE="oh-my-fable: your rules file is v$RULES_V, the plugin ships v$PLUGIN_V. Run /fable-setup refresh to update it."
+  elif [ "$RULES_V" -gt "$PLUGIN_V" ]; then
+    NOTICE="oh-my-fable: your rules file is v$RULES_V, newer than the v$PLUGIN_V this plugin ships, so this session runs an older plugin. Start a new session (update the plugin first if it is not updated yet). Don't run /fable-setup refresh: it would downgrade the file."
+  fi
+fi
 
 if [ "$STATUS" = true ]; then
   case "$STATE" in
@@ -189,7 +196,7 @@ if [ "$STATUS" = true ]; then
     *) SUB="base file reaches regular subagents; Explore and Plan get the short rules from the hook";;
   esac
   printf 'plugin_version: %s\nconfig_dir: %s\nproject_dir: %s\nentrypoint: %s\nenabled: %s\nmode: %s%s\ndelivery_config: %s\nrules_source: %s\nbase_file: %s\nrules_file_version: %s\nplugin_rules_version: %s\neffort: %s\neffort_source: %s\nsubagents: %s\nnotice: %s\n' \
-    "${VERSION:-?}" "$CFG" "$PROJ" "${CLAUDE_CODE_ENTRYPOINT:-(none, interactive)}" "$ENABLED" "$MODE" "$AUTO" "$DELIVERY" "$STATE" "${BASE:-(none)}" "${RULES_V:-(n/a)}" "${PLUGIN_V:-?}" "$EFFORT" "${SRC:-(n/a)}" "$SUB" "${UPGRADE:-(none)}"
+    "${VERSION:-?}" "$CFG" "$PROJ" "${CLAUDE_CODE_ENTRYPOINT:-(none, interactive)}" "$ENABLED" "$MODE" "$AUTO" "$DELIVERY" "$STATE" "${BASE:-(none)}" "${RULES_V:-(n/a)}" "${PLUGIN_V:-?}" "$EFFORT" "${SRC:-(n/a)}" "$SUB" "${NOTICE:-(none)}"
   exit 0
 fi
 
@@ -249,14 +256,14 @@ if [ -z "$EVENT" ]; then
   # run by hand (/fable-setup verification, curious users): plain text, status last
   [ -n "$CTX" ] && printf '%s\n\n' "$CTX"
   printf '(%s)\n' "$STATUS_LINE"
-  [ -n "$UPGRADE" ] && printf '%s\n' "$UPGRADE"
+  [ -n "$NOTICE" ] && printf '%s\n' "$NOTICE"
   exit 0
 fi
 
 # run by Claude Code: rules go to Claude's context, the status line goes to the user (new sessions only)
 MSG=""
 [ "$SOURCE" = startup ] && MSG="$STATUS_LINE"
-[ -n "$UPGRADE" ] && MSG="${MSG:+$MSG. }$UPGRADE"
+[ -n "$NOTICE" ] && MSG="${MSG:+$MSG. }$NOTICE"
 [ -z "$CTX" ] && [ -z "$MSG" ] && exit 0
 OUT="{"
 [ -n "$CTX" ] && OUT="$OUT\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"$(printf '%s' "$CTX" | jesc)\"}"

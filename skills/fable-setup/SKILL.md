@@ -114,6 +114,8 @@ Undo everything this skill may have written, then tell the user to run `claude p
 ## Step 7 · `/fable-setup refresh`
 No questions. Find the rules file the hook uses (`./.claude/rules/oh-my-fable.md`, else `~/.claude/rules/oh-my-fable.md`
 or the one under `CLAUDE_CONFIG_DIR`). If it carries the marker `oh-my-fable:rules`, overwrite it with
-`${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim and report the old and new version numbers (for example v1 → v2). If it has no marker
+`${CLAUDE_PLUGIN_ROOT}/hooks/rules-file.md` verbatim and report the old and new version numbers (for example v1 → v2),
+unless its version is higher than that file's: then leave it, say this session runs an older copy of the plugin, tell
+the user to start a new session (after updating the plugin, if it is not updated yet), and stop. If it has no marker
 it is the user's own file: do not touch it, say so, and stop. If there is no file, say that nothing needs refreshing
 (hook-only delivery is always current).
