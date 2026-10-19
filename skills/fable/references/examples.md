@@ -23,7 +23,7 @@ rules file) already carries them. No effort line.
 완료 기준: 증거(명령 출력, 파일:줄)가 붙은 진단 보고 1개.
 ```
 
-## 3. Research · "grok 4.6 요즘 가격 어때?" (time-sensitive, so block H is attached)
+## 3. Research · "grok 4.6 요즘 가격 어때?" (time-sensitive at `low` effort, so block H is attached; research, so `+ block J`)
 
 ```
 개선된 요청
@@ -31,5 +31,6 @@ rules file) already carries them. No effort line.
 맥락: 없음.
 범위: 사용자가 쓴 표기 "grok 4.6" 을 그대로 넣은 검색 1회 이상 포함. 기억으로 답하지 않는다.
 완료 기준: 가격 표 1개, 각 행에 출처 URL과 확인 날짜.
-+ block H
+When a query centers on a name you do not confidently recognize, or recognize from a fast-moving area like AI models and developer tools where the landscape shifts within months, the name itself is the thing to verify: search before answering, and include the name as the user wrote it in at least one query alongside any reformulations. This holds even when you have some background on it; partial background is exactly what makes an out-of-date answer sound authoritative, so familiarity is not a reason to skip the search.
++ block J
 ```

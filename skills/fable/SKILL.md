@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), "Prompting Claude Sonnet 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5), "Prompting Claude Haiku 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
 Fixed guide blocks: `references/prompt-blocks.md`. Before/after samples: `references/examples.md`.
+The blocks this skill attaches (F, G, H, J) are copied word for word under **Block texts** below, so no file has to
+be opened before the block is printed.
 
 This skill handles the **per-request layer** only: the four fields every request needs, plus the guide
 blocks that depend on the request. The always-on rules (autonomy, scope limits, scope of the deliverable,
@@ -51,13 +53,53 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
    matters for this request: time-sensitive research at `low` → add block **H**; a long deliverable at `xhigh`
    or `max` → add block **G**.
 6. **Conditional blocks** · Assessment → the "report findings, don't fix" sentence. Research/summary →
-   block **J** (quoting example). Research on Sonnet 5.5 (any effort) → instead of block **H**, its guide's own
+   the line `+ block J` (J is too long for the block; follow it while you write the answer). Research on Sonnet 5.5 (any effort) → instead of block **H**, its guide's own
    search line, verbatim: `Use the search tool to check specifics that may have changed since your training, such as what is allowed, required or charged, even when you feel confident. For researched work such as a report or a comparison, gather current sources rather than writing from your training knowledge.` Research on Haiku 5.5 (any effort) → instead of block **H**, its guide's own search text, verbatim: `Your training data ends well before today's date. Records, office holders, prices, versions, rules and anything "latest" may have changed since then, so search for those before you answer, even when you feel sure. Facts that can't change need no search. When the answer depends on where the user is, put the user's country or region in the search query.` Writing → block **F** (short form). Code task → phrase checks as
    "Are there any bugs?" not "Does it compile?" (safeguard false positives).
 
 **Never attach blocks A, B, C, D, E, I, L, M, or N.** They are already active through the plugin hook (N only at
 `xhigh`/`max`, where the hook adds it). The improved
 request stays short: four fields and only the conditional lines from item 6.
+
+## Block texts
+Copied word for word from `references/prompt-blocks.md`. Put the text itself in the block, never a `+ block`
+label, except for J.
+
+**F · Writing density** (short form):
+
+```text
+Please remove all mannered prose.
+```
+
+**G · Long outputs at xhigh or max effort**, at the end of the block. Replace `[max_tokens]` with
+`CLAUDE_CODE_MAX_OUTPUT_TOKENS` when you know this session sets it; otherwise leave out ` of about [max_tokens] tokens`.
+
+```text
+Everything produced in one reply, including any reasoning or drafting done before the reply, counts toward a single limit of about [max_tokens] tokens. If that limit is reached before the reply is finished, the person receives a cut-off response and has to start over. Composing an entire output or deliverable in full as reasoning and then again as a reply would double the length of the turn without improving the result, so don't do that.
+
+Instead, when the person has asked for a long or effort-intensive deliverable such as a multi-section document, a large table or dataset, or a complete code file, spend extra effort on understanding the request, checking the inputs the answer depends on, settling the structure and other difficult decisions, and otherwise using the reasoning space to reason and the output space to write an output. Usually it is not needed to draft an output multiple times.
+```
+
+**H · Search triggering at low effort** (on Sonnet 5.5 and Haiku 5.5, use their own search text from item 6 instead):
+
+```text
+When a query centers on a name you do not confidently recognize, or recognize from a fast-moving area like AI models and developer tools where the landscape shifts within months, the name itself is the thing to verify: search before answering, and include the name as the user wrote it in at least one query alongside any reformulations. This holds even when you have some background on it; partial background is exactly what makes an out-of-date answer sound authoritative, so familiarity is not a reason to skip the search.
+```
+
+**J · Quoting retrieved sources.** Write only the line `+ block J` in the block, then write the answer the way this
+example does:
+
+```text
+<example>
+<user>look up how the Riverton Ledger and the Coast Dispatch each covered the Harbor Bridge closure and compare their reporting</user>
+<response>
+[web_search: Harbor Bridge closure Riverton Ledger]
+[web_search: Harbor Bridge closure Coast Dispatch]
+Both outlets agree on the basics: the bridge closed on March 3 after inspectors found cracked welds, and the state expects repairs to take about eight months. Where they differ is emphasis. The Ledger treats it as a local-economy story. The Dispatch frames it as a funding failure; its editorial calls the closure "entirely foreseeable." Read together, the Ledger explains who is affected now and the Dispatch explains how it came to this; neither account alone gives the whole picture.
+</response>
+<rationale>CORRECT: The response is organized around where the two outlets agree and differ, not as a walk through either article. Each outlet's reporting is conveyed in one or two sentences of the assistant's own indirect speech. One short marked phrase from one source; every other claim is reworded. The response is still specific and complete.</rationale>
+</example>
+```
 
 ## Step 4 · Show, then run
 Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), four fields only plus any conditional lines, then execute it as if

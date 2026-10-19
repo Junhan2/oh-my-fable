@@ -308,6 +308,6 @@ oh-my-fable/
 
 ## 贡献与许可
 
-欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表），然后运行 `bash tests/context-size.sh`。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
+欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表）、`skills/fable/SKILL.md`（模块 F、G、H、J 的副本），然后运行 `bash tests/context-size.sh`。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
 
 MIT © Junhan2。指南原文版权归 Anthropic 所有。

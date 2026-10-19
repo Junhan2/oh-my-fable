@@ -308,6 +308,6 @@ oh-my-fable/
 
 ## Contributing and license
 
-Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, and `skills/fable/references/prompt-blocks.md` (the full block list) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
+Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md` (the full block list), and `skills/fable/SKILL.md` (its copies of blocks F, G, H and J) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
 
 MIT © Junhan2. The guide text itself is copyright Anthropic.

@@ -308,6 +308,6 @@ oh-my-fable/
 
 ## 기여와 라이선스
 
-이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md`(전체 블록 목록)를 같이 고친 뒤 `bash tests/context-size.sh`를 돌립니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
+이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md`(전체 블록 목록), `skills/fable/SKILL.md`(블록 F·G·H·J 사본)를 같이 고친 뒤 `bash tests/context-size.sh`를 돌립니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
 
 MIT © Junhan2. 가이드 원문의 저작권은 Anthropic에 있습니다.
