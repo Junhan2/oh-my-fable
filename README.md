@@ -206,7 +206,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 3층 · 설정값
 
-- 모드 · `~/.claude/oh-my-fable.json` 의 `{"enabled": true, "mode": "interactive" | "unattended"}`. 프로젝트의 `.claude/oh-my-fable.json` 이 있으면 그것이 우선. `/fable-setup` 이 대신 써 줍니다.
+- 모드 · `~/.claude/oh-my-fable.json` 의 `{"enabled": true, "mode": "auto" | "interactive" | "unattended"}`. 프로젝트의 `.claude/oh-my-fable.json` 은 플러그인을 끄는 것(`"enabled": false`)만 할 수 있고, `mode`와 `delivery`는 전역 파일에서만 읽습니다(클론한 저장소가 에이전트를 무인 모드로 바꾸지 못하게). `/fable-setup` 이 대신 써 줍니다.
 - effort · `/effort <단계>` 후 Enter가 settings.json의 `modelSettings.<모델>.effortLevel`에 모델별로 저장합니다. 옛 전역 `effortLevel`은 Opus 5.5·Sonnet 5.5·Haiku 5.5에는 적용되지 않습니다. 환경 변수 `CLAUDE_CODE_EFFORT_LEVEL`이 있으면 그것이 이기니 모델별 값을 쓰려면 환경 변수를 비울 것. `maxEffortLevel`(전역 또는 모델별)이 있으면 어느 값이든 그 상한으로 깎이고, `/fable-status`가 깎인 값을 보여 줍니다. 기본값은 Opus 5.5·Sonnet 5.5·Haiku 5.5 `medium`, 그 밖의 모델 `high`(Opus 4.7은 `xhigh`). 모델마다 단계의 실제 사고량이 달라 다른 모델의 값을 그대로 옮기지 말 것.
 - API 직접 연동 · `thinking.display: "updates"`를 켜야 진행 메모가 화면에 옴. 대화 이력은 덧붙이기만(thinking 블록 포함), 턴마다 넣는 알림은 turn-scoped system message로. 압축은 서버 압축 또는 블록 K.
 - 서브에이전트 · 시작 도구는 즉시 반환, 결과는 나중 메시지로. Claude Code 서브에이전트는 세션의 effort를 물려받습니다. 다만 Claude가 그 호출에만 단계를 정해 넘길 수 있고(Agent 도구, 2.1.292 이상), 고정하려면 에이전트 파일 머리말(frontmatter)에 `effort:`. 훅은 서브에이전트의 effort를 전달받지 못하므로 `xhigh`·`max`로 띄운 서브에이전트에는 블록 N이 붙지 않습니다.
