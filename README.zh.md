@@ -206,7 +206,7 @@ claude plugin install oh-my-fable@oh-my-fable
 
 ## 第 3 层 · 设置项
 
-- 模式 · `~/.claude/oh-my-fable.json` 内容为 `{"enabled": true, "mode": "interactive" | "unattended"}`。项目的 `.claude/oh-my-fable.json` 优先于全局文件。`/fable-setup` 会替你写入。
+- 模式 · `~/.claude/oh-my-fable.json` 内容为 `{"enabled": true, "mode": "auto" | "interactive" | "unattended"}`。项目的 `.claude/oh-my-fable.json` 只能关闭插件（`"enabled": false`），`mode` 和 `delivery` 只从全局文件读取，这样克隆来的仓库无法把代理切换到无人值守模式。`/fable-setup` 会替你写入。
 - effort · 输入 `/effort <级别>` 后回车，会按模型保存到 settings.json 的 `modelSettings.<模型>.effortLevel`。旧的全局 `effortLevel` 对 Opus 5.5、Sonnet 5.5 和 Haiku 5.5 不生效。环境变量 `CLAUDE_CODE_EFFORT_LEVEL` 优先于两者，要用按模型值请清除它。设置了 `maxEffortLevel`（全局或按模型）时，无论哪个值都会被压到这个上限，`/fable-status` 显示压低后的值。默认值为 Opus 5.5、Sonnet 5.5、Haiku 5.5 `medium`，其他模型 `high`（Opus 4.7 为 `xhigh`）。不同模型同名级别的实际思考量不同，不要把一个模型的值照搬到另一个模型。
 - 直接对接 API · 需开启 `thinking.display: "updates"`，否则进度备注不会到达界面。对话历史只追加（含 thinking 块），每轮提醒用 turn-scoped system message，压缩用服务端压缩或模块 K。
 - 子代理 · 启动工具立即返回，结果以后续消息送回。Claude Code 子代理会继承会话的 effort，但 Claude 可以只为那一次调用指定级别（Agent 工具，2.1.292 或更新）；想固定的话在 agent 文件的头部信息（frontmatter）写 `effort:`。钩子拿不到子代理的 effort，所以以 `xhigh` 或 `max` 启动的子代理不会收到模块 N。
