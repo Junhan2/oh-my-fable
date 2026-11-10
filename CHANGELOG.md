@@ -16,6 +16,7 @@ Brings the plugin up to Anthropic's Fable 5.2 documents.
 - A notice at session start when a CLAUDE.md rules section is older than the text the plugin ships.
 - Plugin option `Status line at session start` (`/config`): turn off the line shown at every new session.
 - Two eval cases for block O.
+- A recording of `/fable` at the top of the READMEs, and a section with measured results with and without the plugin on four models.
 
 **Fixed**
 - Fable 5.2 starts at `medium` effort in Claude Code and ignores a top-level `effortLevel` in user settings, and the `fable` alias means Fable 5.2. The hook read it as Fable 5.1 at `high`, so the status line was wrong and block N could be added to a session that was not at `xhigh`.
