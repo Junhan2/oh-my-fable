@@ -101,12 +101,13 @@ fi
 # a compaction the model can be omitted too (hooks doc); the session keeps the model it ran, normally the one /model
 # saved to the user settings' `model` field (model-config doc), so there it is read from that field.
 # Per model: the default effort and whether a user-scope top-level effortLevel is ignored ("Opus 5.5 and models
-# released after it", model-config doc). When a model ships, extend this table, and the alias map in
+# released after it", model-config doc). Fable 5.2 shipped after Opus 5.5: `medium` in Claude Code (its API default is
+# `high`) and the top-level key ignored. When a model ships, extend this table, and the alias map in
 # model_from_settings when an alias moves to it.
 model_traits() {   # sets DEFAULT_EFFORT and IGNORES_TOP for model $1
   IGNORES_TOP=false
   case "$1" in
-    claude-opus-5-5*|claude-sonnet-5-5*|claude-haiku-5-5*) DEFAULT_EFFORT=medium; IGNORES_TOP=true;;
+    claude-opus-5-5*|claude-sonnet-5-5*|claude-haiku-5-5*|claude-fable-5-2*) DEFAULT_EFFORT=medium; IGNORES_TOP=true;;
     claude-opus-4-7*) DEFAULT_EFFORT=xhigh;;
     *) DEFAULT_EFFORT=high;;
   esac
@@ -115,6 +116,8 @@ canon() { printf '%s' "$1" | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//'; }   # canonica
 # The settings' model in Claude Code's order (ANTHROPIC_MODEL, settings, ANTHROPIC_DEFAULT_MODEL). An alias maps to
 # what it means on the Anthropic API today (model-config alias table); with a third-party provider aliases mean older
 # models, so only the ANTHROPIC_DEFAULT_<FAMILY>_MODEL overrides count. best, opusplan and default stay unknown.
+# `fable` means Fable 5.2, except in Claude apps gateway sessions, where it means Fable 5 (model-config doc); the hook
+# has no signal for such a session, so after /clear or a compaction there it reads Fable 5.2's default.
 model_from_settings() {
   local m over def
   m="${ANTHROPIC_MODEL:-}"
@@ -125,7 +128,7 @@ model_from_settings() {
     opus)   over="${ANTHROPIC_DEFAULT_OPUS_MODEL:-}";   def=claude-opus-5-5;;
     sonnet) over="${ANTHROPIC_DEFAULT_SONNET_MODEL:-}"; def=claude-sonnet-5-5;;
     haiku)  over="${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}";  def=claude-haiku-5-5;;
-    fable)  over="${ANTHROPIC_DEFAULT_FABLE_MODEL:-}";  def=claude-fable-5-1;;
+    fable)  over="${ANTHROPIC_DEFAULT_FABLE_MODEL:-}";  def=claude-fable-5-2;;
     claude-*) printf '%s' "$m"; return 0;;
     *) return 0;;
   esac
