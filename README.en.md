@@ -65,7 +65,6 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 - [Layer 3 · settings](#layer-3--settings)
 - [Changing where the rules live](#changing-where-the-rules-live)
 - [Symptom to fix](#symptom-to-fix)
-- [Measured: with and without](#measured-with-and-without)
 - [FAQ](#faq)
 - [Layout](#layout)
 - [Install steps Claude follows](#install-steps-claude-follows)
@@ -264,27 +263,6 @@ Only one is active at a time. If a CLAUDE.md section or a hand-made rules file e
 | Benign code request refused | ask "Are there any bugs?"; link docs for obscure languages |
 
 Full block texts: [`skills/fable/references/prompt-blocks.md`](skills/fable/references/prompt-blocks.md)
-
-## Measured: with and without
-
-The same tasks were run with the plugin and without it, and passes were counted. `claude plugin eval`, 2026-11-10, Claude Code 2.1.322, each model at its default effort. A cell reads `with · without`, each as passes/runs.
-
-| Task | Fable 5.2 | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 |
-|---|---|---|---|---|
-| `/fable`: show a vague request as a four-field request first | 2/2 · 0/2 | 2/2 · 0/2 | 2/3 · 0/3 | 1/3 · 0/3 |
-| fix only the bug that was asked for, and mention the other one next to it | 1/1 · 1/1 | 2/2 · 2/2 | **3/3 · 1/3** | 3/3 · 3/3 |
-| assess only, when the user just describes a problem | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-| request independent file reads in one message | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-| change one line without rewriting the whole file | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-| finish all four steps in an unattended run | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-| finish the work when a tool fails on its first call | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-| leave a file marked DO NOT EDIT as it is | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
-
-- Two rows differ. `/fable` exists only in the plugin. Sonnet 5.5 mentioned the neighboring bug in all three runs with the plugin and in one of three without it.
-- The other six tasks passed on all four models without the plugin. On short tasks that finish in minutes, current models and Claude Code already behave this way.
-- The symptoms the guides describe show up mostly in long work (stopping partway, long silences, cautions that have built up). These tasks do not measure them.
-- The with-plugin arm cost more per task: Fable 5.2 21 percent, Haiku 5.5 29, Opus 5.5 35, Sonnet 5.5 39 (the `/fable` task left out).
-- The sample is small (2 or 3 runs per model; 1 run for the second row on Fable 5.2). The command to measure it yourself is under [Contributing and license](#contributing-and-license).
 
 ## FAQ
 
