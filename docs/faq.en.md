@@ -104,4 +104,4 @@ That fits the flag's purpose, a lean context; put a rule that must reach it into
 
 ---
 
-Other pages: [How it works](how-it-works.en.md) · [Setup and environments](setup.en.md) · [Symptom to fix](symptoms.en.md) · [Layout and contributing](contributing.en.md)
+Other pages: [How it works](how-it-works.en.md) · [Setup and environments](setup.en.md) · [Symptom to fix](symptoms.en.md) · [Layout and contributing](layout.en.md)

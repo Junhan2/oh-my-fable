@@ -108,4 +108,4 @@ The Fable 5.2 guide is a separate page that adds to the 5.1 guide: from it come 
 
 ---
 
-Other pages: [Setup and environments](setup.en.md) · [Symptom to fix](symptoms.en.md) · [FAQ](faq.en.md) · [Layout and contributing](contributing.en.md)
+Other pages: [Setup and environments](setup.en.md) · [Symptom to fix](symptoms.en.md) · [FAQ](faq.en.md) · [Layout and contributing](layout.en.md)

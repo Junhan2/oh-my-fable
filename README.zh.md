@@ -97,7 +97,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | [设置与环境](docs/setup.zh.md) | 按环境的做法、版本要求、更改规则存放位置 |
 | [症状对处方](docs/symptoms.zh.md) | 中途停下询问、重写整个文件等症状及对应模块 |
 | [常见问题](docs/faq.zh.md) | 安装与移除、确认是否生效、请求卡片、其他运行环境 |
-| [结构与贡献](docs/contributing.zh.md) | 目录结构、指南更新时要改的文件 |
+| [结构与贡献](docs/layout.zh.md) | 目录结构、指南更新时要改的文件 |
 | [CHANGELOG](CHANGELOG.md) | 各版本的改动 |
 
 ## Claude 执行的安装步骤

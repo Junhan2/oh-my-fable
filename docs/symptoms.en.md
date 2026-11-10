@@ -25,4 +25,4 @@ Full block texts: [`skills/fable/references/prompt-blocks.md`](https://github.co
 
 ---
 
-Other pages: [How it works](how-it-works.en.md) · [Setup and environments](setup.en.md) · [FAQ](faq.en.md) · [Layout and contributing](contributing.en.md)
+Other pages: [How it works](how-it-works.en.md) · [Setup and environments](setup.en.md) · [FAQ](faq.en.md) · [Layout and contributing](layout.en.md)

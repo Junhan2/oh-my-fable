@@ -42,4 +42,4 @@ Only one is active at a time. If a CLAUDE.md section or a hand-made rules file e
 
 ---
 
-Other pages: [How it works](how-it-works.en.md) · [Symptom to fix](symptoms.en.md) · [FAQ](faq.en.md) · [Layout and contributing](contributing.en.md)
+Other pages: [How it works](how-it-works.en.md) · [Symptom to fix](symptoms.en.md) · [FAQ](faq.en.md) · [Layout and contributing](layout.en.md)

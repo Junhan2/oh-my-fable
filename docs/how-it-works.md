@@ -108,4 +108,4 @@ Claude Code 훅 문서가 훅 텍스트를 시스템 명령이 아닌 사실 문
 
 ---
 
-다른 문서: [설정과 환경](setup.md) · [증상별 처방](symptoms.md) · [FAQ](faq.md) · [구성과 기여](contributing.md)
+다른 문서: [설정과 환경](setup.md) · [증상별 처방](symptoms.md) · [FAQ](faq.md) · [구성과 기여](layout.md)
