@@ -1,14 +1,14 @@
 ---
 name: fable
-description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's Claude prompting guides (Fable 5.1, Opus 5.5), then carry it out. Add "just the prompt" or "프롬프트만" to only see the rewrite.
+description: Rewrite a rough, terse, or under-specified request into a prompt that follows Anthropic's Claude prompting guides (Fable 5.2, Fable 5.1, Opus 5.5), then carry it out. Add "just the prompt" or "프롬프트만" to only see the rewrite.
 argument-hint: "[request]"
 disable-model-invocation: true
 ---
 # fable · guide-aligned request rewrite (per-request layer)
 
-Source: Anthropic docs "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), "Prompting Claude Sonnet 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5), "Prompting Claude Haiku 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
+Source: Anthropic docs "Prompting Claude Fable 5.2" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), "Prompting Claude Fable 5.1" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), "Prompting Claude Opus 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), "Prompting Claude Sonnet 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5), "Prompting Claude Haiku 5.5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5) and "Prompting Claude Opus 5" (https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), which the Opus 5.5 guide names as its starting point.
 Fixed guide blocks: `references/prompt-blocks.md`. Before/after samples: `references/examples.md`.
-The blocks this skill attaches (F, G, H, J) are copied word for word under **Block texts** below, so no file has to
+The blocks this skill attaches (F, G, H, J, P, Q) are copied word for word under **Block texts** below, so no file has to
 be opened before the block is printed.
 
 This skill handles the **per-request layer** only: the four fields every request needs, plus the guide
@@ -55,15 +55,19 @@ Write task-specific parts (goal, context, scope, done) in the user's language so
 6. **Conditional blocks** · Assessment → the "report findings, don't fix" sentence. Research/summary →
    the line `+ block J` (J is too long for the block; follow it while you write the answer). Research on Sonnet 5.5 (any effort) → instead of block **H**, its guide's own
    search line, verbatim: `Use the search tool to check specifics that may have changed since your training, such as what is allowed, required or charged, even when you feel confident. For researched work such as a report or a comparison, gather current sources rather than writing from your training knowledge.` Research on Haiku 5.5 (any effort) → instead of block **H**, its guide's own search text, verbatim: `Your training data ends well before today's date. Records, office holders, prices, versions, rules and anything "latest" may have changed since then, so search for those before you answer, even when you feel sure. Facts that can't change need no search. When the answer depends on where the user is, put the user's country or region in the search query.` Writing → block **F** (short form). Code task → phrase checks as
-   "Are there any bugs?" not "Does it compile?" (safeguard false positives).
+   "Are there any bugs?" not "Does it compile?" (safeguard false positives). A final report or handoff that someone
+   who did not watch the work will read (an investigation, an audit, a long multi-step change) → the line
+   `+ block P`. The user says the code is yours to shape, or asks you to restructure or clean up a codebase you will
+   keep building on → block **Q**, with that cleanup written into the scope field; never when the request asks for
+   minimal changes or the code is someone else's (Q pulls against the always-on scope rule, block D).
 
-**Never attach blocks A, B, C, D, E, I, L, M, or N.** They are already active through the plugin hook (N only at
-`xhigh`/`max`, where the hook adds it). The improved
+**Never attach blocks A, B, C, D, E, I, L, M, N, or O.** They are already active through the plugin hook (N only at
+`xhigh`/`max`, where the hook adds it; M and O only where the hook adds them). The improved
 request stays short: four fields and only the conditional lines from item 6.
 
 ## Block texts
 Copied word for word from `references/prompt-blocks.md`. Put the text itself in the block, never a `+ block`
-label, except for J.
+label, except for J and P.
 
 **F · Writing density** (short form):
 
@@ -101,6 +105,22 @@ Both outlets agree on the basics: the bridge closed on March 3 after inspectors 
 </example>
 ```
 
+**P · Final reports and handoffs.** Write only the line `+ block P` in the block, then write the final report the
+way this text says:
+
+```text
+# Communicating clearly
+Write for an intelligent but low-context reader. The person reading has not seen your tool calls, your reasoning or the files you opened, and may be switching in from other work. Messages should generally be self-contained: the reader should understand what you mean without having to dig for other context. Put the key points in the first few sentences. Practice progressive disclosure in your sentence order, and do not use undefined references and ideas in line 1 that won't make sense until the reader reaches line 12.
+
+Use plain words, and write in clear, understandable full sentences. Do not use a term or abbreviation that you made up during the work. Say what the thing is in a way any reader would understand. Write mostly in the style of ASD-STE100 Simplified Technical English: short sentences, one idea per sentence, active voice, and consistently using the same word for the same thing. Use a paragraph of flowing prose where ideas connect, and keep bullets for lists of separate items. Leave out unnecessary details unless the reader asks and practice concision, but do ensure that your messages have the key context. Aim to make your user-facing text as human-readable and clear as possible.
+```
+
+**Q · Code ownership** (only under the condition in item 6):
+
+```text
+This codebase is yours: what it's for and how it's built are your call, and you'll keep building on it.
+```
+
 ## Step 4 · Show, then run
 Print the prompt in one fenced block titled `개선된 요청` (or `Improved request`), four fields only plus any conditional lines, then execute it as if
 the user had sent it. The block opens your reply: print it in your first message, before any tool call, in
@@ -111,4 +131,5 @@ you work, and close with a recap that stands on its own. End with exactly one st
 ## Do not
 - Do not widen the task while improving it. The rewrite clarifies; it does not add features.
 - Do not turn an Assessment into a Change.
+- Do not attach block Q to make a request sound more capable. It changes what gets edited; the user has to have asked for that.
 - Do not add anti-formatting rules; the conditional formatting rule (block I) is already active.

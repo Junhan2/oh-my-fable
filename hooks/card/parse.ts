@@ -21,7 +21,7 @@ const FIELD =
 // A conditional line: one opened with `+`, or one of the English guide lines /fable appends after the fields,
 // known by how it opens (skills/fable/SKILL.md and references/prompt-blocks.md). The lines under it stay with it.
 const EXTRA =
-  /^(?:\+\s*\S|Report your findings and stop|Exception: when the user is describing|Please remove all mannered prose|Mannered prose substitutes|Everything produced in one reply|When a query centers on a name|Use the search tool to check specifics|<example>)/
+  /^(?:\+\s*\S|Report your findings and stop|Exception: when the user is describing|Please remove all mannered prose|Mannered prose substitutes|Everything produced in one reply|When a query centers on a name|Use the search tool to check specifics|This codebase is yours|<example>)/
 
 /** A line's words without the marks that vary between runs: indentation, a list marker, a heading's #, bold around its start. */
 const plain = (line: string): string =>

@@ -2,9 +2,9 @@
 
 # oh-my-fable
 
-**Keep the working rules from Anthropic's prompting guides (Opus 5.5, Fable 5.1) always on in Claude Code. Install and forget: terminal, headless, or subagent, every session gets the rules that fit it.**
+**Keep the working rules from Anthropic's prompting guides (Opus 5.5, Fable 5.2, Fable 5.1) always on in Claude Code. Install and forget: terminal, headless, or subagent, every session gets the rules that fit it.**
 
-Based on Opus 5.5 (Claude Code's current default model) and Fable 5.1, and it works the same on Sonnet 5.5 and Haiku 5.5 (both also default to `medium` effort in Claude Code), Opus 5 and Sonnet 5.
+Based on Opus 5.5 (Claude Code's current default model), Fable 5.2 and Fable 5.1, and it works the same on Sonnet 5.5 and Haiku 5.5 (both also default to `medium` effort in Claude Code, as Fable 5.2 does), Opus 5 and Sonnet 5.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-2e7d32.svg)](https://github.com/Junhan2/oh-my-fable)
@@ -31,16 +31,20 @@ Scope: this button and its handler only. Do not touch the signup form or other e
 Done: reproduce the click and confirm navigation to /dashboard, 0 console errors, list of changed files attached
 ```
 
+A real session, sped up in places (28 seconds). After the problem is described in plain words, the two words `/fable fix it` become a request card with goal, context, scope and done filled in from the conversation, and the work follows it.
+
+![A terminal where a problem is described, then /fable fix it turns into a four-field request card and is carried out](assets/fable-demo.gif)
+
 **Install it, and the rest is automatic.**
 
 - **Detects how you work, per session** · interactive in the terminal or IDE; unattended under `claude -p`, the Agent SDK, or an agent harness, where it adds the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph. Mixing both needs no switching.
 - **Covers subagents** · subagents started with the Agent tool (including Explore and Plan, which never read rules files) get a short version of the rules.
-- **Creates no files** · CLAUDE.md and rules files stay untouched; the hook injects the rules per session. Updating is just updating the plugin, uninstalling leaves nothing behind.
+- **Creates no files** · CLAUDE.md and rules files stay untouched; the hook injects the rules per session. Updating is just updating the plugin, and with the default delivery uninstalling leaves nothing behind (if you moved the rules into a file, `/fable-setup remove` deletes that file too).
 - **No questions** · setup is optional. The only thing you confirm is the plugin install. Recommended once: `/fable-setup rules-file`, which keeps the base rules in a rules file (Claude Code's hooks doc prefers files over hook text for rules that never change).
 
-One hook and four skills apply the fixes from Anthropic's official [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), and [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), the guide the Opus 5.5 guide names as its own starting point. The wording stays almost word-for-word from the source.
+One hook and four skills apply the fixes from Anthropic's official [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), and [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), the guide the Opus 5.5 guide names as its own starting point. The wording stays almost word-for-word from the source.
 
-> **Which model is this for?** Both: **Opus 5.5** (Claude Code's current default model) and **Fable 5.1**. The finish-the-task, scope-limit, and progress-update rules come from official guides that say the same thing for both models, and the "don't stop on a progress report" paragraph, which only applies in unattended sessions, comes from the Opus 5.5 guide. Targeted edits, batched tool calls, and the formatting rule are fixes found only in the Fable 5.1 guide, but they do no harm on other models. The four-field request shape (goal, context, scope, done) cuts back-and-forth and off-target results no matter the model. Works the same on Sonnet 5.5 and Haiku 5.5 (default effort `medium` in Claude Code, like Opus 5.5), Opus 5 and Sonnet 5; when a session starts at `xhigh` or `max` effort, the hook also adds block N from the Sonnet 5.5 guide.
+> **Which model is this for?** **Opus 5.5** (Claude Code's current default model) and the Fable models, **Fable 5.2** and **Fable 5.1**. The finish-the-task, scope-limit, and progress-update rules come from official guides that say the same thing for both models, and the "don't stop on a progress report" paragraph, which only applies in unattended sessions, comes from the Opus 5.5 guide. Targeted edits, batched tool calls, and the formatting rule are fixes found only in the Fable 5.1 guide, but they do no harm on other models. The four-field request shape (goal, context, scope, done) cuts back-and-forth and off-target results no matter the model. Works the same on Sonnet 5.5 and Haiku 5.5 (default effort `medium` in Claude Code, like Opus 5.5), Opus 5 and Sonnet 5; when a session starts at `xhigh` or `max` effort, the hook also adds block N from the Sonnet 5.5 guide. The Fable 5.2 guide is a separate page that adds to the 5.1 guide: from it come the obstacle lines for unattended sessions and subagents (block O) and two blocks `/fable` attaches by request, P for final reports and Q for code ownership.
 
 ## Contents
 
@@ -53,6 +57,7 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 - [Layer 2 · always-on](#layer-2--always-on)
 - [Layer 3 · settings](#layer-3--settings)
 - [Symptom to fix](#symptom-to-fix)
+- [Measured: with and without](#measured-with-and-without)
 - [FAQ](#faq)
 - [Layout](#layout)
 - [Contributing and license](#contributing-and-license)
@@ -61,14 +66,14 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 
 | Part | When | What |
 |---|---|---|
-| **Always-on rules** | automatically once installed, no files | At every session start the hook injects the official guides' always-on rules (autonomy, scope limits, deliver what was asked, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Headless and SDK sessions automatically get the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph (from the Opus 5.5 guide), sessions at `xhigh`/`max` effort get the "stop once the checks pass" paragraph (block N, from the Sonnet 5.5 guide), and subagents started with the Agent tool get a short version. No rules file, no CLAUDE.md edit |
+| **Always-on rules** | automatically once installed, no files | At every session start the hook injects the official guides' always-on rules (autonomy, scope limits, deliver what was asked, targeted edits, progress updates, formatting, batched tool calls) verbatim in English. Headless and SDK sessions automatically get the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph (from the Opus 5.5 guide) and the lines on working through ordinary obstacles (block O, from the Fable 5.2 guide), sessions at `xhigh`/`max` effort get the "stop once the checks pass" paragraph (block N, from the Sonnet 5.5 guide), and subagents started with the Agent tool get a short version. No rules file, no CLAUDE.md edit |
 | `/fable` | when a request is short or vague | shows a request with goal, context, scope, and done criteria filled in, then runs it. Add `just the prompt` to only see the rewrite |
 | **Request card** | automatic in the terminal (Claude Code 2.1.287 or newer) and the desktop app | draws the improved request that `/fable` shows as a card in the transcript (a colored title bar, one block per field). It only draws: what Claude reads stays the same. Turn it off with `Improved request card` in `/config` ([FAQ](#faq)) |
 | `/fable-status` | when you wonder what is in effect | one table: plugin version, where the rules live, detected mode, effort (value and source), whether the rules file is current, CLAUDE.md conflicts. Writes nothing |
-| `/fable-audit` | when you want to know what your rules are missing | checks your CLAUDE.md, rules files, and agent prompts against the guide's 16 sections: what is missing, what pushes against a section, what the plugin already covers, and lists the Opus 5/5.5, Sonnet 5.5 and Haiku 5.5 guides' model-specific notes separately, unscored. Read-only; it changes nothing. For the opposite job, finding dated, stale or contradictory text to remove, use Claude Code's `/doctor prompt-audit` |
+| `/fable-audit` | when you want to know what your rules are missing | checks your CLAUDE.md, rules files, and agent prompts against the guide's 16 sections: what is missing, what pushes against a section, what the plugin already covers, and lists the Fable 5.2, Opus 5/5.5, Sonnet 5.5 and Haiku 5.5 guides' model-specific notes separately, unscored. Read-only; it changes nothing. For the opposite job, finding dated, stale or contradictory text to remove, use Claude Code's `/doctor prompt-audit` |
 | `/fable-setup` | optional, recommended once | keep the rules in a rules file (recommended; also the one for agent teams) or a CLAUDE.md section, pin one mode, show where effort comes from, audit your CLAUDE.md for conflicting rules |
 
-Fable 5.1 got much better at finishing long tasks on its own, and its habits shifted with it. It narrates less while working, may call one tool per turn, tends to rewrite whole files for small edits, and at low effort answers from memory instead of searching. Opus 5.5 has a habit of ending its turn right after a progress update in the middle of a long unattended run, leaving the task stalled there (official guide, "Unattended agentic runs"). The official guides are a symptom-to-fix list for these shifts; this plugin applies the fixes for you.
+Fable 5.1 got much better at finishing long tasks on its own, and its habits shifted with it. It narrates less while working, may call one tool per turn, tends to rewrite whole files for small edits, and at low effort answers from memory instead of searching. Opus 5.5 has a habit of ending its turn right after a progress update in the middle of a long unattended run, leaving the task stalled there (official guide, "Unattended agentic runs"). Fable 5.2 follows what a prompt says more closely: it applies approval rules and old cautions as written, sometimes ends a turn at an ordinary obstacle such as a timeout, and at `xhigh`/`max` can start subagents to review its own work (official guide, "Prompting Claude Fable 5.2"). The official guides are a symptom-to-fix list for these shifts; this plugin applies the fixes for you.
 
 ## Install: one sentence
 
@@ -79,6 +84,10 @@ install https://github.com/Junhan2/oh-my-fable
 ```
 
 Claude installs it and that is all. No questions, no config file. The rules apply automatically the next time you open Claude Code. To use them in this session right now, type `/reload-plugins` (loads the plugin you just installed) and then `/clear` (injects the rules), one per line.
+
+**Requirements** · Claude Code 2.1.258 or newer. Windows needs Git for Windows (Git Bash).
+
+**Updating** · `claude plugin update oh-my-fable@oh-my-fable`, then a new session. Third-party marketplaces have auto-update off by default; to get new versions by themselves: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. What changed is in [CHANGELOG.md](CHANGELOG.md), and the first session after an update says it in one line.
 
 <details>
 <summary>Manual install</summary>
@@ -100,7 +109,7 @@ Open a new session, or `/reload-plugins` then `/clear`. Nothing to configure. `/
 | Environment | What to do |
 |---|---|
 | Terminal · desktop app · IDE extension | install only. Detected as interactive |
-| `claude -p` · Agent SDK · agent harnesses (Buzz etc.) | install only. Detected as unattended, adding both unattended paragraphs ("not watching", "don't stop on a progress report"). Exception: `claude -p --bare` skips hooks, plugins and CLAUDE.md, and the headless doc says it will become the default for `-p` in a future release; pass the rules with `--append-system-prompt-file hooks/rules-file-unattended.md` (base rules plus both unattended paragraphs) |
+| `claude -p` · Agent SDK · agent harnesses (Buzz etc.) | install only. Detected as unattended, adding the three unattended paragraphs ("not watching", "don't stop on a progress report", "work through ordinary obstacles"). Exception: `claude -p --bare` skips hooks, plugins and CLAUDE.md, and the headless doc says it will become the default for `-p` in a future release; pass the rules with `--append-system-prompt-file hooks/rules-file-unattended.md` (base rules plus the three unattended paragraphs) |
 | Headless-only environments where the plugin cannot be installed (separate `CLAUDE_CONFIG_DIR`, CI) | copy `hooks/rules-file-unattended.md` to that environment's `rules/oh-my-fable.md` ([FAQ](#faq)) |
 | Cowork | the terminal install is not used there. Enable the plugin in your claude.ai account settings |
 | Cloud sessions (claude.ai/code) · routines | plugins enabled on your machine do not run there ([FAQ](#faq)). Commit `hooks/rules-file-unattended.md` to the repository as `.claude/rules/oh-my-fable.md` |
@@ -135,7 +144,7 @@ It shows a request with goal, context, scope, and done criteria filled in, then 
 | Interactive/unattended auto-detect | yes | yes | no (static) |
 | Reaches subagents | yes (regular subagents via the file, Explore and Plan via the hook's short version) | yes (the SubagentStart hook sends the short version to every subagent) | yes (Explore and Plan via the hook) |
 | Reaches agent teams | yes (per the docs, teammates load rules files) | in-process teammates yes (per the hooks doc, SubagentStart runs for each of their messages); split-pane teammates unverified | yes |
-| After a plugin update | a stale rules file is flagged at session start; `/fable-setup refresh` updates it | always current | paste the section again |
+| After a plugin update | a stale rules file is flagged at session start; `/fable-setup refresh` updates it | always current | a stale section is flagged at session start; `/fable-setup claude-md` replaces it |
 | Removal | delete the file + uninstall | uninstall or `{"enabled": false}` | delete the section |
 
 **Why the rules file is recommended.** Claude Code's [hooks doc](https://code.claude.com/docs/en/hooks) says "for instructions that never change, prefer CLAUDE.md" (rules files load the same way), and warns that hook text framed as out-of-band system commands can trigger Claude's prompt-injection defenses. The hook-only default stays because a plugin cannot write files on install; the hook's text opens with a factual lead-in ("The user installed oh-my-fable; these are the user's standing working rules.") for that reason. The trade-off of a rules file is that it is a copy: a stale one is flagged at session start and `/fable-setup refresh` updates it.
@@ -143,7 +152,7 @@ It shows a request with goal, context, scope, and done criteria filled in, then 
 Only one is active at a time. If a CLAUDE.md section or a hand-made rules file exists, the hook goes silent by itself (no double injection). Since 1.7 the hook takes care of subagents itself: on Claude Code's `SubagentStart` event it injects a short version (`hooks/subagent.md`: scope limits, targeted edits, batched calls, finish the task, "report blockers instead of asking"). Explore and Plan subagents read neither CLAUDE.md nor rules files, so they get this short version under every delivery. Forks (the `fork` subagent type) are skipped: they inherit the whole conversation, rules included.
 
 - **The mode is auto-detected by default.** A session opened in the terminal or IDE runs interactive; one started headless (`claude -p`), through the Agent SDK, or by an agent harness runs unattended, decided per session from the `CLAUDE_CODE_ENTRYPOINT` value Claude Code sets. Mixing interactive and headless use needs no switching. To pin one mode, pick "Interactive" or "Unattended" in question 2. Unattended adds the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph, and can only be set in the global config, never by a config file inside a repository, so a cloned repo cannot switch your agent to unattended. Auto-detection works with both hook-based deliveries; only the CLAUDE.md section is static text, so pick one mode for that.
-- **Effort**: this plugin no longer sets it. Opus 5.5, Sonnet 5.5 and Haiku 5.5 default to `medium` in Claude Code (their guides' starting point for agentic work), Fable 5.1 defaults to `high`. To save a value per model, type `/effort <level>` in a session on that model and press Enter; `s` saves for this session only. `/fable-status` shows the current value and where it comes from.
+- **Effort**: this plugin no longer sets it. Opus 5.5, Sonnet 5.5 and Haiku 5.5 default to `medium` in Claude Code (their guides' starting point for agentic work), and so does Fable 5.2 (its guide suggests `high` for hard or long unattended work); Fable 5.1 defaults to `high`. To save a value per model, type `/effort <level>` in a session on that model and press Enter; `s` saves for this session only. `/fable-status` shows the current value and where it comes from.
 
 </details>
 
@@ -183,13 +192,15 @@ Add depending on the request:
 
 - **When you only describe a problem** · "assess only, do not fix". The guide's explicit exception.
 - **When fresh information matters** · keep effort at high or above, or add "search the name as I wrote it at least once" (block H; on Sonnet 5.5 and Haiku 5.5, `/fable` uses each guide's own search text instead).
-- **Effort** · Opus 5.5, Sonnet 5.5 and Haiku 5.5 default to `medium`, their guides' own starting point; Fable 5.1 defaults to `high`. Raise it only for hard tasks, in that session (`/effort high` then `s`). `low` may skip searches. `xhigh`/`max` means longer thinking (Opus 5.5 thinks longer than Opus 5 at the same level), and long documents get drafted twice and slow down, so attach the long-output note (block G) and leave room in `max_tokens`.
+- **Effort** · Opus 5.5, Sonnet 5.5 and Haiku 5.5 default to `medium`, their guides' own starting point; Fable 5.1 defaults to `high`. Fable 5.2 also starts at `medium` in Claude Code; its guide suggests `high` for hard coding, research and long unattended runs, and `xhigh` only where you measured a gain. Raise it only for hard tasks, in that session (`/effort high` then `s`). `low` may skip searches. `xhigh`/`max` means longer thinking (Opus 5.5 thinks longer than Opus 5 at the same level), and long documents get drafted twice and slow down, so attach the long-output note (block G) and leave room in `max_tokens`.
 - **Dense prose** · `Please remove all mannered prose.`
 - **Summarising sources** · include one correct example (block J).
+- **A report someone will read cold** · the Fable 5.2 guide's "Communicating clearly" text (block P): write for a reader who has not seen the tool calls or the files.
+- **Your own codebase, structure included** · `This codebase is yours: what it's for and how it's built are your call, and you'll keep building on it.` (block Q, Fable 5.2 guide). Only when you want repeated code merged and the structure improved as it works; it also makes more changes you did not ask for, so read the diff.
 
 ## Layer 2 · always-on
 
-The plugin's SessionStart hook loads the blocks below verbatim in English at every session start (file `hooks/always-on.md`). CLAUDE.md is not modified, and the text is English regardless of your language. The first paragraph of block A ("the user is not watching") and block M ("don't stop on a progress report") are added automatically in headless and SDK sessions only and omitted in the terminal or IDE; `/fable-setup unattended` makes it permanent. Block N is added only when the session runs at `xhigh` or `max` effort: at session start, after `/clear` (the hook is then not told the model, so it reads the model from your settings), and after a model switch that moves the session to such a level (a paragraph already added stays). Under `claude -p` the hook is not told the model, so there only `CLAUDE_CODE_EFFORT_LEVEL` counts. Each injected part opens with a one-line factual lead-in (for example "This session was started headless (entrypoint sdk-cli); the user's standing rules for such sessions follow."), because Claude Code's hooks doc asks for hook text written as facts, not as system commands.
+The plugin's SessionStart hook loads the blocks below verbatim in English at every session start (file `hooks/always-on.md`). CLAUDE.md is not modified, and the text is English regardless of your language. The first paragraph of block A ("the user is not watching"), block M ("don't stop on a progress report") and block O ("work through ordinary obstacles, leave deliberate blockers alone") are added automatically in headless and SDK sessions only and omitted in the terminal or IDE; `/fable-setup unattended` makes it permanent. Block N is added only when the session runs at `xhigh` or `max` effort: at session start, after `/clear` (the hook is then not told the model, so it reads the model from your settings), and after a model switch that moves the session to such a level (a paragraph already added stays). Under `claude -p` the hook is not told the model, so there only `CLAUDE_CODE_EFFORT_LEVEL` counts. Each injected part opens with a one-line factual lead-in (for example "This session was started headless (entrypoint sdk-cli); the user's standing rules for such sessions follow."), because Claude Code's hooks doc asks for hook text written as facts, not as system commands.
 
 | Block | One-line gist | Note |
 |---|---|---|
@@ -202,12 +213,13 @@ The plugin's SessionStart hook loads the blocks below verbatim in English at eve
 | **+** read as written | a rewritten prompt, a table, or a question for the user goes in reply text, before the first tool call or in the last message | the plugin's own line, not a guide quote. Reason: on current models a note written between tool calls can reach the user only as a one-line summary (thinking doc, "Progress updates between tool calls") |
 | **I** formatting rule | lists when the content is multifaceted, minimal formatting when asked, prose in conversation | delete old "no formatting" rules; 5.1 already under-formats |
 | **B** batched tool calls | list what you need, then request every independent item in one response | |
-| **N** stop once the checks pass | when the requested work is done and its checks pass, stop and report; no self-started review or hardening rounds, no reviewer subagents unless a review was asked for; suggest a deeper review at the end instead | from the Sonnet 5.5 guide. Only for sessions at `xhigh`/`max` effort; in the guide's test (Sonnet 5.5, `max`) it stopped reviewer subagents and cut session cost by about a third with no quality change |
+| **N** stop once the checks pass | when the requested work is done and its checks pass, stop and report; no self-started review or hardening rounds, no reviewer subagents unless a review was asked for; suggest a deeper review at the end instead | from the Sonnet 5.5 guide. Only for sessions at `xhigh`/`max` effort; in the guide's test (Sonnet 5.5, `max`) it stopped reviewer subagents and cut session cost by about a third with no quality change. The Fable 5.2 guide reports the same habit on Fable 5.2 at these levels |
+| **O** work through ordinary obstacles | diagnose errors, timeouts, locked files, empty results and failing tools, then continue another way; leave alone what someone deliberately blocked (a file marked not to be touched, withheld access, a safety guardrail), say so, and look for another safe way | from the Fable 5.2 guide "Finish the whole task". Unattended sessions and subagents only; in an interactive Fable 5.2 session Claude Code 2.1.321 carries its own text to the same effect |
 
 ## Layer 3 · settings
 
 - Mode · `~/.claude/oh-my-fable.json` with `{"enabled": true, "mode": "interactive" | "unattended"}`. A project `.claude/oh-my-fable.json` wins over the global file. `/fable-setup` writes it for you.
-- Effort · `/effort <level>` then Enter saves it per model to `modelSettings.<model>.effortLevel` in settings.json. The old global `effortLevel` does not apply to Opus 5.5, Sonnet 5.5 and Haiku 5.5. An env var `CLAUDE_CODE_EFFORT_LEVEL` wins over both, so unset it to use per-model values. A `maxEffortLevel` (top-level or per model) caps whatever wins; `/fable-status` shows the capped value. Defaults: Opus 5.5, Sonnet 5.5 and Haiku 5.5 `medium`, other models `high` (Opus 4.7 `xhigh`). Effort names do not map to the same thinking across models, so do not carry a value from one model over to another.
+- Effort · `/effort <level>` then Enter saves it per model to `modelSettings.<model>.effortLevel` in settings.json. The old global `effortLevel` does not apply to Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5. An env var `CLAUDE_CODE_EFFORT_LEVEL` wins over both, so unset it to use per-model values. A `maxEffortLevel` (top-level or per model) caps whatever wins; `/fable-status` shows the capped value. Defaults: Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5 `medium`, other models `high` (Opus 4.7 `xhigh`). Effort names do not map to the same thinking across models, so do not carry a value from one model over to another.
 - Direct API integrations · set `thinking.display: "updates"` or progress notes never reach the UI. Keep history append-only (thinking blocks included), send per-turn reminders as turn-scoped system messages, use server-side compaction or block K.
 - Subagents · the start tool returns immediately; results come back as later messages. Claude Code subagents inherit the session's effort unless Claude passes a level for that one call (Agent tool, 2.1.292 or newer); pin one with `effort:` in the agent file's frontmatter. The hook is not told a subagent's effort, so a subagent started at `xhigh` or `max` does not get block N.
 - Vision · a crop-and-zoom tool gives most of the gain on charts and tables.
@@ -220,6 +232,10 @@ The plugin's SessionStart hook loads the blocks below verbatim in English at eve
 | Stops with "Shall I?" | blocks A and M (automatic in unattended sessions; `/fable-setup unattended` to always include them) |
 | An unattended run ends its turn right after a progress update | block M (automatic in unattended sessions) |
 | At `xhigh`/`max`, keeps reviewing and hardening after the work is done, or launches reviewer subagents | block N (automatic when the session starts at `xhigh`/`max`), or run routine work at `high` or below |
+| Stops at a timeout or a failing tool instead of trying another way | block O (automatic in unattended sessions and subagents) |
+| The final report is hard to follow for someone who did not watch the work | block P (`/fable` attaches it to report and handoff requests) |
+| Writes similar code again instead of merging what exists | block Q, only where the structure may change |
+| Asks for approvals it doesn't need, or holds back routine work | name the exact actions in approval rules and write the exception into a "never" rule (`/fable-audit` notes N19 and N20) |
 | Changes things you did not ask for | block D |
 | Does narrower or broader work than asked | block L |
 | Silent for minutes | delete old rule, then block E; thinking.display over the API |
@@ -232,6 +248,27 @@ The plugin's SessionStart hook loads the blocks below verbatim in English at eve
 
 Full block texts: [`skills/fable/references/prompt-blocks.md`](skills/fable/references/prompt-blocks.md)
 
+## Measured: with and without
+
+The same tasks were run with the plugin and without it, and passes were counted. `claude plugin eval`, 2026-11-10, Claude Code 2.1.322, each model at its default effort. A cell reads `with · without`, each as passes/runs.
+
+| Task | Fable 5.2 | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 |
+|---|---|---|---|---|
+| `/fable`: show a vague request as a four-field request first | 2/2 · 0/2 | 2/2 · 0/2 | 2/3 · 0/3 | 1/3 · 0/3 |
+| fix only the bug that was asked for, and mention the other one next to it | 1/1 · 1/1 | 2/2 · 2/2 | **3/3 · 1/3** | 3/3 · 3/3 |
+| assess only, when the user just describes a problem | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+| request independent file reads in one message | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+| change one line without rewriting the whole file | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+| finish all four steps in an unattended run | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+| finish the work when a tool fails on its first call | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+| leave a file marked DO NOT EDIT as it is | 2/2 · 2/2 | 2/2 · 2/2 | 3/3 · 3/3 | 3/3 · 3/3 |
+
+- Two rows differ. `/fable` exists only in the plugin. Sonnet 5.5 mentioned the neighboring bug in all three runs with the plugin and in one of three without it.
+- The other six tasks passed on all four models without the plugin. On short tasks that finish in minutes, current models and Claude Code already behave this way.
+- The symptoms the guides describe show up mostly in long work (stopping partway, long silences, cautions that have built up). These tasks do not measure them.
+- The with-plugin arm cost more per task: Fable 5.2 21 percent, Haiku 5.5 29, Opus 5.5 35, Sonnet 5.5 39 (the `/fable` task left out).
+- The sample is small (2 or 3 runs per model; 1 run for the second row on Fable 5.2). The command to measure it yourself is under [Contributing and license](#contributing-and-license).
+
 ## FAQ
 
 **My CLAUDE.md already has similar rules.**
@@ -241,7 +278,7 @@ Full block texts: [`skills/fable/references/prompt-blocks.md`](skills/fable/refe
 By default the rules live only inside the plugin and the hook injects them per session, so neither CLAUDE.md nor a rules file is created. The recommended setup is a rules file (`/fable-setup rules-file`): Claude Code's hooks doc prefers files over hook text for rules that never change, and agent teams load it. A CLAUDE.md section is the third option. The comparison table is under "Optional" in [Beginner flow](#beginner-flow).
 
 **Does it work on Opus 5.5?**
-Yes. Opus 5.5 is now Claude Code's default model, so from 2.2.0 the plugin is built on both guides together. Finish-the-task, scope limits, and progress updates come from both guides saying the same thing, and the unattended "don't stop on a progress report" paragraph (block M) comes from the Opus 5.5 guide. The formatting rule, targeted edits, and batched tool calls come from the Fable 5.1 guide, so they may matter less on Opus 5.5, but they do no harm. Same for Sonnet 5.5, Haiku 5.5, Opus 5 and Sonnet 5. Sonnet 5.5 and Haiku 5.5 also start at `medium` effort in Claude Code and ignore a top-level `effortLevel` in user settings, which the status line shows. On Haiku 5.5, `/fable` uses that guide's own search text instead of block H.
+Yes. Opus 5.5 is now Claude Code's default model, so from 2.2.0 the plugin is built on both guides together. Finish-the-task, scope limits, and progress updates come from both guides saying the same thing, and the unattended "don't stop on a progress report" paragraph (block M) comes from the Opus 5.5 guide. The formatting rule, targeted edits, and batched tool calls come from the Fable 5.1 guide, so they may matter less on Opus 5.5, but they do no harm. Same for Sonnet 5.5, Haiku 5.5, Opus 5 and Sonnet 5. Sonnet 5.5 and Haiku 5.5 also start at `medium` effort in Claude Code and ignore a top-level `effortLevel` in user settings, which the status line shows. On Haiku 5.5, `/fable` uses that guide's own search text instead of block H. Fable 5.2 starts at `medium` too and ignores the same key; from its guide the plugin adds block O in unattended sessions and subagents, and `/fable` attaches blocks P and Q by request.
 
 **Why `/reload-plugins` and then `/clear` to use it right away?**
 The two commands do different things per the official docs. `/reload-plugins` "reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers" without a restart ([Plugins](https://code.claude.com/docs/en/plugins)). The SessionStart hook that injects the rules fires only on `startup`, `resume`, `/clear`, `compact`, and `fork` ([Hooks](https://code.claude.com/docs/en/hooks#sessionstart)). So reload registers the hook but does not run it; in the install session, `/clear` runs it once. A new session needs neither.
@@ -251,6 +288,9 @@ The two commands do different things per the official docs. `/reload-plugins` "r
 
 **What is the request card, and how do I turn it off?**
 It draws the improved request that `/fable` shows as a card in the transcript. It is a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview) (plugin code that runs inside Claude Code), and redrawing that one block is all it does (`claude plugin validate` lists a single call, `$.ui.resolve`). What Claude reads and what the transcript stores stay the same; while the reply streams you see the code block, and it turns into the card when that block of the reply is complete. In the terminal it draws on Claude Code 2.1.287 or newer and was checked on 2.1.292. The desktop app draws it too (checked on an app that embeds Claude Code 2.1.289); the VS Code extension panel, `claude -p`, and versions before 2.1.287 keep showing the code block. Claude Code 2.1.290 fixed a stall when a mod draws multi-line text in a non-Latin script, and 2.1.295 fixed the last known card issue, so 2.1.295 or newer is recommended. To turn it off, switch off `Improved request card` in `/config` (it applies at once, no restart needed), or go to `/plugin` → oh-my-fable → Configure options. To install with it off: `claude plugin install oh-my-fable@oh-my-fable --config card=false`.
+
+**How do I turn off the line shown at every session start?**
+Turn off `Status line at session start` for oh-my-fable in `/config`. The welcome line on the first session after install, the one line after an update, and notices that need action still show.
 
 **How do I remove it?**
 `/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
@@ -286,10 +326,11 @@ oh-my-fable/
 │   ├── session-start.sh       the hook (session start: unattended paragraph only when a rules file exists, else everything · subagents: short version · model switch: block N · --status)
 │   ├── always-on.md           block text (English)
 │   ├── rules-file.md          base rules that /fable-setup copies to ~/.claude/rules/oh-my-fable.md
-│   ├── rules-file-unattended.md static rules (with both unattended paragraphs) for headless-only environments without the plugin
+│   ├── rules-file-unattended.md static rules (with the three unattended paragraphs) for headless-only environments without the plugin
 │   ├── subagent.md            short version injected into subagents
 │   ├── effort-high.md         block N, added only when the session starts at xhigh or max effort
-│   └── autonomy-unattended.md the two paragraphs added only in unattended mode
+│   ├── whats-new.txt          one line per version, shown on the first session after an update
+│   └── autonomy-unattended.md the three paragraphs added only in unattended mode
 ├── skills/
 │   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)
 │   ├── fable-status/SKILL.md  what is in effect, one table (read-only)
@@ -301,13 +342,13 @@ oh-my-fable/
 │       └── references/        block texts (A to N) and before/after examples
 ├── tests/card.test.ts         request card tests (`claude plugin test .`)
 ├── tests/context-size.sh      keeps the injected text under the hook's 10,000-character cap (`bash tests/context-size.sh`)
-├── evals/                     `claude plugin eval` suite: 6 cases, deterministic graders
+├── evals/                     `claude plugin eval` suite: 8 cases, deterministic graders
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## Contributing and license
 
-Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md` (the full block list), and `skills/fable/SKILL.md` (its copies of blocks F, G, H and J) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
+Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md` (the full block list), and `skills/fable/SKILL.md` (its copies of blocks F, G, H and J) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline). The case `obstacle-retries-busy-tool` needs a shell, so run it on its own with `--case obstacle-retries-busy-tool --allow-tools Edit Write Bash` (with the shell granted to every case, the new-files check of `scope-fix-one-bug` failed). When you bump the version, add a line to `hooks/whats-new.txt` and an entry to `CHANGELOG.md`, and raise the `u` number in the header of `hooks/rules-file-unattended.md` if the unattended paragraphs changed.
 
 MIT © Junhan2. The guide text itself is copyright Anthropic.

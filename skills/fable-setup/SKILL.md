@@ -4,7 +4,7 @@ description: 'Optional, recommended once. The plugin works with no setup (hook d
 ---
 # fable-setup · choose delivery and mode, see where effort comes from; audit conflicts
 
-Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, two paragraphs, for unattended mode;
+Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, three paragraphs, for unattended mode;
 and `effort-high.md`, block N, when the session starts at `xhigh` or `max`).
 Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable/references/prompt-blocks.md`.
 
@@ -34,10 +34,10 @@ steps for the user, so prefer asking over leaving something for them to do by ha
 2. **How do you mostly work?**
    - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
    - `Interactive` · always as if you watch and steer
-   - `Unattended` · always adds the two unattended paragraphs ("the user is not watching" and the early-stop list), even in the terminal
+   - `Unattended` · always adds the three unattended paragraphs ("the user is not watching", the early-stop list, and the ordinary-obstacle lines), even in the terminal
 
 Effort is not a question. Show this one line with the questions, in the user's language: "Effort is not written by
-this skill. Opus 5.5 and Sonnet 5.5 start at medium (their Claude Code default), Fable 5.1 and the other models at
+this skill. Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5 start at medium (their Claude Code default), Fable 5.1 and the other models at
 high. To save a level for the model you are on: /effort <level> then Enter (saved per model in modelSettings); s
 applies it to this session only."
 
@@ -73,7 +73,10 @@ added by the hook per session, so `auto` mode works with the default delivery. O
   say so in one line: the hook then carries everything for the main session, and the user can create the file by
   hand from the shown path. When the plugin ships a newer file, the hook says so at session start; `/fable-setup refresh` updates the copy.
 - `claude-md`: insert the section between `<!-- oh-my-fable:start v3 -->` and `<!-- oh-my-fable:end -->`, or replace
-  an existing one that starts with `<!-- oh-my-fable:start v` (any version), in the chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
+  an existing one that starts with `<!-- oh-my-fable:start v` (any version), in the chosen CLAUDE.md with the Edit tool; touch nothing else.
+  When the section also holds the unattended paragraphs, write the marker as `<!-- oh-my-fable:start v3 u2 -->`: take
+  the two numbers from the `oh-my-fable:static vN uM` marker at the top of `hooks/rules-file-unattended.md`. The hook
+  compares these numbers with its own and tells the user at session start when the section is older. Set `"delivery": "claude-md"`. If refused, do not retry
   with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.
 
 **Effort**: write nothing. If the user passed `medium` or `high`, print exactly this, translated: "Run /effort <level>

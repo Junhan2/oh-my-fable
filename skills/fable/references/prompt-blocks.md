@@ -1,6 +1,7 @@
-# Fixed prompt blocks from Anthropic's prompting guides (Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 read 2026-09-29)
+# Fixed prompt blocks from Anthropic's prompting guides (Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 read 2026-09-29; Fable 5.2 read 2026-11-10)
 
-Sources: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1 ·
+Sources: https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2 (blocks O, P and Q; a separate page, the 5.1 page stays as it was) ·
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5 ·
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5 ·
@@ -124,17 +125,89 @@ At those levels the model can start its own rounds of review and verification af
 with reviewer subagents, and make related fixes it noticed along the way; the guide says to run routine work at
 `high` or below, where this is rare. Its measurement: on coding tasks at `max` effort (Sonnet 5.5), this paragraph
 stopped the model from launching reviewer subagents and cut session cost by about a third, with no change in
-quality; self-started review rounds by the main agent became less frequent but did not disappear. The plugin's
+quality; self-started review rounds by the main agent became less frequent but did not disappear. The Fable 5.2
+guide ("Set expectations for subagents") reports the same habit on Fable 5.2: at `xhigh` and `max` in an agentic
+coding product it used subagents to review its own work, which Fable 5.1 did not do on the same tasks. The plugin's
 hook adds it when the effort resolved at session start is `xhigh` or `max` (`hooks/effort-high.md`).
 
 ```text
 When the work the user asked for is done and its checks pass, stop and report. Don't start extra rounds of review or hardening on your own, and don't launch reviewer sub-agents unless the user asked for a review. If you think a deeper review is worth doing, say so at the end.
 ```
 
-## Effort guidance (Fable 5.1 "Consider all effort levels"; Opus 5.5 and Sonnet 5.5 "Calibrate effort")
+## O · Ordinary obstacles and deliberate blockers (system prompt; subagents and unattended sessions)
 
-- Defaults: `high` on Fable 5.1, Opus 5 and Sonnet 5; `medium` on Opus 5.5 (its guide: start there). Sonnet 5.5 defaults to `high` on the API and `medium` in Claude Code; its guide says start at `medium` for well-specified agentic coding and multistep tool use and move to `high` for harder or longer tasks. Re-measure every level per model and task; effort names do not map to the same thinking across models.
+From the Fable 5.2 guide "Finish the whole task". On long, multistep tasks Fable 5.2 sometimes ends a turn before
+the work is done: a list of what remains, an offer to continue, or a stop at an ordinary obstacle such as a timeout,
+more often at `low` and `medium` effort (Claude Code runs Fable 5.2 at `medium` by default). The guide's text:
+
+```text
+# Finishing work
+Please avoid stopping while you still owe work the user asked for. Be persistent and do not stop unless needed.
+
+While status notes are welcome, as is clarifying with the user on open decisions, carry on with work that does not depend on the user's answer without unnecessary stops.
+
+If you notice yourself inviting the user to redirect you or offering to wait, instead proceed on the next part of the task. You may meet ordinary obstacles like errors, timeouts, locked files, empty results or failing tools. Diagnose them first, and when they are not real blockers, work through them with the access you have (wait and retry, fix the request, use another tool or source) rather than stopping unnecessarily.
+
+If someone clearly decided something is a hard blocker, such as a file marked not to be touched, access that was intentionally withheld, or a safety guardrail, leave it alone, say plainly what you found, and look for another safe way to finish the task. Stopping before the task is complete is very rarely merited, as in when the task can't move forward without user input, or where the blocker is deliberate and should not be worked past. This does not override the need for confirmation on risky or destructive actions.
+```
+
+The guide's measurement: recorded sessions from an agentic coding product replayed at `medium`; with a version of
+this text about half as many sessions ended with doable work left. It removed most endings that ask permission or
+offer to continue, but not endings that list what remains and then stop, and output tokens rose by about 30 percent.
+The model asks less often with it, so keep your own confirmation step for risky or irreversible actions. When you
+adapt the text, keep its distinction between the two kinds of obstacle.
+
+The plugin's hook injects only the sentences that carry that distinction, into subagents (`hooks/subagent.md`) and
+unattended sessions (`hooks/autonomy-unattended.md`); blocks A and M already say the rest. It is not added to the
+base rules: Claude Code 2.1.321 carries its own version of this text in a Fable 5.2 session (seen 2026-11-10 in an
+interactive session's system prompt; not checked for headless runs or other models).
+
+```text
+You may meet ordinary obstacles like errors, timeouts, locked files, empty results or failing tools. Diagnose them first, and when they are not real blockers, work through them with the access you have (wait and retry, fix the request, use another tool or source) rather than stopping unnecessarily. If someone clearly decided something is a hard blocker, such as a file marked not to be touched, access that was intentionally withheld, or a safety guardrail, leave it alone, say plainly what you found, and look for another safe way to finish the task.
+```
+
+## P · Final reports and handoffs (system prompt or request; long agentic work that someone reads afterwards)
+
+From the Fable 5.2 guide "Make reports easy to follow". The people who read a final report after long agentic work
+usually haven't seen the tool calls or files behind it. The guide says to adjust the text to your readers, and to
+remove hard style limits first ("one instruction per sentence, in 20 words or fewer" makes Fable 5.2's prose choppy).
+Its measurement: on agentic tasks the text made final reports less dense, with fewer semicolons; on workflow
+automation tasks it also made sentences shorter. Not injected by the hook; `/fable` attaches it by request kind.
+
+```text
+# Communicating clearly
+Write for an intelligent but low-context reader. The person reading has not seen your tool calls, your reasoning or the files you opened, and may be switching in from other work. Messages should generally be self-contained: the reader should understand what you mean without having to dig for other context. Put the key points in the first few sentences. Practice progressive disclosure in your sentence order, and do not use undefined references and ideas in line 1 that won't make sense until the reader reaches line 12.
+
+Use plain words, and write in clear, understandable full sentences. Do not use a term or abbreviation that you made up during the work. Say what the thing is in a way any reader would understand. Write mostly in the style of ASD-STE100 Simplified Technical English: short sentences, one idea per sentence, active voice, and consistently using the same word for the same thing. Use a paragraph of flowing prose where ideas connect, and keep bullets for lists of separate items. Leave out unnecessary details unless the reader asks and practice concision, but do ensure that your messages have the key context. Aim to make your user-facing text as human-readable and clear as possible.
+```
+
+## Q · Code ownership (request or system prompt; only where the user wants the structure improved)
+
+From the Fable 5.2 guide "Say who owns the code". When a prompt says nothing about ownership, or presents the code
+base as someone else's, Fable 5.2 tends to add to the existing structure, even repeating code, and to report nearby
+problems instead of fixing them. This sentence is the guide's fix:
+
+```text
+This codebase is yours: what it's for and how it's built are your call, and you'll keep building on it.
+```
+
+The guide's measurement (small coding tasks): the model merged repeated code in about half of the tries with the
+sentence and in under a tenth without it; the requested feature worked in nearly every try either way. With it the
+model used about 1.5 times the output tokens and made changes nobody asked for, many of them new tests and
+documentation; apart from bug fixes it changed how an existing feature behaves in one try in six to ten, more often
+at higher effort; its closing summary often left out small changes, so review the diff and not only the summary.
+
+Leave it out where the user owns the code and wants it changed as little as possible. It pulls against block D,
+which the hook injects, and a scope rule does not cancel it: with "No drive-by refactors, renames or cleanups"
+earlier in the same prompt the model still merged repeated code in about a third of the tries. Never inject it by
+default; `/fable` attaches it only when the request asks for the structure to be improved, and writes that cleanup
+into the scope field.
+
+## Effort guidance (Fable 5.1 "Consider all effort levels"; Fable 5.2, Opus 5.5 and Sonnet 5.5 "Calibrate effort")
+
+- Defaults: `high` on Fable 5.1, Opus 5 and Sonnet 5; `medium` on Opus 5.5 (its guide: start there). Fable 5.2 defaults to `high` on the API and `medium` in Claude Code. Sonnet 5.5 defaults to `high` on the API and `medium` in Claude Code; its guide says start at `medium` for well-specified agentic coding and multistep tool use and move to `high` for harder or longer tasks. Re-measure every level per model and task; effort names do not map to the same thinking across models.
 - Sonnet 5.5 at `low` and `medium` is more likely to stop and check in before a long agentic task is done; try a higher level first. At `low` it can also report a change as done without running a check. At `xhigh`/`max` it can start its own review rounds and reviewer subagents: block N. To get less thinking, lower the effort level; asking it in the prompt to think less does not reliably reduce its thinking (the Opus 5.5 guide says the same for Opus 5.5).
+- Fable 5.2 by kind of work (its guide): `low` for quick back-and-forth, well-specified tasks and subagents (its `low` scored close to Fable 5.1 at higher levels); `medium` for interactive coding, chat and everyday knowledge work; `high` for hard coding, research, agentic work and long unattended runs, where most of the gain is already present; `xhigh` only where a gain was measured; `max` for measuring the model's ceiling. It stops early more often at `low` and `medium` (blocks O and M). At `high` and above it thinks before almost every reply, a greeting included, and a prompt line asking it to think less does not stop that at `medium` and above: lower the level instead. Effort barely changes how long its replies are; set length in the prompt.
 - Opus 5.5 at `medium` matches or beats Opus 5 at `high` on coding and knowledge work, and `low` comes close on several coding evaluations. It thinks more per level than Opus 5, most at `xhigh`/`max`: reserve those for measured gains.
 - `xhigh`/`max` widen the gain on hard problems but can double long deliverables by drafting in reasoning first; add block G and size `max_tokens` for thinking plus reply.
 
@@ -143,6 +216,18 @@ When the work the user asked for is done and its checks pass, stop and report. D
 - Ask "Are there any bugs in this program?" rather than "Does this compile without errors?".
 - For lesser-known languages, include what the language is and where its docs are.
 - Keep base64 blobs out of tool output.
+- Don't ask the model to write its reasoning in the response; on Fable models such a request can be declined (`reasoning_extraction`). Read the summarized thinking instead (Fable 5.2 guide "Safeguard refusals").
+
+## Approval rules and carried caution (Fable 5.2 guide; rule wording, not request blocks)
+
+Fable 5.2 applies approval rules and cautious notes as written, so their wording decides how much routine work it holds back.
+
+- Name the exact actions an approval rule covers. A rule that required approval for "sending messages to people outside this conversation" made the model hold back about half of its routine requests to colleagues.
+- When you approve a step, say what is approved ("Yes, run the migration on the staging database") instead of a bare "continue".
+- Write the exception into the rule. Under a "never" rule the model took an approved step in about one try in ten; when the rule itself said to get a go-ahead first, in about nine in ten. A separate line saying approved steps have their go-ahead changed little.
+- Name the steps that need no approval (retries only for calls that are safe to repeat). A general instruction to act more freely changed nothing.
+- Remove notes and memories whose reason no longer holds, and check the conditions reviewer agents attach ("stop at the first error").
+- Keep your own confirmation step for risky or irreversible actions.
 
 ## J · Quoting retrieved sources (system prompt; research and summarisation tasks)
 
@@ -168,6 +253,6 @@ Summarize the transcript inside <summary></summary> tags. Include relevant infor
 ```
 
 ## Harness-level items (not request wording)
-- Keep conversation history append-only; per-turn reminders go in turn-scoped system messages (beta header `mid-conversation-system-clear-at-2026-08-21`).
+- Keep conversation history append-only; per-turn reminders go in turn-scoped system messages (beta header `mid-conversation-system-clear-at-2026-08-21`). On Fable 5.2 the API checks this for every account: a request that sends thinking blocks back after `system`, `tools` or an earlier message changed can return a 400, so change prompts in new conversations.
 - Let the lead agent keep working while subagents run: start tool returns immediately, results arrive as later user messages, separate wait tool.
 - Vision: give the model a crop-and-zoom tool for dense charts and PDFs.

@@ -4,6 +4,9 @@
 #   SubagentStart   · a short version of the rules for subagents spawned with the Agent tool (forks skipped)
 #   PostModelSwitch · block N when a mid-session model switch moves the session to xhigh or max effort
 #   --status      · print what is in effect (used by /fable-status); writes nothing
+# For the user (never Claude's context), on a new session: the status line (plugin option status_line, on by default),
+# one welcome line on the first session after install, one line saying what changed on the first session after an
+# update, and a notice when a copy of the rules (rules file or CLAUDE.md section) is older than this plugin's text.
 #
 # Config (optional). Global: $CLAUDE_CONFIG_DIR/oh-my-fable.json (default ~/.claude)  Project: $CLAUDE_PROJECT_DIR/.claude/oh-my-fable.json
 #   {"enabled": true, "mode": "auto" | "interactive" | "unattended", "delivery": "hook" | "rules-file" | "claude-md"}
@@ -16,7 +19,9 @@
 # Defaults: enabled, auto, hook.
 #
 # Where the base rules come from, in this order:
-#   1. a CLAUDE.md section between oh-my-fable:start / oh-my-fable:end (static, user-managed): hook stays silent
+#   1. a CLAUDE.md section between oh-my-fable:start / oh-my-fable:end (static, user-managed): hook adds no rules,
+#      and says so once per session when the section is older than this plugin's text (marker `start vN`, or
+#      `start vN uM` when the section also holds the unattended paragraphs)
 #   2. rules/oh-my-fable.md written by /fable-setup (marker oh-my-fable:rules vN): Claude Code auto-loads it for the
 #      main session, regular subagents and teams; the hook adds only the unattended paragraphs per session and
 #      warns once per session when the plugin ships a newer version of that file (or, when the file is newer than
@@ -101,12 +106,13 @@ fi
 # a compaction the model can be omitted too (hooks doc); the session keeps the model it ran, normally the one /model
 # saved to the user settings' `model` field (model-config doc), so there it is read from that field.
 # Per model: the default effort and whether a user-scope top-level effortLevel is ignored ("Opus 5.5 and models
-# released after it", model-config doc). When a model ships, extend this table, and the alias map in
+# released after it", model-config doc). Fable 5.2 shipped after Opus 5.5: `medium` in Claude Code (its API default is
+# `high`) and the top-level key ignored. When a model ships, extend this table, and the alias map in
 # model_from_settings when an alias moves to it.
 model_traits() {   # sets DEFAULT_EFFORT and IGNORES_TOP for model $1
   IGNORES_TOP=false
   case "$1" in
-    claude-opus-5-5*|claude-sonnet-5-5*|claude-haiku-5-5*) DEFAULT_EFFORT=medium; IGNORES_TOP=true;;
+    claude-opus-5-5*|claude-sonnet-5-5*|claude-haiku-5-5*|claude-fable-5-2*) DEFAULT_EFFORT=medium; IGNORES_TOP=true;;
     claude-opus-4-7*) DEFAULT_EFFORT=xhigh;;
     *) DEFAULT_EFFORT=high;;
   esac
@@ -115,6 +121,8 @@ canon() { printf '%s' "$1" | sed 's/\[1m\]$//; s/-[0-9]\{8\}$//'; }   # canonica
 # The settings' model in Claude Code's order (ANTHROPIC_MODEL, settings, ANTHROPIC_DEFAULT_MODEL). An alias maps to
 # what it means on the Anthropic API today (model-config alias table); with a third-party provider aliases mean older
 # models, so only the ANTHROPIC_DEFAULT_<FAMILY>_MODEL overrides count. best, opusplan and default stay unknown.
+# `fable` means Fable 5.2, except in Claude apps gateway sessions, where it means Fable 5 (model-config doc); the hook
+# has no signal for such a session, so after /clear or a compaction there it reads Fable 5.2's default.
 model_from_settings() {
   local m over def
   m="${ANTHROPIC_MODEL:-}"
@@ -125,7 +133,7 @@ model_from_settings() {
     opus)   over="${ANTHROPIC_DEFAULT_OPUS_MODEL:-}";   def=claude-opus-5-5;;
     sonnet) over="${ANTHROPIC_DEFAULT_SONNET_MODEL:-}"; def=claude-sonnet-5-5;;
     haiku)  over="${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}";  def=claude-haiku-5-5;;
-    fable)  over="${ANTHROPIC_DEFAULT_FABLE_MODEL:-}";  def=claude-fable-5-1;;
+    fable)  over="${ANTHROPIC_DEFAULT_FABLE_MODEL:-}";  def=claude-fable-5-2;;
     claude-*) printf '%s' "$m"; return 0;;
     *) return 0;;
   esac
@@ -187,6 +195,21 @@ if [ "$STATE" = rules-file ] && [ -n "$PLUGIN_V" ]; then
   elif [ "$RULES_V" -gt "$PLUGIN_V" ]; then
     NOTICE="oh-my-fable: your rules file is v$RULES_V, newer than the v$PLUGIN_V this plugin ships, so this session runs an older plugin. Start a new session (update the plugin first if it is not updated yet). Don't run /fable-setup refresh: it would downgrade the file."
   fi
+fi
+# A CLAUDE.md section is a snapshot too. Its marker carries the base rules version (vN) and, when the section also holds
+# the unattended paragraphs, their version (uM); the plugin's own numbers are in rules-file.md and in the header of
+# rules-file-unattended.md. A section whose marker carries no number is left alone.
+if [ "$STATE" = claude-md ] && [ -n "$BASE" ] && [ -n "$PLUGIN_V" ]; then
+  SEC="$(grep -o 'oh-my-fable:start v[0-9]*\( u[0-9]*\)\{0,1\}' "$BASE" | head -1)"
+  SEC_V="$(printf '%s' "$SEC" | sed -n 's/.*start v\([0-9]*\).*/\1/p')"
+  SEC_U="$(printf '%s' "$SEC" | sed -n 's/.* u\([0-9]*\)$/\1/p')"
+  PLUGIN_U="$(grep -o 'oh-my-fable:static v[0-9]* u[0-9]*' "$HERE/rules-file-unattended.md" | head -1 | sed 's/.* u//')"
+  STALE=false
+  [ -n "$SEC_V" ] && [ "$SEC_V" -lt "$PLUGIN_V" ] && STALE=true
+  if [ -n "$SEC_V" ] && [ -n "$PLUGIN_U" ] && grep -q 'You are operating autonomously' "$BASE"; then
+    [ "${SEC_U:-0}" -lt "$PLUGIN_U" ] && STALE=true
+  fi
+  [ "$STALE" = true ] && NOTICE="oh-my-fable: the rules section in $BASE is older than the text this plugin ships. Run /fable-setup claude-md to replace it."
 fi
 
 if [ "$STATUS" = true ]; then
@@ -260,9 +283,28 @@ if [ -z "$EVENT" ]; then
   exit 0
 fi
 
-# run by Claude Code: rules go to Claude's context, the status line goes to the user (new sessions only)
+# run by Claude Code: rules go to Claude's context, the lines below go to the user (new sessions only)
+# The status line can be turned off in the plugin's options (status_line in plugin.json userConfig; the plugins
+# reference says hook processes get each option as CLAUDE_PLUGIN_OPTION_<KEY>).
+SHOW_STATUS=true; case "${CLAUDE_PLUGIN_OPTION_STATUS_LINE:-true}" in false|0|no|off) SHOW_STATUS=false;; esac
+# One line, once: a welcome on the first session after install, what changed on the first session after an update.
+# The last version seen is kept in the plugin's data folder (CLAUDE_PLUGIN_DATA, kept across updates). Without that
+# folder, or when it cannot be written, nothing is shown, so the line cannot repeat every session. The folder's name
+# carries the plugin's id; a path without it was inherited from another plugin's process and is not ours to write to.
+ONCE=""; case "${CLAUDE_PLUGIN_DATA:-}" in *oh-my-fable*) OURS=true;; *) OURS=false;; esac
+if [ "$SOURCE" = startup ] && [ "$OURS" = true ] && [ -n "$VERSION" ]; then
+  SEEN="$(head -1 "$CLAUDE_PLUGIN_DATA/last-version" 2>/dev/null | tr -cd '0-9.')"
+  if [ "$SEEN" != "$VERSION" ]; then
+    NEWS="$(grep "^$VERSION: " "$HERE/whats-new.txt" 2>/dev/null | head -1 | sed 's/^[0-9.]*: //')"
+    if [ -z "$SEEN" ]; then ONCE="oh-my-fable is on: the working rules load by themselves. Put /fable before a vague request to sharpen it; /fable-status shows what is in effect."
+    else ONCE="oh-my-fable updated from $SEEN to $VERSION."; fi
+    [ -n "$NEWS" ] && ONCE="$ONCE New in $VERSION: $NEWS"
+    { mkdir -p "$CLAUDE_PLUGIN_DATA" && printf '%s\n' "$VERSION" > "$CLAUDE_PLUGIN_DATA/last-version"; } 2>/dev/null || ONCE=""
+  fi
+fi
 MSG=""
-[ "$SOURCE" = startup ] && MSG="$STATUS_LINE"
+[ "$SOURCE" = startup ] && [ "$SHOW_STATUS" = true ] && MSG="$STATUS_LINE"
+[ -n "$ONCE" ] && MSG="${MSG:+$MSG. }$ONCE"
 [ -n "$NOTICE" ] && MSG="${MSG:+$MSG. }$NOTICE"
 [ -z "$CTX" ] && [ -z "$MSG" ] && exit 0
 OUT="{"
