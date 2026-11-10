@@ -4,7 +4,7 @@ description: 'Optional, recommended once. The plugin works with no setup (hook d
 ---
 # fable-setup · choose delivery and mode, see where effort comes from; audit conflicts
 
-Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, two paragraphs, for unattended mode;
+Blocks: `${CLAUDE_PLUGIN_ROOT}/hooks/always-on.md` (+ `autonomy-unattended.md`, three paragraphs, for unattended mode;
 and `effort-high.md`, block N, when the session starts at `xhigh` or `max`).
 Guide reference: `${CLAUDE_PLUGIN_ROOT}/skills/fable/references/prompt-blocks.md`.
 
@@ -34,10 +34,10 @@ steps for the user, so prefer asking over leaving something for them to do by ha
 2. **How do you mostly work?**
    - `Auto (recommended)` · detects per session: unattended for headless/SDK/agent runs, interactive in the terminal or IDE
    - `Interactive` · always as if you watch and steer
-   - `Unattended` · always adds the two unattended paragraphs ("the user is not watching" and the early-stop list), even in the terminal
+   - `Unattended` · always adds the three unattended paragraphs ("the user is not watching", the early-stop list, and the ordinary-obstacle lines), even in the terminal
 
 Effort is not a question. Show this one line with the questions, in the user's language: "Effort is not written by
-this skill. Opus 5.5 and Sonnet 5.5 start at medium (their Claude Code default), Fable 5.1 and the other models at
+this skill. Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5 start at medium (their Claude Code default), Fable 5.1 and the other models at
 high. To save a level for the model you are on: /effort <level> then Enter (saved per model in modelSettings); s
 applies it to this session only."
 
