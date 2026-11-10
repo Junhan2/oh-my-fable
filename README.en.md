@@ -31,9 +31,9 @@ Scope: this button and its handler only. Do not touch the signup form or other e
 Done: reproduce the click and confirm navigation to /dashboard, 0 console errors, list of changed files attached
 ```
 
-A real session: one rough line is shown first as a four-field request card, then the fix runs and the report says what was fixed and what was left (1.5x speed, 28 seconds; the request is typed in Korean).
+A real session, sped up in places (28 seconds). After the problem is described in plain words, the two words `/fable fix it` become a request card with goal, context, scope and done filled in from the conversation, and the work follows it.
 
-![A terminal where one /fable line turns into a four-field request card and is carried out](assets/fable-card.gif)
+![A terminal where a problem is described, then /fable fix it turns into a four-field request card and is carried out](assets/fable-demo.gif)
 
 **Install it, and the rest is automatic.**
 
