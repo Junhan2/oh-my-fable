@@ -25,4 +25,4 @@
 
 ---
 
-다른 문서: [작동 원리](how-it-works.md) · [설정과 환경](setup.md) · [FAQ](faq.md) · [구성과 기여](contributing.md)
+다른 문서: [작동 원리](how-it-works.md) · [설정과 환경](setup.md) · [FAQ](faq.md) · [구성과 기여](layout.md)

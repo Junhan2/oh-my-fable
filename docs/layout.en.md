@@ -1,6 +1,6 @@
 # Layout and contributing
 
-[← oh-my-fable](../README.en.md) · [한국어](contributing.md) · English · [中文](contributing.zh.md)
+[← oh-my-fable](../README.en.md) · [한국어](layout.md) · English · [中文](layout.zh.md)
 
 ## Layout
 

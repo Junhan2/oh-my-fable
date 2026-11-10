@@ -97,7 +97,7 @@ One hook and four skills apply the fixes from Anthropic's official [Prompting Cl
 | [Setup and environments](docs/setup.en.md) | what to do per environment, version requirements, changing where the rules live |
 | [Symptom to fix](docs/symptoms.en.md) | symptoms such as stopping to ask or rewriting whole files, and the block for each |
 | [FAQ](docs/faq.en.md) | install and remove, checking that it is on, the request card, other environments |
-| [Layout and contributing](docs/contributing.en.md) | folder layout, files to change when a guide is updated |
+| [Layout and contributing](docs/layout.en.md) | folder layout, files to change when a guide is updated |
 | [CHANGELOG](CHANGELOG.md) | changes per version |
 
 ## Install steps Claude follows

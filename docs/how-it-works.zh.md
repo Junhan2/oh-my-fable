@@ -110,4 +110,4 @@ Fable 5.2 指南是 5.1 指南之外的一份单独文档：无人值守会话�
 
 ---
 
-其他文档: [设置与环境](setup.zh.md) · [症状对处方](symptoms.zh.md) · [常见问题](faq.zh.md) · [结构与贡献](contributing.zh.md)
+其他文档: [设置与环境](setup.zh.md) · [症状对处方](symptoms.zh.md) · [常见问题](faq.zh.md) · [结构与贡献](layout.zh.md)

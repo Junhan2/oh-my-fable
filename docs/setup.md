@@ -42,4 +42,4 @@
 
 ---
 
-다른 문서: [작동 원리](how-it-works.md) · [증상별 처방](symptoms.md) · [FAQ](faq.md) · [구성과 기여](contributing.md)
+다른 문서: [작동 원리](how-it-works.md) · [증상별 처방](symptoms.md) · [FAQ](faq.md) · [구성과 기여](layout.md)

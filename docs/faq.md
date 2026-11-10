@@ -86,4 +86,4 @@ Haiku 5.5에서는 `/fable`이 블록 H 대신 그 가이드의 검색 문구를
 
 ---
 
-다른 문서: [작동 원리](how-it-works.md) · [설정과 환경](setup.md) · [증상별 처방](symptoms.md) · [구성과 기여](contributing.md)
+다른 문서: [작동 원리](how-it-works.md) · [설정과 환경](setup.md) · [증상별 처방](symptoms.md) · [구성과 기여](layout.md)

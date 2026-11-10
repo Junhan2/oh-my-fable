@@ -1,6 +1,6 @@
 # 구성과 기여
 
-[← oh-my-fable](../README.md) · 한국어 · [English](contributing.en.md) · [中文](contributing.zh.md)
+[← oh-my-fable](../README.md) · 한국어 · [English](layout.en.md) · [中文](layout.zh.md)
 
 ## 구성
 

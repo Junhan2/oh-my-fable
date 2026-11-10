@@ -88,4 +88,4 @@ Fable 5.2 同样从 `medium` 开始并忽略同一个全局值；来自其指南
 
 ---
 
-其他文档: [工作原理](how-it-works.zh.md) · [设置与环境](setup.zh.md) · [症状对处方](symptoms.zh.md) · [结构与贡献](contributing.zh.md)
+其他文档: [工作原理](how-it-works.zh.md) · [设置与环境](setup.zh.md) · [症状对处方](symptoms.zh.md) · [结构与贡献](layout.zh.md)

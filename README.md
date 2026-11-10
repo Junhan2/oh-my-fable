@@ -97,7 +97,7 @@ Anthropic 공식 문서 [Prompting Claude Fable 5.2](https://platform.claude.com
 | [설정과 환경](docs/setup.md) | 환경별 안내, 버전 요구 사항, 규칙 위치 바꾸기 |
 | [증상별 처방](docs/symptoms.md) | "할까요?" 하고 멈춤, 파일 통째 재작성 같은 증상과 그에 맞는 블록 |
 | [FAQ](docs/faq.md) | 설치와 제거, 켜져 있는지 확인, 요청 카드, 다른 실행 환경 |
-| [구성과 기여](docs/contributing.md) | 폴더 구조, 가이드가 갱신될 때 고칠 파일 |
+| [구성과 기여](docs/layout.md) | 폴더 구조, 가이드가 갱신될 때 고칠 파일 |
 | [CHANGELOG](CHANGELOG.md) | 버전별 변경 내용 |
 
 ## Claude가 따르는 설치 절차

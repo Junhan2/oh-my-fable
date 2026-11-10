@@ -1,6 +1,6 @@
 # 结构与贡献
 
-[← oh-my-fable](../README.zh.md) · [한국어](contributing.md) · [English](contributing.en.md) · 中文
+[← oh-my-fable](../README.zh.md) · [한국어](layout.md) · [English](layout.en.md) · 中文
 
 ## 结构
 

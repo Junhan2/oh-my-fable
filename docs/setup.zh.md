@@ -42,4 +42,4 @@
 
 ---
 
-其他文档: [工作原理](how-it-works.zh.md) · [症状对处方](symptoms.zh.md) · [常见问题](faq.zh.md) · [结构与贡献](contributing.zh.md)
+其他文档: [工作原理](how-it-works.zh.md) · [症状对处方](symptoms.zh.md) · [常见问题](faq.zh.md) · [结构与贡献](layout.zh.md)
