@@ -23,6 +23,12 @@
       "title": "Improved request card",
       "description": "Draw the improved request that /fable prints as a card in the transcript (terminal Claude Code 2.1.287 or later, and the desktop app). Turn off to keep the plain code block.",
       "default": true
+    },
+    "status_line": {
+      "type": "boolean",
+      "title": "Status line at session start",
+      "description": "Show the one-line oh-my-fable status when a new session starts. Turn off to see only the welcome line, the line after an update, and notices that need your attention.",
+      "default": true
     }
   }
 }

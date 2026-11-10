@@ -35,7 +35,7 @@ Done: reproduce the click and confirm navigation to /dashboard, 0 console errors
 
 - **Detects how you work, per session** · interactive in the terminal or IDE; unattended under `claude -p`, the Agent SDK, or an agent harness, where it adds the "the user is not watching" paragraph and the "don't stop on a progress report" paragraph. Mixing both needs no switching.
 - **Covers subagents** · subagents started with the Agent tool (including Explore and Plan, which never read rules files) get a short version of the rules.
-- **Creates no files** · CLAUDE.md and rules files stay untouched; the hook injects the rules per session. Updating is just updating the plugin, uninstalling leaves nothing behind.
+- **Creates no files** · CLAUDE.md and rules files stay untouched; the hook injects the rules per session. Updating is just updating the plugin, and with the default delivery uninstalling leaves nothing behind (if you moved the rules into a file, `/fable-setup remove` deletes that file too).
 - **No questions** · setup is optional. The only thing you confirm is the plugin install. Recommended once: `/fable-setup rules-file`, which keeps the base rules in a rules file (Claude Code's hooks doc prefers files over hook text for rules that never change).
 
 One hook and four skills apply the fixes from Anthropic's official [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), and [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5), the guide the Opus 5.5 guide names as its own starting point. The wording stays almost word-for-word from the source.
@@ -79,6 +79,10 @@ install https://github.com/Junhan2/oh-my-fable
 ```
 
 Claude installs it and that is all. No questions, no config file. The rules apply automatically the next time you open Claude Code. To use them in this session right now, type `/reload-plugins` (loads the plugin you just installed) and then `/clear` (injects the rules), one per line.
+
+**Requirements** · Claude Code 2.1.258 or newer. Windows needs Git for Windows (Git Bash).
+
+**Updating** · `claude plugin update oh-my-fable@oh-my-fable`, then a new session. Third-party marketplaces have auto-update off by default; to get new versions by themselves: `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. What changed is in [CHANGELOG.md](CHANGELOG.md), and the first session after an update says it in one line.
 
 <details>
 <summary>Manual install</summary>
@@ -135,7 +139,7 @@ It shows a request with goal, context, scope, and done criteria filled in, then 
 | Interactive/unattended auto-detect | yes | yes | no (static) |
 | Reaches subagents | yes (regular subagents via the file, Explore and Plan via the hook's short version) | yes (the SubagentStart hook sends the short version to every subagent) | yes (Explore and Plan via the hook) |
 | Reaches agent teams | yes (per the docs, teammates load rules files) | in-process teammates yes (per the hooks doc, SubagentStart runs for each of their messages); split-pane teammates unverified | yes |
-| After a plugin update | a stale rules file is flagged at session start; `/fable-setup refresh` updates it | always current | paste the section again |
+| After a plugin update | a stale rules file is flagged at session start; `/fable-setup refresh` updates it | always current | a stale section is flagged at session start; `/fable-setup claude-md` replaces it |
 | Removal | delete the file + uninstall | uninstall or `{"enabled": false}` | delete the section |
 
 **Why the rules file is recommended.** Claude Code's [hooks doc](https://code.claude.com/docs/en/hooks) says "for instructions that never change, prefer CLAUDE.md" (rules files load the same way), and warns that hook text framed as out-of-band system commands can trigger Claude's prompt-injection defenses. The hook-only default stays because a plugin cannot write files on install; the hook's text opens with a factual lead-in ("The user installed oh-my-fable; these are the user's standing working rules.") for that reason. The trade-off of a rules file is that it is a copy: a stale one is flagged at session start and `/fable-setup refresh` updates it.
@@ -259,6 +263,9 @@ The two commands do different things per the official docs. `/reload-plugins` "r
 **What is the request card, and how do I turn it off?**
 It draws the improved request that `/fable` shows as a card in the transcript. It is a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview) (plugin code that runs inside Claude Code), and redrawing that one block is all it does (`claude plugin validate` lists a single call, `$.ui.resolve`). What Claude reads and what the transcript stores stay the same; while the reply streams you see the code block, and it turns into the card when that block of the reply is complete. In the terminal it draws on Claude Code 2.1.287 or newer and was checked on 2.1.292. The desktop app draws it too (checked on an app that embeds Claude Code 2.1.289); the VS Code extension panel, `claude -p`, and versions before 2.1.287 keep showing the code block. Claude Code 2.1.290 fixed a stall when a mod draws multi-line text in a non-Latin script, and 2.1.295 fixed the last known card issue, so 2.1.295 or newer is recommended. To turn it off, switch off `Improved request card` in `/config` (it applies at once, no restart needed), or go to `/plugin` → oh-my-fable → Configure options. To install with it off: `claude plugin install oh-my-fable@oh-my-fable --config card=false`.
 
+**How do I turn off the line shown at every session start?**
+Turn off `Status line at session start` for oh-my-fable in `/config`. The welcome line on the first session after install, the one line after an update, and notices that need action still show.
+
 **How do I remove it?**
 `/fable-setup remove` deletes the config, the rules file, and the CLAUDE.md section. Then `claude plugin uninstall oh-my-fable@oh-my-fable`. To pause instead, write `{"enabled": false}` to `~/.claude/oh-my-fable.json`.
 
@@ -296,6 +303,7 @@ oh-my-fable/
 │   ├── rules-file-unattended.md static rules (with the three unattended paragraphs) for headless-only environments without the plugin
 │   ├── subagent.md            short version injected into subagents
 │   ├── effort-high.md         block N, added only when the session starts at xhigh or max effort
+│   ├── whats-new.txt          one line per version, shown on the first session after an update
 │   └── autonomy-unattended.md the three paragraphs added only in unattended mode
 ├── skills/
 │   ├── fable-setup/SKILL.md   audit, mode switch, settings checklist (layers 2 and 3)
@@ -308,13 +316,13 @@ oh-my-fable/
 │       └── references/        block texts (A to N) and before/after examples
 ├── tests/card.test.ts         request card tests (`claude plugin test .`)
 ├── tests/context-size.sh      keeps the injected text under the hook's 10,000-character cap (`bash tests/context-size.sh`)
-├── evals/                     `claude plugin eval` suite: 6 cases, deterministic graders
+├── evals/                     `claude plugin eval` suite: 8 cases, deterministic graders
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## Contributing and license
 
-Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md` (the full block list), and `skills/fable/SKILL.md` (its copies of blocks F, G, H and J) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline).
+Issues and PRs are welcome. When the guide changes, update `hooks/always-on.md` (the injected text), `hooks/autonomy-unattended.md` (the unattended paragraphs), `hooks/rules-file.md` (bump the marker version), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md` (the full block list), and `skills/fable/SKILL.md` (its copies of blocks F, G, H and J) together, then run `bash tests/context-size.sh`. To measure what the plugin contributes, run `claude plugin eval . --scaffold --allow-tools Edit Write` (each case also runs without the plugin as a baseline). The case `obstacle-retries-busy-tool` needs a shell, so run it on its own with `--case obstacle-retries-busy-tool --allow-tools Edit Write Bash` (with the shell granted to every case, the new-files check of `scope-fix-one-bug` failed). When you bump the version, add a line to `hooks/whats-new.txt` and an entry to `CHANGELOG.md`, and raise the `u` number in the header of `hooks/rules-file-unattended.md` if the unattended paragraphs changed.
 
 MIT © Junhan2. The guide text itself is copyright Anthropic.

@@ -35,7 +35,7 @@
 
 - **每个会话自动判断使用方式** · 终端、IDE 为交互式；`claude -p`、Agent SDK、代理框架为无人值守，只在那时加入"用户不在旁边"段落和"不要只汇报进度就停下"段落。混用也无需切换。
 - **子代理也覆盖** · 用 Agent 工具启动的子代理（包括从不读规则文件的 Explore、Plan）会收到精简版规则。
-- **不创建文件** · 不碰 CLAUDE.md 和规则文件，由钩子每次会话注入。更新只需更新插件，卸载不留痕迹。
+- **不创建文件** · 不碰 CLAUDE.md 和规则文件，由钩子每次会话注入。更新只需更新插件；默认方式下卸载不留痕迹（如果把规则移到了文件里，`/fable-setup remove` 会把那个文件一并删除）。
 - **不提问** · 设置是可选的。你唯一要确认的是插件安装。建议运行一次 `/fable-setup rules-file`，把基础规则放进规则文件（Claude Code 的钩子文档也建议：不会变的规则放在文件里，而不是钩子文本里）。
 
 把 Anthropic 官方文档 [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2)、[Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1)、[Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5)，以及 Opus 5.5 指南指定为起点的 [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5) 的处方，装进一个钩子和四个技能。提示词模块原文基本照用。
@@ -79,6 +79,10 @@ Fable 5.1 独立完成长任务的能力大幅提升，习惯也随之改变：�
 ```
 
 Claude 装好就结束了。没有提问，也没有配置文件。下次打开 Claude Code 时自动生效。想在当前会话立即使用，先输入 `/reload-plugins`（加载刚安装的插件），再输入 `/clear`（注入规则），每行一个。
+
+**环境要求** · Claude Code 2.1.258 及以上。Windows 需要 Git for Windows（Git Bash）。
+
+**更新** · `claude plugin update oh-my-fable@oh-my-fable`，然后开新会话。第三方市场默认关闭自动更新，想自动获取新版本：`/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update。改动内容见 [CHANGELOG.md](CHANGELOG.md)，更新后的第一个会话也会用一行告诉你。
 
 <details>
 <summary>手动安装</summary>
@@ -135,7 +139,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 交互式/无人值守自动检测 | 是 | 是 | 否（固定） |
 | 对子代理生效 | 是（普通子代理读文件，Explore、Plan 收钩子的精简版） | 是（SubagentStart 钩子向所有子代理发送精简版） | 是（Explore、Plan 收钩子的精简版） |
 | 对代理团队生效 | 是（按文档，团队成员会加载规则文件） | 同一窗口内的成员（in-process）是（按钩子文档，成员每处理一条消息都会运行 SubagentStart）；分窗格的成员未验证 | 是 |
-| 插件更新后 | 规则文件过旧时会话开始会提示，`/fable-setup refresh` 更新 | 始终最新 | 重新粘贴段落 |
+| 插件更新后 | 规则文件过旧时会话开始会提示，`/fable-setup refresh` 更新 | 始终最新 | 段落过旧时会话开始会提示，`/fable-setup claude-md` 替换 |
 | 移除 | 删除文件 + 卸载 | 卸载或 `{"enabled": false}` | 删除段落 |
 
 **为什么推荐规则文件。** Claude Code 的[钩子文档](https://code.claude.com/docs/en/hooks)写道"不会变的指令请放在 CLAUDE.md（for instructions that never change, prefer CLAUDE.md）"（规则文件以同样方式加载），并提醒写成系统命令口吻的钩子文本可能触发 Claude 的提示注入防御。默认仍是钩子，是因为插件在安装时无法写文件；也正因如此，钩子文本以一句陈述事实的引导语开头（"The user installed oh-my-fable; these are the user's standing working rules."）。规则文件的代价是它是一份副本：过旧时会话开始会提示，`/fable-setup refresh` 可更新。
@@ -259,6 +263,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **请求卡片是什么？怎么关闭？**
 它把 `/fable` 展示的改写后请求在对话中画成卡片。它是 Claude Code 的 [mod](https://code.claude.com/docs/en/plugins/mods/overview)（在 Claude Code 内部运行的插件代码），只做一件事：重新绘制那一个代码块（`claude plugin validate` 列出的调用只有 `$.ui.resolve`）。Claude 读到的内容和保存的对话都不变；回复输出过程中显示的是代码块，这一段回复结束后才变成卡片。在终端中，Claude Code 2.1.287 或更新版本会绘制，已在 2.1.292 上确认。桌面应用中也会绘制（已在内置 Claude Code 2.1.289 的应用上确认）；VS Code 扩展面板、`claude -p` 和 2.1.287 之前的版本仍显示代码块。Claude Code 2.1.290 修复了 mod 绘制非拉丁文字的多行文本时界面卡顿的问题，2.1.295 修复了最后一个已知的卡片问题，因此建议使用 2.1.295 或更新版本。关闭方法：在 `/config` 里关掉 `Improved request card`（无需重启，立即生效），或 `/plugin` → oh-my-fable → Configure options。安装时就关闭：`claude plugin install oh-my-fable@oh-my-fable --config card=false`。
 
+**怎么关闭每次开会话时显示的那一行？**
+在 `/config` 里关闭 oh-my-fable 的 `Status line at session start`。关闭后，安装后第一个会话的欢迎语、更新后的一行说明，以及需要你处理的提示仍会显示。
+
 **如何移除？**
 `/fable-setup remove` 会删除配置文件、规则文件和 CLAUDE.md 段落。然后 `claude plugin uninstall oh-my-fable@oh-my-fable`。只想暂停，在 `~/.claude/oh-my-fable.json` 写入 `{"enabled": false}`。
 
@@ -295,6 +302,7 @@ oh-my-fable/
 │   ├── rules-file.md          /fable-setup 复制到 ~/.claude/rules/oh-my-fable.md 的基础规则
 │   ├── rules-file-unattended.md 无插件的纯无头环境用静态规则（含三个无人值守段落）
 │   ├── effort-high.md         模块 N，仅在会话以 xhigh 或 max effort 开始时追加
+│   ├── whats-new.txt          每个版本一行，更新后的第一个会话显示
 │   ├── subagent.md            注入子代理的精简版
 │   └── autonomy-unattended.md 仅无人值守模式追加的三个段落
 ├── skills/
@@ -308,13 +316,13 @@ oh-my-fable/
 │       └── references/        模块原文（A 到 N）与前后示例
 ├── tests/card.test.ts         请求卡片测试（`claude plugin test .`）
 ├── tests/context-size.sh      检查钩子注入的文字不超过 1 万字符上限（`bash tests/context-size.sh`）
-├── evals/                     `claude plugin eval` 评测集：6 个用例，按规则判分，不用模型评判
+├── evals/                     `claude plugin eval` 评测集：8 个用例，按规则判分，不用模型评判
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## 贡献与许可
 
-欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表）、`skills/fable/SKILL.md`（模块 F、G、H、J 的副本），然后运行 `bash tests/context-size.sh`。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。
+欢迎 Issue 和 PR。指南更新时请同时修改 `hooks/always-on.md`（注入原文）、`hooks/autonomy-unattended.md`（无人值守段落）、`hooks/rules-file.md`（把标记版本号加一）、`hooks/rules-file-unattended.md`、`hooks/effort-high.md`、`skills/fable/references/prompt-blocks.md`（完整模块列表）、`skills/fable/SKILL.md`（模块 F、G、H、J 的副本），然后运行 `bash tests/context-size.sh`。想衡量插件实际带来了什么，运行 `claude plugin eval . --scaffold --allow-tools Edit Write`（每个用例也会在不加载插件的情况下运行作为对照）。用例 `obstacle-retries-busy-tool` 需要 shell，请用 `--case obstacle-retries-busy-tool --allow-tools Edit Write Bash` 单独运行（把 shell 授权给所有用例时，`scope-fix-one-bug` 的新文件检查失败了）。升级版本时，在 `hooks/whats-new.txt` 加一行、在 `CHANGELOG.md` 加一条；如果改了无人值守段落，还要把 `hooks/rules-file-unattended.md` 头部的 `u` 数字加一。
 
 MIT © Junhan2。指南原文版权归 Anthropic 所有。

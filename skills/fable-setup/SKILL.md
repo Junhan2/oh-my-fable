@@ -73,7 +73,10 @@ added by the hook per session, so `auto` mode works with the default delivery. O
   say so in one line: the hook then carries everything for the main session, and the user can create the file by
   hand from the shown path. When the plugin ships a newer file, the hook says so at session start; `/fable-setup refresh` updates the copy.
 - `claude-md`: insert the section between `<!-- oh-my-fable:start v3 -->` and `<!-- oh-my-fable:end -->`, or replace
-  an existing one that starts with `<!-- oh-my-fable:start v` (any version), in the chosen CLAUDE.md with the Edit tool; touch nothing else. Set `"delivery": "claude-md"`. If refused, do not retry
+  an existing one that starts with `<!-- oh-my-fable:start v` (any version), in the chosen CLAUDE.md with the Edit tool; touch nothing else.
+  When the section also holds the unattended paragraphs, write the marker as `<!-- oh-my-fable:start v3 u2 -->`: take
+  the two numbers from the `oh-my-fable:static vN uM` marker at the top of `hooks/rules-file-unattended.md`. The hook
+  compares these numbers with its own and tells the user at session start when the section is older. Set `"delivery": "claude-md"`. If refused, do not retry
   with another tool: say it needs a session outside auto mode, keep `hook`, and show the section for manual paste.
 
 **Effort**: write nothing. If the user passed `medium` or `high`, print exactly this, translated: "Run /effort <level>

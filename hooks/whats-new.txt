@@ -1,0 +1,1 @@
+2.8.0: Fable 5.2 support. Unattended sessions and subagents now work through ordinary obstacles and leave deliberate blockers alone; /fable can add a block for final reports or for code ownership; /fable-audit checks approval rules and cautions that have built up. Full list: CHANGELOG.md in the repository.

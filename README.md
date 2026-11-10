@@ -35,7 +35,7 @@ Opus 5.5(지금 Claude Code의 기본 모델)와 Fable 5.2·Fable 5.1 기준이�
 
 - **사용 형태를 세션마다 알아서 판정** · 터미널·IDE면 대화형, `claude -p`·Agent SDK·에이전트 하네스면 무인으로 감지해 "사용자가 지켜보고 있지 않다" 문단과 "중간 보고로 멈추지 말라" 문단을 그때만 넣습니다. 섞어 써도 바꿀 것이 없습니다.
 - **서브에이전트까지 자동** · Agent 도구로 띄운 서브에이전트(규칙 파일을 안 읽는 Explore·Plan 포함)에 짧은 판을 따로 넣습니다.
-- **파일을 만들지 않습니다** · CLAUDE.md도 규칙 파일도 건드리지 않고, 훅이 세션마다 넣습니다. 그래서 갱신은 플러그인만 올리면 되고 제거하면 흔적이 없습니다.
+- **파일을 만들지 않습니다** · CLAUDE.md도 규칙 파일도 건드리지 않고, 훅이 세션마다 넣습니다. 그래서 갱신은 플러그인만 올리면 되고, 기본 방식에서는 제거하면 흔적이 없습니다(규칙을 파일로 옮겼다면 `/fable-setup remove`가 그 파일도 지웁니다).
 - **질문 없음** · 설정은 선택 사항입니다. 확인할 것은 설치 승인 하나뿐입니다. 한 번은 `/fable-setup rules-file`을 권합니다. 기본 규칙을 규칙 파일로 두는 방식이고, Claude Code 훅 문서도 바뀌지 않는 규칙은 훅 텍스트보다 파일에 두라고 합니다.
 
 Anthropic 공식 문서 [Prompting Claude Fable 5.2](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2), [Prompting Claude Fable 5.1](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1), [Prompting Claude Opus 5.5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5), 그리고 Opus 5.5 가이드가 출발점으로 지정한 [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)의 처방을 훅 하나와 스킬 네 개에 담았습니다. 문구는 원문을 거의 그대로 씁니다.
@@ -79,6 +79,10 @@ https://github.com/Junhan2/oh-my-fable 설치해줘
 ```
 
 Claude가 설치하면 끝입니다. 질문도, 설정 파일도 없습니다. 다음에 Claude Code를 열면 자동으로 적용됩니다. 지금 이 세션에서 바로 쓰고 싶으면 `/reload-plugins`(방금 설치한 플러그인 로드) 다음 `/clear`(규칙 주입) 를 한 줄씩.
+
+**요구 사항** · Claude Code 2.1.258 이상. Windows는 Git for Windows(Git Bash)가 있어야 합니다.
+
+**업데이트** · `claude plugin update oh-my-fable@oh-my-fable` 다음 새 세션. 서드파티 마켓플레이스는 자동 갱신이 기본으로 꺼져 있으니, 자동으로 받으려면 `/plugin` → Marketplaces → `oh-my-fable` → Enable auto-update. 바뀐 내용은 [CHANGELOG.md](CHANGELOG.md)에 있고, 업데이트 뒤 첫 세션에 한 줄로도 알려 줍니다.
 
 <details>
 <summary>수동 설치</summary>
@@ -135,7 +139,7 @@ claude plugin install oh-my-fable@oh-my-fable
 | 대화형/무인 자동 감지 | 예 | 예 | 아니요(고정) |
 | 서브에이전트에도 적용 | 예 (일반 서브에이전트는 파일, Explore·Plan은 훅의 짧은 판) | 예 (SubagentStart 훅이 짧은 판을 모든 서브에이전트에) | 예 (Explore·Plan은 훅의 짧은 판) |
 | 에이전트 팀에도 적용 | 예 (문서상 팀원은 규칙 파일을 로드) | 같은 창 안 팀원(in-process)은 예(훅 문서상 팀원의 메시지마다 SubagentStart가 실행), 창이 나뉜 팀원은 미검증 | 예 |
-| 플러그인 갱신 시 | 규칙 파일이 오래되면 세션 시작 때 알려 줌, `/fable-setup refresh` 로 갱신 | 항상 최신 | 구간을 다시 붙여 넣기 |
+| 플러그인 갱신 시 | 규칙 파일이 오래되면 세션 시작 때 알려 줌, `/fable-setup refresh` 로 갱신 | 항상 최신 | 구간이 오래되면 세션 시작 때 알려 줌, `/fable-setup claude-md` 로 교체 |
 | 제거 | 파일 삭제 + 플러그인 삭제 | 플러그인 삭제 또는 `{"enabled": false}` | 구간 삭제 |
 
 **규칙 파일을 권하는 이유.** Claude Code [훅 문서](https://code.claude.com/docs/en/hooks)는 "바뀌지 않는 지시는 CLAUDE.md에 두라(for instructions that never change, prefer CLAUDE.md)"고 하고(규칙 파일도 같은 방식으로 로드됩니다), 시스템 명령처럼 쓴 훅 텍스트는 Claude의 프롬프트 주입 방어를 건드릴 수 있다고 경고합니다. 그래도 기본값이 훅인 이유는 플러그인이 설치 때 파일을 쓸 수 없기 때문이고, 같은 이유로 훅 텍스트는 사실을 말하는 한 줄("The user installed oh-my-fable; these are the user's standing working rules.")로 시작합니다. 규칙 파일의 단점은 복사본이라는 점입니다. 오래되면 세션 시작 때 알려 주고 `/fable-setup refresh`로 갱신합니다.
@@ -259,6 +263,9 @@ claude plugin install oh-my-fable@oh-my-fable
 **요청 카드가 뭔가요? 끄려면?**
 `/fable`이 보여 주는 개선된 요청을 대화 속 카드로 그려 주는 기능입니다. Claude Code의 [mod](https://code.claude.com/docs/en/plugins/mods/overview)(Claude Code 안에서 실행되는 플러그인 코드)로 만들었고, 하는 일은 그 블록을 화면에 다시 그리는 것 하나입니다(`claude plugin validate`가 보여 주는 호출은 `$.ui.resolve`뿐). Claude가 읽는 내용과 저장되는 대화는 그대로이며, 글자가 나오는 동안에는 코드 블록으로 보이다가 그 답변 덩어리가 끝나면 카드로 바뀝니다. 터미널에서는 Claude Code 2.1.287 이상에서 그려지며 2.1.292에서 확인했습니다. 데스크톱 앱에서도 그려지며(Claude Code 2.1.289가 내장된 앱에서 확인), VS Code 확장 창·`claude -p`·2.1.287보다 낮은 버전에서는 지금처럼 코드 블록으로 보입니다. Claude Code 2.1.290에 mod가 라틴 문자가 아닌 여러 줄 글을 그릴 때 화면이 멈칫하던 문제의 수정이, 2.1.295에 마지막으로 알려진 카드 문제의 수정이 들어갔으니 2.1.295 이상을 권합니다. 끄려면 `/config`에서 `Improved request card`를 끄거나(세션을 다시 시작하지 않아도 바로 적용됩니다) `/plugin` → oh-my-fable → Configure options. 설치할 때부터 끄려면 `claude plugin install oh-my-fable@oh-my-fable --config card=false`.
 
+**세션을 열 때마다 뜨는 한 줄을 끄려면?**
+`/config`에서 oh-my-fable의 `Status line at session start`를 끄세요. 꺼도 설치 뒤 첫 세션의 안내, 업데이트 뒤 무엇이 바뀌었는지 한 줄, 조치가 필요한 알림은 나옵니다.
+
 **되돌리려면?**
 `/fable-setup remove` 가 설정 파일, 규칙 파일, CLAUDE.md 구간을 지웁니다. 그다음 `claude plugin uninstall oh-my-fable@oh-my-fable`. 잠시 끄기만 하려면 `~/.claude/oh-my-fable.json` 에 `{"enabled": false}`.
 
@@ -296,6 +303,7 @@ oh-my-fable/
 │   ├── rules-file.md          /fable-setup이 ~/.claude/rules/oh-my-fable.md 로 복사하는 기본 규칙
 │   ├── rules-file-unattended.md 플러그인 없는 헤드리스 전용 환경용 정적 규칙(무인 문단 셋 포함)
 │   ├── effort-high.md         블록 N, 세션이 xhigh·max effort로 시작할 때만 추가
+│   ├── whats-new.txt          버전마다 한 줄, 업데이트 뒤 첫 세션에 보여 주는 문장
 │   └── autonomy-unattended.md 무인 모드에서만 추가되는 문단 셋
 ├── skills/
 │   ├── fable-setup/SKILL.md   충돌 점검·모드 전환·설정 점검 (2층·3층)
@@ -308,13 +316,13 @@ oh-my-fable/
 │       └── references/        블록 원문(A~N)과 전후 예시
 ├── tests/card.test.ts         요청 카드 시험 (`claude plugin test .`)
 ├── tests/context-size.sh      훅이 넣는 글이 1만 자 상한 안인지 검사 (`bash tests/context-size.sh`)
-├── evals/                     `claude plugin eval` 평가 묶음: 사례 6개, 모델 판정 없이 규칙으로 채점
+├── evals/                     `claude plugin eval` 평가 묶음: 사례 8개, 모델 판정 없이 규칙으로 채점
 ├── README.md · README.en.md · README.zh.md
 └── LICENSE
 ```
 
 ## 기여와 라이선스
 
-이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md`(전체 블록 목록), `skills/fable/SKILL.md`(블록 F·G·H·J 사본)를 같이 고친 뒤 `bash tests/context-size.sh`를 돌립니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다).
+이슈와 PR을 환영합니다. 가이드가 갱신되면 `hooks/always-on.md`(주입 원문), `hooks/autonomy-unattended.md`(무인 문단), `hooks/rules-file.md`(마커 버전을 올릴 것), `hooks/rules-file-unattended.md`, `hooks/effort-high.md`, `skills/fable/references/prompt-blocks.md`(전체 블록 목록), `skills/fable/SKILL.md`(블록 F·G·H·J 사본)를 같이 고친 뒤 `bash tests/context-size.sh`를 돌립니다. 플러그인이 실제로 무엇을 보태는지 재려면 `claude plugin eval . --scaffold --allow-tools Edit Write`를 돌립니다(사례마다 플러그인 없는 쪽도 함께 돌려 비교합니다). 사례 `obstacle-retries-busy-tool`은 셸이 필요해 `--case obstacle-retries-busy-tool --allow-tools Edit Write Bash`로 따로 돌립니다(셸을 전체에 허용하면 `scope-fix-one-bug`의 새 파일 검사가 실패했습니다). 버전을 올릴 때는 `hooks/whats-new.txt`에 한 줄, `CHANGELOG.md`에 항목을 더하고, 무인 문단을 바꿨으면 `hooks/rules-file-unattended.md` 머리말의 `u` 숫자도 올립니다.
 
 MIT © Junhan2. 가이드 원문의 저작권은 Anthropic에 있습니다.

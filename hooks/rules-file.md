@@ -1,4 +1,4 @@
-<!-- oh-my-fable:rules v3 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraphs per session -->
+<!-- oh-my-fable:rules v3 · written by /fable-setup · base rules; the plugin hook adds the unattended paragraphs per session · if you uninstall the plugin, delete this file too (/fable-setup remove does both) -->
 
 These are default working rules. If CLAUDE.md or a rules file states an explicit opposite instruction, that instruction wins.
 
