@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: obstacle-retries-busy-tool
+description: Headless task whose first tool call fails the way a busy service does. Passes when the work is finished anyway and the reply does not end on a question.
+context:
+  scaffold_script: fixture.sh
